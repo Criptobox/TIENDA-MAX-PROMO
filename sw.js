@@ -4,14 +4,17 @@
    - Datos de la tienda (productos.json, config.json): red primero, caché de respaldo
    - Imágenes de productos: caché con actualización (stale-while-revalidate)
 */
-const CACHE = "tmgen-v2";
+const CACHE = "tmgen-v3";
 const APP_FILES = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
-  "./icon-maskable-512.png"
+  "./icon-maskable-512.png",
+  "./escenas/mesa.jpg",
+  "./escenas/sala.jpg",
+  "./escenas/taller.jpg"
 ];
 
 self.addEventListener("install", e => {
