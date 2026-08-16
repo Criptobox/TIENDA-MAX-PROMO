@@ -72,20 +72,22 @@ input[type=text]{flex:1;min-width:160px;}
 .btn.dark{background:var(--panel2);border:1px solid rgba(255,255,255,.14);}
 .btn.blue{background:linear-gradient(135deg,#4da3ff,#2AABEE);box-shadow:0 6px 18px rgba(42,171,238,.3);}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px;}
 .card{
   background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;
   cursor:pointer;transition:transform .15s, border-color .15s, box-shadow .15s;position:relative;
+  display:flex;align-items:stretch;gap:0;min-height:92px;
 }
-.card:hover{transform:translateY(-3px);border-color:rgba(255,107,53,.5);}
+.card:hover{transform:translateY(-2px);border-color:rgba(255,107,53,.5);}
 .card.sel{border-color:var(--naranja);box-shadow:0 0 0 2px rgba(255,107,53,.4), 0 10px 26px rgba(232,80,30,.25);}
-.card img{width:100%;aspect-ratio:1/1;object-fit:contain;background:#fff;display:block;}
-.card .cd{padding:9px 11px 11px;}
-.card .cn{font-size:11.5px;font-weight:700;line-height:1.3;height:30px;overflow:hidden;}
-.card .cp{margin-top:5px;font-size:15px;font-weight:900;color:var(--naranja);}
+.card img{width:92px;min-height:92px;height:auto;object-fit:contain;background:#fff;display:block;flex:none;align-self:stretch;}
+.card .cd{padding:9px 12px;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;}
+.card .cn{font-size:12px;font-weight:700;line-height:1.35;max-height:33px;overflow:hidden;}
+.card .cp{margin-top:5px;font-size:16px;font-weight:900;color:var(--naranja);}
 .card .cp s{color:var(--tx2);font-size:11px;font-weight:600;margin-right:5px;}
-.card .cc{position:absolute;top:7px;left:7px;font-size:8.5px;font-weight:800;letter-spacing:1px;padding:3px 8px;border-radius:10px;background:rgba(11,11,13,.8);backdrop-filter:blur(4px);}
-.card .cdisc{position:absolute;top:7px;right:7px;font-size:9px;font-weight:900;padding:3px 7px;border-radius:10px;background:linear-gradient(135deg,#ff3d00,var(--naranja));}
+.card .cmeta{display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap;}
+.card .cc{font-size:8px;font-weight:800;letter-spacing:1px;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);}
+.card .cdisc{font-size:9px;font-weight:900;padding:3px 7px;border-radius:10px;background:linear-gradient(135deg,#ff3d00,var(--naranja));color:#fff;}
 .count{font-size:12px;color:var(--tx2);margin-bottom:12px;}
 
 .panel{
@@ -143,25 +145,25 @@ body.preview .right{width:100%;max-width:720px;margin:0 auto;position:static;max
 .pick .px{cursor:pointer;color:var(--tx2);font-weight:900;padding:0 2px;flex:none;font-size:14px;}
 .pick .px:hover{color:#ff9a9a;}
 .newbadge{
-  position:absolute;top:38px;left:7px;font-size:8.5px;font-weight:900;letter-spacing:.5px;padding:3px 8px;border-radius:10px;
-  background:linear-gradient(135deg,#4da3ff,#2AABEE);color:#fff;z-index:2;box-shadow:0 3px 8px rgba(42,171,238,.4);
+  font-size:8px;font-weight:900;letter-spacing:.5px;padding:3px 7px;border-radius:10px;
+  background:linear-gradient(135deg,#4da3ff,#2AABEE);color:#fff;
 }
 .revbadge{
-  position:absolute;top:7px;right:38px;font-size:11px;z-index:2;
-  background:rgba(245,166,35,.18);border:1px solid rgba(245,166,35,.5);border-radius:10px;padding:2px 6px;
+  font-size:10px;
+  background:rgba(245,166,35,.18);border:1px solid rgba(245,166,35,.5);border-radius:10px;padding:1px 6px;
 }
 .pubbadge{
-  position:absolute;bottom:7px;left:7px;font-size:9px;font-weight:800;padding:3px 8px;border-radius:10px;
-  background:rgba(37,211,102,.16);border:1px solid rgba(37,211,102,.4);color:#7ee8a5;z-index:2;
+  font-size:8.5px;font-weight:800;padding:3px 7px;border-radius:10px;
+  background:rgba(37,211,102,.16);border:1px solid rgba(37,211,102,.4);color:#7ee8a5;
 }
 .selbox{
-  position:absolute;bottom:7px;right:7px;width:26px;height:26px;border-radius:9px;cursor:pointer;
+  position:absolute;top:50%;right:10px;transform:translateY(-50%);width:28px;height:28px;border-radius:9px;cursor:pointer;
   background:rgba(11,11,13,.75);border:1.5px solid rgba(255,255,255,.35);color:transparent;
   display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;z-index:3;
 }
 .selbox.on{background:linear-gradient(135deg,#FF6B35,#E8501E);border-color:#fff;color:#fff;}
 .combobadge{
-  position:absolute;bottom:8px;right:8px;width:26px;height:26px;border-radius:50%;
+  position:absolute;top:50%;right:10px;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;
   background:linear-gradient(135deg,var(--dorado),var(--naranja));color:#141416;font-size:13px;
   font-weight:900;display:flex;align-items:center;justify-content:center;
   box-shadow:0 4px 10px rgba(245,166,35,.5);z-index:2;
@@ -225,9 +227,12 @@ input[type=number]:focus{border-color:var(--naranja);}
   .controls{gap:7px;}
   .controls select,.controls input[type=text]{font-size:16px;padding:9px 12px;} /* 16px evita el zoom de iOS */
   .controls .btn{flex:1;justify-content:center;font-size:12px;padding:10px 10px;}
-  .grid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:9px;}
-  .card .cn{font-size:11px;}
-  .card .cp{font-size:14px;}
+  .grid{grid-template-columns:1fr;gap:8px;}
+  .card{min-height:84px;}
+  .card img{width:84px;min-height:84px;}
+  .card .cn{font-size:11.5px;}
+  .card .cp{font-size:15px;}
+  .card .cd{padding:8px 40px 8px 11px;} /* espacio para el checkbox a la derecha */
   .stylesrow{gap:6px;}
   .stybtn{min-width:78px;padding:9px 6px;font-size:10.5px;}
   .sharerow .btn{min-width:100px;font-size:12px;padding:11px 10px;}
@@ -3040,16 +3045,20 @@ function render(){
     const disc = p.precioOriginal>p.precioActual ? Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100) : 0;
     const dsp = diasSinPub(p.id);
     d.innerHTML = `
-      <span class="cc" style="color:${acento(p.categoria)}">${p.categoria}</span>
-      ${disc?`<span class="cdisc">−${disc}%</span>`:""}
       ${comboMode&&enCombo>=0?`<span class="combobadge">${enCombo+1}</span>`:""}
-      ${dsp!=null?`<span class="pubbadge" title="Publicado hace ${dsp} día(s)">✅ ${dsp===0?"hoy":dsp+"d"}</span>`:""}
-      ${nuevosIds.has(p.id)?`<span class="newbadge">🆕 NUEVO</span>`:""}
-      ${tieneResena(p)?`<span class="revbadge" title="Tiene reseña de cliente">⭐</span>`:""}
       ${!comboMode?`<span class="selbox ${multiSel.has(p.id)?"on":""}">✓</span>`:""}
       <img loading="lazy" src="${p.imagen}" alt="">
-      <div class="cd"><div class="cn">${p.nombre}</div>
-      <div class="cp">${p.precioOriginal>p.precioActual?`<s>$${p.precioOriginal}</s>`:""}$${p.precioActual}</div></div>`;
+      <div class="cd">
+        <div class="cn">${p.nombre}</div>
+        <div class="cp">${p.precioOriginal>p.precioActual?`<s>$${p.precioOriginal}</s>`:""}$${p.precioActual}</div>
+        <div class="cmeta">
+          <span class="cc" style="color:${acento(p.categoria)}">${p.categoria}</span>
+          ${disc?`<span class="cdisc">−${disc}%</span>`:""}
+          ${nuevosIds.has(p.id)?`<span class="newbadge">🆕</span>`:""}
+          ${tieneResena(p)?`<span class="revbadge" title="Tiene reseña">⭐</span>`:""}
+          ${dsp!=null?`<span class="pubbadge" title="Publicado hace ${dsp} día(s)">✅ ${dsp===0?"hoy":dsp+"d"}</span>`:""}
+        </div>
+      </div>`;
     d.onclick = ()=>seleccionar(p, true);
     const sb = d.querySelector(".selbox");
     if(sb) sb.onclick = e=>{
@@ -3394,7 +3403,7 @@ function dibujarQR(ctx, url, x, y, size){
 function qrOn(){const c=document.getElementById("chkQR");return c && c.checked;}
 
 /* ================= DISEÑOS ================= */
-const VERSION = "v4.9 PWA";
+const VERSION = "v5.0 PWA";
 async function dibujar(){
   const cv = $("#cv");
   try{
