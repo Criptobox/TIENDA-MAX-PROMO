@@ -164,6 +164,21 @@ input[type=text]{flex:1;min-width:160px;}
   user-select:none;
 }
 .qrtoggle input{accent-color:var(--naranja);width:16px;height:16px;cursor:pointer;}
+.prevrow{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 8px;-webkit-overflow-scrolling:touch;}
+.prevthumb{flex:none;width:96px;cursor:pointer;text-align:center;}
+.prevthumb canvas{
+  width:96px;border-radius:10px;display:block;background:#0B0B0D;
+  border:2px solid rgba(255,255,255,.12);transition:border-color .15s, transform .15s;
+}
+.prevthumb:hover canvas{transform:translateY(-2px);}
+.prevthumb.on canvas{border-color:var(--naranja);box-shadow:0 0 0 2px rgba(255,107,53,.35), 0 8px 18px rgba(232,80,30,.3);}
+.prevthumb .pl{font-size:9.5px;font-weight:700;color:var(--tx2);margin-top:5px;line-height:1.2;}
+.prevthumb.on .pl{color:#ffb28f;}
+.prevthumb .cargando{
+  width:96px;aspect-ratio:1/1;border-radius:10px;background:var(--panel2);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  border:2px solid rgba(255,255,255,.08);
+}
 .sizerow{display:flex;align-items:center;gap:10px;margin-top:10px;background:var(--panel2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:9px 12px;}
 .sizelbl{font-size:11.5px;color:var(--tx2);font-weight:700;flex:none;}
 .sizerow input[type=range]{flex:1;accent-color:var(--naranja);cursor:pointer;min-width:60px;}
@@ -216,6 +231,11 @@ input[type=number]:focus{border-color:var(--naranja);}
   </div>
 
   <div class="right">
+    <div class="panel">
+      <h3>👀 Vista previa — toca el estilo que más te guste</h3>
+      <div class="prevrow" id="prevRow"></div>
+    </div>
+
     <div class="panel">
       <h3>🎨 Estilo del diseño</h3>
       <div class="stylesrow">
@@ -2940,6 +2960,7 @@ function seleccionar(p){
   render();
   dibujar();
   updCapPrev();
+  renderPreviews();
 }
 
 /* ================= HELPERS CANVAS ================= */
@@ -3167,7 +3188,7 @@ function dibujarQR(ctx, url, x, y, size){
 function qrOn(){const c=document.getElementById("chkQR");return c && c.checked;}
 
 /* ================= DISEÑOS ================= */
-const VERSION = "v3.8 PWA";
+const VERSION = "v3.9 PWA";
 async function dibujar(){
   const cv = $("#cv");
   try{
@@ -3965,6 +3986,65 @@ function descargarBlob(b,nombre){
   a.click(); URL.revokeObjectURL(a.href);
 }
 
+/* ================= VISTAS PREVIAS DE ESTILOS ================= */
+const ESTILOS_PREV = [
+  {id:"vitrina", nombre:"🖼️ Vitrina", w:1080, h:1080},
+  {id:"oferta", nombre:"🔥 Oferta", w:1080, h:1080},
+  {id:"story", nombre:"📱 Story", w:1080, h:1920},
+  {id:"flotante", nombre:"✨ Flotante", w:1080, h:1350},
+  {id:"claro", nombre:"🌅 Claro WA", w:1080, h:1920},
+  {id:"resena", nombre:"⭐ Reseña", w:1080, h:1080}
+];
+let _prevToken = 0;
+async function renderPreviews(){
+  const row = document.getElementById("prevRow");
+  if(!row || !sel || comboMode) return;
+  const token = ++_prevToken;
+  row.innerHTML = ESTILOS_PREV.map(e=>`
+    <div class="prevthumb ${estilo===e.id?"on":""}" data-sty="${e.id}">
+      <div class="cargando">⏳</div>
+      <div class="pl">${e.nombre}</div>
+    </div>`).join("");
+  row.querySelectorAll(".prevthumb").forEach(t=>{
+    t.onclick = ()=>{
+      const b = document.querySelector(`.stybtn[data-sty=${t.dataset.sty}]`);
+      if(b) b.click();
+      row.querySelectorAll(".prevthumb").forEach(x=>x.classList.toggle("on", x===t));
+    };
+  });
+  let img = null;
+  try{ img = await loadImage(sel.imagen); }catch(e){}
+  if(token!==_prevToken) return;
+  const off = document.createElement("canvas");
+  for(const e of ESTILOS_PREV){
+    if(token!==_prevToken) return;
+    try{
+      off.width = e.w; off.height = e.h;
+      const octx = off.getContext("2d");
+      const imgUsar = (e.id==="flotante" && fotoSinFondo) ? fotoSinFondo : img;
+      if(e.id==="vitrina") dVitrina(octx,sel,imgUsar);
+      else if(e.id==="oferta") dOferta(octx,sel,imgUsar);
+      else if(e.id==="story") dStory(octx,sel,imgUsar);
+      else if(e.id==="claro") dClaro(octx,sel,imgUsar);
+      else if(e.id==="resena") dResena(octx,sel,imgUsar);
+      else dFlotante(octx,sel,imgUsar);
+      const t = row.querySelector(`[data-sty=${e.id}]`);
+      if(!t) continue;
+      const mini = document.createElement("canvas");
+      const mw = 192, mh = Math.round(mw*e.h/e.w);
+      mini.width = mw; mini.height = mh;
+      mini.getContext("2d").drawImage(off,0,0,mw,mh);
+      const holder = t.querySelector(".cargando");
+      if(holder) holder.replaceWith(mini);
+      await new Promise(r=>setTimeout(r,30));
+    }catch(err){}
+  }
+}
+function marcarPrevActiva(){
+  const row = document.getElementById("prevRow");
+  if(row) row.querySelectorAll(".prevthumb").forEach(x=>x.classList.toggle("on", x.dataset.sty===estilo));
+}
+
 /* ================= ACCIONES ================= */
 function canvasBlob(){return new Promise(r=>$("#cv").toBlob(r,"image/png"));}
 function nombreArchivo(p,suf=""){return `tiendamax-${p.slug||p.id}${suf}.png`;}
@@ -4007,6 +4087,7 @@ document.querySelectorAll(".stybtn").forEach(b=>{
     guardarPref("estilo", estilo);
     $("#uploadbox").style.display = estilo==="flotante" ? "block" : "none";
     dibujar();
+    marcarPrevActiva();
   };
 });
 /* restaurar preferencias guardadas */
@@ -4089,12 +4170,13 @@ $("#fileUp").onchange = e=>{
     $("#uzone").innerHTML = `✅ <b>${f.name}</b> cargada<br>Toca para cambiarla`;
     $("#sizeRow").style.display = "flex";
     dibujar();
+    renderPreviews();
   };
   im.src = URL.createObjectURL(f);
 };
 
 $("#selPlantilla").onchange = ()=>{ guardarPref("plantilla", $("#selPlantilla").value); updCapPrev(); };
-$("#chkQR").onchange = ()=>{ guardarPref("qr", $("#chkQR").checked); dibujar(); };
+$("#chkQR").onchange = ()=>{ guardarPref("qr", $("#chkQR").checked); dibujar(); renderPreviews(); };
 $("#rngEscala").oninput = e=>{
   escalaProducto = Number(e.target.value)/100;
   $("#escalaVal").textContent = e.target.value+"%";
