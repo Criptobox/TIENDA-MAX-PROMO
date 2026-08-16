@@ -210,6 +210,47 @@ input[type=number]:focus{border-color:var(--naranja);}
   border-radius:50%;margin:0 auto 14px;animation:sp 0.8s linear infinite;
 }
 @keyframes sp{to{transform:rotate(360deg);}}
+
+/* ============ USABILIDAD MÓVIL ============ */
+@media(max-width:700px){
+  header{padding:10px 12px;gap:8px;position:sticky;}
+  .logo{font-size:17px;}
+  .logo img{width:30px;height:30px;border-radius:8px;}
+  .logo small{font-size:8px;letter-spacing:1px;}
+  .tasa{padding:6px 10px;font-size:10.5px;order:5;}
+  .status{font-size:9.5px;padding:5px 9px;}
+  #btnHist,#btnPlan{padding:7px 11px;font-size:11px;}
+  .left{padding:12px 12px 70px;}
+  .right{padding:0 12px 70px;}
+  .controls{gap:7px;}
+  .controls select,.controls input[type=text]{font-size:16px;padding:9px 12px;} /* 16px evita el zoom de iOS */
+  .controls .btn{flex:1;justify-content:center;font-size:12px;padding:10px 10px;}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:9px;}
+  .card .cn{font-size:11px;}
+  .card .cp{font-size:14px;}
+  .stylesrow{gap:6px;}
+  .stybtn{min-width:78px;padding:9px 6px;font-size:10.5px;}
+  .sharerow .btn{min-width:100px;font-size:12px;padding:11px 10px;}
+  .panel{padding:13px;}
+  .prevthumb{width:84px;}
+  .prevthumb canvas,.prevthumb .cargando{width:84px;}
+  .pick .pn{max-width:130px;}
+  .toast{width:calc(100% - 32px);text-align:center;font-size:12px;}
+}
+/* En móvil, dentro de la vista previa: el LIENZO primero, luego estilos y compartir */
+@media(max-width:1020px){
+  body.preview .right{display:flex;flex-direction:column;}
+  body.preview .right .canvaswrap{order:-1;}
+  body.preview #quickBar{display:flex;}
+}
+/* Barra rápida fija inferior (solo móvil + vista previa) */
+#quickBar{
+  display:none;position:fixed;bottom:0;left:0;right:0;z-index:97;
+  background:rgba(11,11,13,.94);backdrop-filter:blur(10px);
+  border-top:1px solid rgba(255,255,255,.12);
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));gap:8px;
+}
+#quickBar .btn{flex:1;justify-content:center;font-size:12px;padding:12px 6px;}
 </style>
 </head>
 <body>
@@ -369,8 +410,16 @@ input[type=number]:focus{border-color:var(--naranja);}
 
 <div id="selBar" style="display:none;position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:98;background:linear-gradient(135deg,#1c1c20,#141417);border:1px solid rgba(255,107,53,.5);border-radius:30px;padding:10px 18px;box-shadow:0 12px 32px rgba(0,0,0,.55);align-items:center;gap:12px;font-size:13px;font-weight:700;">
   <span id="selBarTxt">☑️ 0</span>
-  <button class="btn orange" id="btnZipSel" style="padding:8px 16px;font-size:12px;">⚡ Generar ZIP</button>
+  <button class="btn green" id="btnPack" style="padding:8px 14px;font-size:12px;">📲 Compartir pack</button>
+  <button class="btn orange" id="btnZipSel" style="padding:8px 14px;font-size:12px;">⚡ ZIP</button>
   <button class="btn dark" id="btnSelClear" style="padding:8px 12px;font-size:12px;">✕</button>
+</div>
+
+<div id="quickBar">
+  <button class="btn dark" id="qbBack">🔍</button>
+  <button class="btn orange" id="qbPng">⬇️ PNG</button>
+  <button class="btn green" id="qbShare">📲 Compartir</button>
+  <button class="btn green" id="qbWa" style="background:linear-gradient(135deg,#25D366,#1a9e4b);">🟢 Estado</button>
 </div>
 
 <div id="comboBar" style="display:none;position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:98;background:linear-gradient(135deg,#1c1c20,#141417);border:1px solid rgba(245,166,35,.5);border-radius:30px;padding:10px 18px;box-shadow:0 12px 32px rgba(0,0,0,.55);display:none;align-items:center;gap:12px;font-size:13px;font-weight:700;">
@@ -3345,7 +3394,7 @@ function dibujarQR(ctx, url, x, y, size){
 function qrOn(){const c=document.getElementById("chkQR");return c && c.checked;}
 
 /* ================= DISEÑOS ================= */
-const VERSION = "v4.8 PWA";
+const VERSION = "v4.9 PWA";
 async function dibujar(){
   const cv = $("#cv");
   try{
@@ -4689,7 +4738,53 @@ function selBarUpd(){
   } else b.style.display="none";
 }
 $("#btnCambiar").onclick = ()=>modoPreview(false);
+$("#qbBack").onclick = ()=>modoPreview(false);
+$("#qbPng").onclick = ()=>$("#btnPng").click();
+$("#qbShare").onclick = ()=>$("#btnShare").click();
+$("#qbWa").onclick = ()=>$("#btnWa").click();
 $("#btnSelClear").onclick = ()=>{ multiSel.clear(); render(); selBarUpd(); };
+$("#btnPack").onclick = async ()=>{
+  const lista = productos.filter(p=>multiSel.has(p.id));
+  if(!lista.length) return;
+  if(lista.length>10){ toast("Máximo 10 productos por pack"); return; }
+  const btn = $("#btnPack"); btn.disabled = true;
+  $("#prog").style.display = "block";
+  const files = []; let done = 0;
+  const guardaSel = sel;
+  for(const p of lista){
+    try{
+      sel = p;
+      await dibujar();
+      const blob = await canvasBlob();
+      files.push(new File([blob], nombreArchivo(p), {type:"image/png"}));
+      registrarPub(p);
+    }catch(e){}
+    done++;
+    $("#progTxt").textContent = `${done}/${lista.length}`;
+    $("#progBar").style.width = (done/lista.length*100)+"%";
+  }
+  sel = guardaSel; dibujar();
+  $("#prog").style.display = "none"; btn.disabled = false;
+  const packTxt = `🛍️ Nuevos en TiendaMax — ${lista.length} productos\n📲 Pedidos: https://wa.me/${WHATSAPP}\n🌐 tiendamax.org\n#TiendaMax #Cuba`;
+  if(navigator.canShare && navigator.canShare({files})){
+    try{
+      toast("💡 En el menú: WhatsApp → Mi estado (van las "+files.length+" juntas) o Facebook");
+      await navigator.share({files, text: packTxt});
+    }catch(e){}
+  }else{
+    /* PC: ZIP + texto copiado */
+    const zfiles = [];
+    for(const f of files) zfiles.push({name:f.name, data:new Uint8Array(await f.arrayBuffer())});
+    const zip = zipStore(zfiles);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(zip);
+    a.download = "tiendamax-pack.zip";
+    a.click(); URL.revokeObjectURL(a.href);
+    try{ await navigator.clipboard.writeText(packTxt); }catch(e){}
+    toast("💻 Pack descargado en ZIP — en WhatsApp Web/Facebook selecciona las imágenes juntas al publicar");
+  }
+  multiSel.clear(); render(); selBarUpd();
+};
 $("#btnZipSel").onclick = async ()=>{
   const lista = productos.filter(p=>multiSel.has(p.id));
   if(!lista.length) return;
