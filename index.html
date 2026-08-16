@@ -423,6 +423,7 @@ input[type=number]:focus{border-color:var(--naranja);}
         <button class="btn green" id="btnWa">🟢 Estado WhatsApp</button>
         <button class="btn blue" id="btnTg">✈️ Telegram</button>
         <button class="btn blue" id="btnFb" style="background:linear-gradient(135deg,#5c7cfa,#4C77E6);">📘 Facebook</button>
+        <button class="btn blue" id="btnFbGrupos" style="background:linear-gradient(135deg,#4C77E6,#3b5fc7);">👥 Grupos FB</button>
         <button class="btn dark" id="btnCap">📋 Copiar caption</button>
         <button class="btn dark" id="btnCopyImg">🖼️ Copiar imagen</button>
       </div>
@@ -3467,7 +3468,7 @@ function dibujarQR(ctx, url, x, y, size){
 function qrOn(){const c=document.getElementById("chkQR");return c && c.checked;}
 
 /* ================= DISEÑOS ================= */
-const VERSION = "v5.4 PWA";
+const VERSION = "v5.5 PWA";
 async function dibujar(){
   const cv = $("#cv");
   try{
@@ -5193,6 +5194,134 @@ $("#btnSemana").onclick = async ()=>{
   toast("📅 Plan semanal listo: 7 imágenes + guía de publicación");
 };
 
+/* ================= GRUPOS DE FACEBOOK ================= */
+function fbGrupos(){ return leerPref("fb_grupos", []); }
+function guardarFbGrupos(g){ guardarPref("fb_grupos", g); }
+
+function modalGrupos(){
+  const old = document.getElementById("fbgModal");
+  if(old){ old.remove(); return; }
+  const grupos = fbGrupos();
+  const catProducto = sel ? sel.categoria : "";
+  const m = document.createElement("div");
+  m.id = "fbgModal";
+  m.style.cssText = "position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.9);overflow-y:auto;padding:20px;";
+  const cats = [...new Set(productos.map(p=>p.categoria))].sort();
+  let inner = `<div style="max-width:640px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+      <h2 style="font-size:19px;flex:1;">👥 Mis grupos de Facebook</h2>
+      <button class="btn orange" id="fbgClose" style="padding:8px 14px;font-size:12px;">✕ Cerrar</button>
+    </div>
+    <div style="font-size:12px;color:var(--tx2);line-height:1.6;margin-bottom:16px;">Guarda tus grupos una vez, organizados por categoría. Al publicar, el asistente te lleva grupo por grupo con la imagen y el texto listos — solo pegas y publicas.</div>
+
+    <div style="background:var(--panel);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px;margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:800;color:#ffb28f;margin-bottom:10px;">＋ Añadir grupo</div>
+      <input type="text" id="fbgNombre" placeholder="Nombre (ej: Compra/Venta La Habana)" style="width:100%;margin-bottom:8px;">
+      <input type="text" id="fbgUrl" placeholder="Enlace del grupo (https://www.facebook.com/groups/…)" style="width:100%;margin-bottom:8px;">
+      <div style="font-size:11px;color:var(--tx2);margin-bottom:6px;">Categorías que publicas ahí (vacío = todas):</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;" id="fbgCats">`;
+  for(const c of cats){
+    inner += `<label style="display:flex;align-items:center;gap:4px;background:var(--panel2);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:4px 10px;font-size:10.5px;cursor:pointer;"><input type="checkbox" value="${c}" style="accent-color:var(--naranja);">${c}</label>`;
+  }
+  inner += `</div>
+      <button class="btn green" id="fbgAdd" style="width:100%;justify-content:center;">💾 Guardar grupo</button>
+    </div>
+    <div id="fbgLista">`;
+  if(!grupos.length){
+    inner += `<div style="text-align:center;color:var(--tx2);font-size:12.5px;padding:20px;">Aún no tienes grupos guardados.</div>`;
+  }
+  grupos.forEach((g,i)=>{
+    const coincide = !g.cats.length || (catProducto && g.cats.includes(catProducto));
+    inner += `<div style="display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid ${coincide&&catProducto?"rgba(37,211,102,.45)":"rgba(255,255,255,.09)"};border-radius:12px;padding:10px 14px;margin-bottom:8px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${g.nombre} ${coincide&&catProducto?'<span style="color:#7ee8a5;font-size:10px;">· coincide</span>':""}</div>
+        <div style="font-size:10px;color:var(--tx2);">${g.cats.length? g.cats.join(" · ") : "Todas las categorías"}</div>
+      </div>
+      <button class="btn dark fbgDel" data-i="${i}" style="padding:6px 10px;font-size:11px;">🗑️</button>
+    </div>`;
+  });
+  inner += `</div>`;
+  if(grupos.length && sel){
+    inner += `<button class="btn green" id="fbgPublicar" style="width:100%;justify-content:center;margin-top:12px;padding:14px;">🚀 Publicar "${sel.nombre.slice(0,26)}…" en los grupos</button>`;
+  }
+  inner += `</div>`;
+  m.innerHTML = inner;
+  document.body.appendChild(m);
+  m.querySelector("#fbgClose").onclick = ()=>m.remove();
+  m.querySelector("#fbgAdd").onclick = ()=>{
+    const nombre = m.querySelector("#fbgNombre").value.trim();
+    let url = m.querySelector("#fbgUrl").value.trim();
+    if(!nombre || !url){ toast("Pon el nombre y el enlace del grupo"); return; }
+    if(!/^https?:\/\//.test(url)) url = "https://"+url;
+    const cats2 = [...m.querySelectorAll("#fbgCats input:checked")].map(x=>x.value);
+    const g = fbGrupos(); g.push({nombre, url, cats:cats2});
+    guardarFbGrupos(g);
+    m.remove(); modalGrupos();
+    toast("✅ Grupo guardado");
+  };
+  m.querySelectorAll(".fbgDel").forEach(b=>b.onclick=()=>{
+    const g = fbGrupos(); g.splice(Number(b.dataset.i),1);
+    guardarFbGrupos(g);
+    m.remove(); modalGrupos();
+  });
+  const pubBtn = m.querySelector("#fbgPublicar");
+  if(pubBtn) pubBtn.onclick = ()=>{ m.remove(); iniciarAsistenteGrupos(); };
+}
+
+/* ===== Asistente: grupo por grupo con imagen+texto listos ===== */
+let _asist = null;
+async function iniciarAsistenteGrupos(){
+  if(!sel){ toast("Elige un producto primero"); return; }
+  const catP = sel.categoria;
+  let grupos = fbGrupos().filter(g=>!g.cats.length || g.cats.includes(catP));
+  if(!grupos.length){ toast(`No hay grupos para la categoría ${catP} — añade alguno o márcalo "todas"`); return; }
+  const blob = await canvasBlob();
+  _asist = { grupos, idx:0, blob };
+  /* imagen lista: en móvil descargarla a galería; en PC va al portapapeles en cada paso */
+  if(esMovil()) descargarBlob(blob, nombreArchivo(sel));
+  try{ await navigator.clipboard.writeText(caption(sel)); }catch(e){}
+  mostrarPasoGrupo();
+}
+async function mostrarPasoGrupo(){
+  const old = document.getElementById("agModal");
+  if(old) old.remove();
+  if(!_asist || _asist.idx >= _asist.grupos.length){
+    if(_asist){ registrarPub(sel); toast(`✅ Recorrido completo: ${_asist.grupos.length} grupos`); }
+    _asist = null;
+    return;
+  }
+  const g = _asist.grupos[_asist.idx];
+  const m = document.createElement("div");
+  m.id = "agModal";
+  m.style.cssText = "position:fixed;bottom:0;left:0;right:0;z-index:130;background:rgba(11,11,13,.97);backdrop-filter:blur(10px);border-top:2px solid #4C77E6;padding:14px 16px calc(14px + env(safe-area-inset-bottom));";
+  m.innerHTML = `
+    <div style="max-width:640px;margin:0 auto;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:4px;">👥 Grupo ${_asist.idx+1}/${_asist.grupos.length}: ${g.nombre}</div>
+      <div style="font-size:11px;color:var(--tx2);line-height:1.6;margin-bottom:10px;">
+        ${esMovil()
+          ? "1️⃣ Abrir grupo → 2️⃣ Crear publicación → 3️⃣ Adjunta la imagen (ya está en tu galería) → 4️⃣ Mantén pulsado y pega el texto → Publicar"
+          : "1️⃣ Abrir grupo → 2️⃣ Crear publicación → 3️⃣ Ctrl+V pega la imagen → 4️⃣ Ctrl+V de nuevo pega el texto → Publicar"}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn blue" id="agAbrir" style="flex:2;justify-content:center;background:linear-gradient(135deg,#5c7cfa,#4C77E6);">📘 Abrir grupo</button>
+        <button class="btn dark" id="agCopiar" style="flex:1;justify-content:center;">📋 Texto</button>
+        <button class="btn green" id="agHecho" style="flex:1;justify-content:center;">✅ Siguiente</button>
+        <button class="btn dark" id="agCancel" style="justify-content:center;">✕</button>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+  m.querySelector("#agAbrir").onclick = async ()=>{
+    if(!esMovil()){ try{ await copiarImagen(_asist.blob); }catch(e){} }
+    window.open(g.url, "_blank");
+  };
+  m.querySelector("#agCopiar").onclick = async ()=>{
+    try{ await navigator.clipboard.writeText(caption(sel)); toast("📋 Texto copiado"); }catch(e){}
+  };
+  m.querySelector("#agHecho").onclick = ()=>{ _asist.idx++; mostrarPasoGrupo(); };
+  m.querySelector("#agCancel").onclick = ()=>{ m.remove(); _asist=null; toast("Asistente cerrado"); };
+}
+$("#btnFbGrupos").onclick = modalGrupos;
+
 /* ================= RESPALDO (#2) ================= */
 $("#btnBackup").onclick = ()=>{
   const old = document.getElementById("bkModal");
@@ -5200,7 +5329,7 @@ $("#btnBackup").onclick = ()=>{
   const m = document.createElement("div");
   m.id = "bkModal";
   m.style.cssText = "position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:20px;";
-  const claves = ["publog","plan_semana","ids_vistos","estilo","qr","plantilla","rmbg_key"];
+  const claves = ["publog","plan_semana","ids_vistos","estilo","qr","plantilla","rmbg_key","fb_grupos"];
   m.innerHTML = `<div style="background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:24px;max-width:420px;width:100%;">
     <h2 style="font-size:17px;margin-bottom:6px;">💾 Respaldo de datos</h2>
     <div style="font-size:12px;color:var(--tx2);line-height:1.6;margin-bottom:16px;">Tu historial de publicaciones, plan semanal y preferencias viven en este dispositivo. Exporta un respaldo para no perderlos o para pasarlos a otro teléfono/PC.</div>
