@@ -125,6 +125,23 @@ input[type=text]{flex:1;min-width:160px;}
 }
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
 .empty{text-align:center;color:var(--tx2);padding:60px 20px;font-size:14px;line-height:1.8;}
+/* ===== MODO VISTA PREVIA: catálogo colapsado a píldoras ===== */
+#pickedBar{display:none;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px;}
+body.preview #pickedBar{display:flex;}
+body.preview .controls, body.preview .grid, body.preview .count{display:none;}
+body.preview .layout{flex-direction:column;}
+body.preview .left{padding-bottom:0;}
+body.preview .right{width:100%;max-width:720px;margin:0 auto;position:static;max-height:none;padding:0 0 60px;}
+.pick{
+  display:flex;align-items:center;gap:9px;background:var(--panel);
+  border:1.5px solid rgba(255,107,53,.55);border-radius:26px;padding:6px 16px 6px 7px;
+  font-size:12.5px;font-weight:700;box-shadow:0 6px 16px rgba(232,80,30,.18);
+}
+.pick img{width:36px;height:36px;border-radius:50%;object-fit:contain;background:#fff;flex:none;}
+.pick .pn{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.pick .pp{color:var(--naranja);font-weight:900;flex:none;}
+.pick .px{cursor:pointer;color:var(--tx2);font-weight:900;padding:0 2px;flex:none;font-size:14px;}
+.pick .px:hover{color:#ff9a9a;}
 .newbadge{
   position:absolute;top:38px;left:7px;font-size:8.5px;font-weight:900;letter-spacing:.5px;padding:3px 8px;border-radius:10px;
   background:linear-gradient(135deg,#4da3ff,#2AABEE);color:#fff;z-index:2;box-shadow:0 3px 8px rgba(42,171,238,.4);
@@ -224,6 +241,10 @@ input[type=number]:focus{border-color:var(--naranja);}
       <button class="btn blue" id="btnSemana">📅 Plan semanal (ZIP)</button>
     </div>
     <div class="progress" id="prog">Generando <b id="progTxt">0/0</b>…<div class="pbar"><i id="progBar"></i></div></div>
+    <div id="pickedBar">
+      <div id="pickedList" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;"></div>
+      <button class="btn dark" id="btnCambiar" style="padding:9px 16px;font-size:12px;">🔍 Cambiar producto</button>
+    </div>
     <div class="count" id="count"></div>
     <div class="grid" id="grid">
       <div class="empty" style="grid-column:1/-1;"><div class="spin"></div>Cargando catálogo desde tiendamax.org…</div>
@@ -2846,7 +2867,7 @@ async function init(){
       if(reb.length){
         const b = document.querySelector('[data-sty=oferta]');
         if(b) b.click();
-        seleccionar(reb[0]);
+        seleccionar(reb[0], true);
         toast(`🔥 ${reb.length} producto${reb.length>1?"s":""} en oferta ahora mismo`);
       } else toast("No hay productos rebajados en este momento");
     }
@@ -2893,7 +2914,7 @@ function render(){
       <img loading="lazy" src="${p.imagen}" alt="">
       <div class="cd"><div class="cn">${p.nombre}</div>
       <div class="cp">${p.precioOriginal>p.precioActual?`<s>$${p.precioOriginal}</s>`:""}$${p.precioActual}</div></div>`;
-    d.onclick = ()=>seleccionar(p);
+    d.onclick = ()=>seleccionar(p, true);
     const sb = d.querySelector(".selbox");
     if(sb) sb.onclick = e=>{
       e.stopPropagation();
@@ -2946,7 +2967,31 @@ function renderComboList(){
     el.appendChild(d);
   }
 }
-function seleccionar(p){
+function modoPreview(on){
+  document.body.classList.toggle("preview", !!on);
+  renderPicked();
+  if(on) window.scrollTo({top:0, behavior:"smooth"});
+}
+function renderPicked(){
+  const el = document.getElementById("pickedList");
+  if(!el) return;
+  el.innerHTML = "";
+  const items = comboMode ? comboSel : (sel ? [sel] : []);
+  for(const it of items){
+    const d = document.createElement("div");
+    d.className = "pick";
+    d.innerHTML = `<img src="${it.imagen}"><span class="pn">${it.nombre}</span><span class="pp">$${it.precioActual}</span>`+
+      (comboMode?`<span class="px" title="Quitar del combo">✕</span>`:"");
+    if(comboMode){
+      d.querySelector(".px").onclick = ()=>{
+        toggleCombo(it);
+        if(comboSel.length<2) modoPreview(false);
+      };
+    }
+    el.appendChild(d);
+  }
+}
+function seleccionar(p, abrirPreview){
   if(comboMode){ toggleCombo(p); return; }
   sel = p; fotoSinFondo = null;
   escalaProducto = 1;
@@ -2961,6 +3006,8 @@ function seleccionar(p){
   dibujar();
   updCapPrev();
   renderPreviews();
+  if(abrirPreview) modoPreview(true);
+  else renderPicked();
 }
 
 /* ================= HELPERS CANVAS ================= */
@@ -3188,7 +3235,7 @@ function dibujarQR(ctx, url, x, y, size){
 function qrOn(){const c=document.getElementById("chkQR");return c && c.checked;}
 
 /* ================= DISEÑOS ================= */
-const VERSION = "v3.9 PWA";
+const VERSION = "v4.0 PWA";
 async function dibujar(){
   const cv = $("#cv");
   try{
@@ -4193,6 +4240,7 @@ $("#btnComboMode").onclick = ()=>{
   $("#btnComboMode").textContent = comboMode ? "✕ Salir del modo combo" : "🎁 Activar modo combo";
   $("#btnComboMode").classList.toggle("orange", comboMode);
   $("#btnComboMode").classList.toggle("dark", !comboMode);
+  modoPreview(false);
   if(!comboMode){
     comboSel=[]; comboPngs={}; renderComboList();
     escalaCombo = 1;
@@ -4218,6 +4266,7 @@ function selBarUpd(){
     $("#selBarTxt").textContent = `☑️ ${multiSel.size} seleccionado${multiSel.size>1?"s":""}`;
   } else b.style.display="none";
 }
+$("#btnCambiar").onclick = ()=>modoPreview(false);
 $("#btnSelClear").onclick = ()=>{ multiSel.clear(); render(); selBarUpd(); };
 $("#btnZipSel").onclick = async ()=>{
   const lista = productos.filter(p=>multiSel.has(p.id));
@@ -4227,7 +4276,7 @@ $("#btnZipSel").onclick = async ()=>{
   multiSel.clear(); render(); selBarUpd();
 };
 $("#btnVerCombo").onclick = ()=>{
-  document.querySelector(".canvaswrap").scrollIntoView({behavior:"smooth",block:"center"});
+  modoPreview(true);
 };
 $("#uzoneCombo").onclick = ()=>{
   if(!comboSel.length){ toast("Primero elige los productos del combo"); return; }
@@ -4454,7 +4503,7 @@ $("#btnHist").onclick = ()=>{
   m.querySelectorAll(".histcard").forEach(c=>{
     c.onclick = ()=>{
       const p = productos.find(x=>String(x.id)===c.dataset.id);
-      if(p){ m.remove(); seleccionar(p); toast("Producto cargado para republicar"); }
+      if(p){ m.remove(); seleccionar(p, true); toast("Producto cargado para republicar"); }
     };
   });
 };
