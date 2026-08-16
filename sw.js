@@ -4,7 +4,7 @@
    - Datos de la tienda (productos.json, config.json): red primero, caché de respaldo
    - Imágenes de productos: caché con actualización (stale-while-revalidate)
 */
-const CACHE = "tmgen-v4";
+const CACHE = "tmgen-v5";
 const APP_FILES = [
   "./",
   "./index.html",
