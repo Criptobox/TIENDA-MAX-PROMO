@@ -1,0 +1,4413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0B0B0D">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TM Diseños">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>TiendaMax · Generador de Diseños para Redes</title>
+<style>
+:root{
+  --naranja:#FF6B35; --naranja-osc:#E8501E; --naranja-logo:#F98127;
+  --negro:#0B0B0D; --panel:#141417; --panel2:#1b1b1f;
+  --wa:#25D366; --dorado:#f5a623; --tx:#e8e8ec; --tx2:#9a9aa2;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+  background:
+    radial-gradient(900px 400px at 85% -100px, rgba(255,107,53,.12), transparent 60%),
+    linear-gradient(180deg,#0B0B0D,#101013);
+  color:var(--tx);min-height:100vh;
+}
+header{
+  display:flex;align-items:center;gap:14px;padding:16px 22px;flex-wrap:wrap;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  background:rgba(11,11,13,.85);backdrop-filter:blur(10px);position:sticky;top:0;z-index:50;
+}
+.logo{display:flex;align-items:center;gap:10px;font-family:Georgia,serif;font-weight:800;font-size:22px;}
+.logo img{width:38px;height:38px;border-radius:10px;box-shadow:0 6px 16px rgba(232,80,30,.45);}
+.logo em{font-style:normal;color:var(--naranja-logo);margin-left:2px;}
+.logo small{font-size:10px;color:var(--tx2);display:block;letter-spacing:2px;font-family:'Segoe UI',sans-serif;font-weight:600;}
+.tasa{
+  margin-left:auto;font-size:12px;color:var(--tx2);background:var(--panel);border:1px solid rgba(255,255,255,.09);
+  padding:8px 14px;border-radius:20px;
+}
+.tasa b{color:var(--dorado);}
+.status{font-size:11px;padding:6px 12px;border-radius:16px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.4);color:#7ee8a5;}
+.status.err{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.4);color:#ff9a9a;}
+
+.layout{display:flex;gap:0;align-items:flex-start;}
+.left{flex:1;min-width:0;padding:18px 20px 80px;}
+.right{
+  width:480px;flex:none;position:sticky;top:76px;padding:18px 20px 20px 0;
+  display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 80px);overflow-y:auto;
+}
+@media(max-width:1020px){
+  .layout{flex-direction:column;}
+  .right{width:100%;position:static;padding:0 20px 60px;max-height:none;}
+}
+
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+select,input[type=text]{
+  background:var(--panel);border:1px solid rgba(255,255,255,.12);color:var(--tx);
+  padding:10px 14px;border-radius:12px;font-size:13px;outline:none;
+}
+select:focus,input[type=text]:focus{border-color:var(--naranja);}
+input[type=text]{flex:1;min-width:160px;}
+.btn{
+  border:none;cursor:pointer;font-weight:800;font-size:13px;border-radius:12px;padding:11px 18px;
+  color:#fff;display:inline-flex;align-items:center;gap:8px;transition:transform .12s, box-shadow .12s;
+}
+.btn:hover{transform:translateY(-1px);}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+.btn.orange{background:linear-gradient(135deg,var(--naranja),var(--naranja-osc));box-shadow:0 6px 18px rgba(232,80,30,.35);}
+.btn.green{background:linear-gradient(135deg,#2ee578,#1eb257);box-shadow:0 6px 18px rgba(37,211,102,.3);}
+.btn.dark{background:var(--panel2);border:1px solid rgba(255,255,255,.14);}
+.btn.blue{background:linear-gradient(135deg,#4da3ff,#2AABEE);box-shadow:0 6px 18px rgba(42,171,238,.3);}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+.card{
+  background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;
+  cursor:pointer;transition:transform .15s, border-color .15s, box-shadow .15s;position:relative;
+}
+.card:hover{transform:translateY(-3px);border-color:rgba(255,107,53,.5);}
+.card.sel{border-color:var(--naranja);box-shadow:0 0 0 2px rgba(255,107,53,.4), 0 10px 26px rgba(232,80,30,.25);}
+.card img{width:100%;aspect-ratio:1/1;object-fit:contain;background:#fff;display:block;}
+.card .cd{padding:9px 11px 11px;}
+.card .cn{font-size:11.5px;font-weight:700;line-height:1.3;height:30px;overflow:hidden;}
+.card .cp{margin-top:5px;font-size:15px;font-weight:900;color:var(--naranja);}
+.card .cp s{color:var(--tx2);font-size:11px;font-weight:600;margin-right:5px;}
+.card .cc{position:absolute;top:7px;left:7px;font-size:8.5px;font-weight:800;letter-spacing:1px;padding:3px 8px;border-radius:10px;background:rgba(11,11,13,.8);backdrop-filter:blur(4px);}
+.card .cdisc{position:absolute;top:7px;right:7px;font-size:9px;font-weight:900;padding:3px 7px;border-radius:10px;background:linear-gradient(135deg,#ff3d00,var(--naranja));}
+.count{font-size:12px;color:var(--tx2);margin-bottom:12px;}
+
+.panel{
+  background:var(--panel);border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:16px;
+}
+.panel h3{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--tx2);margin-bottom:12px;font-weight:800;}
+.stylesrow{display:flex;gap:8px;flex-wrap:wrap;}
+.stybtn{
+  flex:1;min-width:90px;background:var(--panel2);border:1px solid rgba(255,255,255,.12);color:var(--tx);
+  border-radius:12px;padding:10px 8px;font-size:11.5px;font-weight:700;cursor:pointer;text-align:center;line-height:1.35;
+}
+.stybtn small{display:block;font-size:9px;color:var(--tx2);font-weight:600;}
+.stybtn.on{border-color:var(--naranja);background:rgba(255,107,53,.12);color:#ffb28f;}
+.canvaswrap{
+  border-radius:16px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 18px 45px rgba(0,0,0,.5);line-height:0;
+}
+.canvaswrap canvas{width:100%;height:auto;display:block;}
+.sharerow{display:flex;gap:8px;flex-wrap:wrap;}
+.sharerow .btn{flex:1;justify-content:center;min-width:120px;}
+.uploadzone{
+  border:1.5px dashed rgba(255,255,255,.25);border-radius:14px;padding:14px;text-align:center;
+  font-size:12px;color:var(--tx2);cursor:pointer;transition:border-color .15s;line-height:1.6;
+}
+.uploadzone:hover{border-color:var(--naranja);color:#ffb28f;}
+.uploadzone.ok{border-color:var(--wa);color:#7ee8a5;}
+.progress{font-size:12px;color:var(--tx2);margin-top:10px;display:none;}
+.progress b{color:var(--naranja);}
+.pbar{height:6px;border-radius:6px;background:var(--panel2);margin-top:6px;overflow:hidden;}
+.pbar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--naranja),var(--dorado));transition:width .2s;}
+.hint{font-size:11px;color:var(--tx2);line-height:1.6;margin-top:8px;}
+.hint b{color:#ffb28f;}
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);z-index:99;
+  background:#1c1c20;border:1px solid rgba(255,255,255,.15);color:var(--tx);font-size:13px;font-weight:600;
+  padding:12px 22px;border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.5);opacity:0;transition:all .3s;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.empty{text-align:center;color:var(--tx2);padding:60px 20px;font-size:14px;line-height:1.8;}
+.newbadge{
+  position:absolute;top:38px;left:7px;font-size:8.5px;font-weight:900;letter-spacing:.5px;padding:3px 8px;border-radius:10px;
+  background:linear-gradient(135deg,#4da3ff,#2AABEE);color:#fff;z-index:2;box-shadow:0 3px 8px rgba(42,171,238,.4);
+}
+.revbadge{
+  position:absolute;top:7px;right:38px;font-size:11px;z-index:2;
+  background:rgba(245,166,35,.18);border:1px solid rgba(245,166,35,.5);border-radius:10px;padding:2px 6px;
+}
+.pubbadge{
+  position:absolute;bottom:7px;left:7px;font-size:9px;font-weight:800;padding:3px 8px;border-radius:10px;
+  background:rgba(37,211,102,.16);border:1px solid rgba(37,211,102,.4);color:#7ee8a5;z-index:2;
+}
+.selbox{
+  position:absolute;bottom:7px;right:7px;width:26px;height:26px;border-radius:9px;cursor:pointer;
+  background:rgba(11,11,13,.75);border:1.5px solid rgba(255,255,255,.35);color:transparent;
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;z-index:3;
+}
+.selbox.on{background:linear-gradient(135deg,#FF6B35,#E8501E);border-color:#fff;color:#fff;}
+.combobadge{
+  position:absolute;bottom:8px;right:8px;width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,var(--dorado),var(--naranja));color:#141416;font-size:13px;
+  font-weight:900;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 10px rgba(245,166,35,.5);z-index:2;
+}
+.combolist{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.comboitem{
+  display:flex;align-items:center;gap:9px;background:var(--panel2);border:1px solid rgba(255,255,255,.1);
+  border-radius:10px;padding:7px 10px;font-size:11.5px;
+}
+.comboitem img{width:32px;height:32px;border-radius:7px;object-fit:contain;background:#fff;flex:none;}
+.comboitem .cn2{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;}
+.comboitem .cp2{color:var(--naranja);font-weight:900;flex:none;}
+.comboitem .cx{cursor:pointer;color:var(--tx2);font-weight:900;padding:0 4px;flex:none;}
+.comboitem .cx:hover{color:#ff9a9a;}
+.qrtoggle{
+  display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx2);margin-top:10px;cursor:pointer;
+  user-select:none;
+}
+.qrtoggle input{accent-color:var(--naranja);width:16px;height:16px;cursor:pointer;}
+.sizerow{display:flex;align-items:center;gap:10px;margin-top:10px;background:var(--panel2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:9px 12px;}
+.sizelbl{font-size:11.5px;color:var(--tx2);font-weight:700;flex:none;}
+.sizerow input[type=range]{flex:1;accent-color:var(--naranja);cursor:pointer;min-width:60px;}
+.sizeval{font-size:12px;font-weight:900;color:var(--naranja);flex:none;width:42px;text-align:right;}
+input[type=number]{
+  background:var(--panel2);border:1px solid rgba(255,255,255,.12);color:var(--tx);
+  padding:9px 12px;border-radius:10px;font-size:13px;outline:none;width:100%;
+}
+input[type=number]:focus{border-color:var(--naranja);}
+.spin{
+  width:34px;height:34px;border:3px solid rgba(255,107,53,.2);border-top-color:var(--naranja);
+  border-radius:50%;margin:0 auto 14px;animation:sp 0.8s linear infinite;
+}
+@keyframes sp{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <img id="logoimg" src="https://tiendamax.org/iconos/icon-192.png" alt="">
+    <div>Tienda<em>Max</em><small>GENERADOR DE DISEÑOS</small></div>
+  </div>
+  <span class="status" id="status">Conectando con tiendamax.org…</span>
+  <button class="btn dark" id="btnHist" style="padding:8px 16px;font-size:12px;">🗓️ Historial</button>
+  <button class="btn orange" id="btnInstall" style="display:none;padding:8px 16px;font-size:12px;">📲 Instalar app</button>
+  <div class="tasa">💱 Tasa del día: <b id="tasa">—</b> MN/USD</div>
+</header>
+
+<div class="layout">
+  <div class="left">
+    <div class="controls">
+      <select id="selCat"><option value="">📂 Todas las categorías</option></select>
+      <input type="text" id="txtBuscar" placeholder="🔍 Buscar producto…">
+      <select id="selOrden">
+        <option value="rel">Relevancia</option>
+        <option value="pub">📤 Sin publicar primero</option>
+        <option value="pmenor">Precio: menor</option>
+        <option value="pmayor">Precio: mayor</option>
+        <option value="nom">A–Z</option>
+      </select>
+      <button class="btn orange" id="btnLote">⚡ Generar toda la categoría (ZIP)</button>
+      <button class="btn blue" id="btnSemana">📅 Plan semanal (ZIP)</button>
+    </div>
+    <div class="progress" id="prog">Generando <b id="progTxt">0/0</b>…<div class="pbar"><i id="progBar"></i></div></div>
+    <div class="count" id="count"></div>
+    <div class="grid" id="grid">
+      <div class="empty" style="grid-column:1/-1;"><div class="spin"></div>Cargando catálogo desde tiendamax.org…</div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="panel">
+      <h3>🎨 Estilo del diseño</h3>
+      <div class="stylesrow">
+        <button class="stybtn on" data-sty="vitrina">🖼️ Vitrina<small>Feed 1080×1080</small></button>
+        <button class="stybtn" data-sty="oferta">🔥 Oferta<small>Feed 1080×1080</small></button>
+        <button class="stybtn" data-sty="story">📱 Story<small>1080×1920</small></button>
+        <button class="stybtn" data-sty="flotante">✨ Flotante<small>1080×1350 · PNG</small></button>
+        <button class="stybtn" data-sty="claro">🌅 Claro WA<small>1080×1920</small></button>
+        <button class="stybtn" data-sty="resena">⭐ Reseña<small>1080×1080</small></button>
+      </div>
+      <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:12px;">
+        <button class="btn dark" id="btnComboMode" style="width:100%;justify-content:center;">🎁 Activar modo combo</button>
+        <div id="comboBox" style="display:none;">
+          <div class="hint" style="margin-top:8px;">Toca 2 o 3 productos del catálogo para armar el combo:</div>
+          <div class="combolist" id="comboList"></div>
+          <div class="uploadzone" id="uzoneCombo" style="margin-top:8px;">📤 <b>Subir varias fotos PNG a la vez</b> (se asignan en orden)<br>O toca un producto de la lista de arriba para ponerle la suya</div>
+          <input type="file" id="fileCombo" accept="image/*" multiple style="display:none;">
+          <input type="file" id="fileComboUno" accept="image/*" style="display:none;">
+          <div class="sizerow">
+            <span class="sizelbl">🔍 Tamaño de productos</span>
+            <input type="range" id="rngEscalaCombo" min="50" max="150" value="100" step="5">
+            <span class="sizeval" id="escalaComboVal">100%</span>
+          </div>
+          <input type="number" id="inpComboPrecio" placeholder="💰 Precio del combo en USD (opcional)" style="margin-top:8px;">
+          <div class="hint">Si lo dejas vacío se muestra la suma. Si pones un precio menor, se calcula el ahorro automáticamente.</div>
+        </div>
+      </div>
+      <div id="uploadbox" style="display:none;margin-top:10px;">
+        <div class="uploadzone" id="uzone">📤 <b>Sube aquí la foto PNG sin fondo</b><br>Los datos (nombre, precio, specs) se toman solos de la tienda</div>
+        <input type="file" id="fileUp" accept="image/png,image/webp" style="display:none;">
+        <div style="margin-top:8px;background:var(--panel2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;">
+          <div style="font-size:11px;color:var(--tx2);font-weight:700;margin-bottom:6px;">🔑 API key de remove.bg <a href="https://www.remove.bg/api" target="_blank" style="color:var(--naranja);font-weight:800;text-decoration:none;">(conseguir gratis →)</a></div>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="inpRmKey" placeholder="Pega aquí tu clave…" style="flex:1;min-width:0;">
+            <button class="btn dark" id="btnRmKeySave" style="padding:9px 14px;font-size:12px;flex:none;">💾</button>
+          </div>
+        </div>
+        <button class="btn dark" id="btnRmBg" style="width:100%;justify-content:center;margin-top:8px;">🪄 Quitar fondo automáticamente</button>
+        <div class="sizerow" id="sizeRow" style="display:none;">
+          <span class="sizelbl">🔍 Tamaño del producto</span>
+          <input type="range" id="rngEscala" min="50" max="150" value="100" step="5">
+          <span class="sizeval" id="escalaVal">100%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="canvaswrap"><canvas id="cv" width="1080" height="1080"></canvas></div>
+
+    <div class="panel">
+      <h3>📤 Compartir / Descargar</h3>
+      <select id="selPlantilla" style="width:100%;margin-bottom:10px;">
+        <option value="fb">📘 Facebook — completa</option>
+        <option value="oferta">🔥 Facebook — con descuento</option>
+        <option value="revolico">🏠 Revolico — anuncio</option>
+        <option value="wa">🟢 Estado de WhatsApp — corta</option>
+      </select>
+      <label class="qrtoggle"><input type="checkbox" id="chkQR" checked> 🔳 Incluir QR del producto en la imagen</label>
+      <pre id="capPrev" style="background:#0B0B0D;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 14px;font-size:11px;line-height:1.65;color:#c9c9cf;white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;max-height:180px;overflow-y:auto;margin-bottom:10px;"></pre>
+      <div class="sharerow">
+        <button class="btn orange" id="btnPng">⬇️ PNG</button>
+        <button class="btn green" id="btnShare">📲 Compartir imagen</button>
+      </div>
+      <div class="sharerow" style="margin-top:8px;">
+        <button class="btn blue" id="btnVideo" style="flex:2;">🎬 Video para Reels/Story (6 s)</button>
+      </div>
+      <div class="progress" id="progVid">Grabando video <b id="progVidTxt">0%</b>…<div class="pbar"><i id="progVidBar"></i></div></div>
+      <div class="sharerow" style="margin-top:8px;">
+        <button class="btn green" id="btnWa">💬 WhatsApp</button>
+        <button class="btn blue" id="btnTg">✈️ Telegram</button>
+        <button class="btn blue" id="btnFb" style="background:linear-gradient(135deg,#5c7cfa,#4C77E6);">📘 Facebook</button>
+        <button class="btn dark" id="btnCap">📋 Copiar caption</button>
+      </div>
+      <div class="hint">💡 Elige la plantilla de texto (las mismas del generador de tiendamax.org) — <b>📋 Copiar caption</b> copia ese texto con hashtags y enlace de pedido. <b>Compartir imagen</b> abre el menú nativo del teléfono.</div>
+    </div>
+  </div>
+</div>
+
+<div id="selBar" style="display:none;position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:98;background:linear-gradient(135deg,#1c1c20,#141417);border:1px solid rgba(255,107,53,.5);border-radius:30px;padding:10px 18px;box-shadow:0 12px 32px rgba(0,0,0,.55);align-items:center;gap:12px;font-size:13px;font-weight:700;">
+  <span id="selBarTxt">☑️ 0</span>
+  <button class="btn orange" id="btnZipSel" style="padding:8px 16px;font-size:12px;">⚡ Generar ZIP</button>
+  <button class="btn dark" id="btnSelClear" style="padding:8px 12px;font-size:12px;">✕</button>
+</div>
+
+<div id="comboBar" style="display:none;position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:98;background:linear-gradient(135deg,#1c1c20,#141417);border:1px solid rgba(245,166,35,.5);border-radius:30px;padding:10px 18px;box-shadow:0 12px 32px rgba(0,0,0,.55);display:none;align-items:center;gap:12px;font-size:13px;font-weight:700;">
+  <span id="comboBarTxt">🎁 0/3 productos</span>
+  <button class="btn orange" id="btnVerCombo" style="padding:8px 16px;font-size:12px;">Ver diseño ↓</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+//---------------------------------------------------------------------
+//
+// QR Code Generator for JavaScript
+//
+// Copyright (c) 2009 Kazuhiko Arase
+//
+// URL: http://www.d-project.com/
+//
+// Licensed under the MIT license:
+//  http://www.opensource.org/licenses/mit-license.php
+//
+// The word 'QR Code' is registered trademark of
+// DENSO WAVE INCORPORATED
+//  http://www.denso-wave.com/qrcode/faqpatent-e.html
+//
+//---------------------------------------------------------------------
+
+var qrcode = function() {
+
+  //---------------------------------------------------------------------
+  // qrcode
+  //---------------------------------------------------------------------
+
+  /**
+   * qrcode
+   * @param typeNumber 1 to 40
+   * @param errorCorrectionLevel 'L','M','Q','H'
+   */
+  var qrcode = function(typeNumber, errorCorrectionLevel) {
+
+    var PAD0 = 0xEC;
+    var PAD1 = 0x11;
+
+    var _typeNumber = typeNumber;
+    var _errorCorrectionLevel = QRErrorCorrectionLevel[errorCorrectionLevel];
+    var _modules = null;
+    var _moduleCount = 0;
+    var _dataCache = null;
+    var _dataList = [];
+
+    var _this = {};
+
+    var makeImpl = function(test, maskPattern) {
+
+      _moduleCount = _typeNumber * 4 + 17;
+      _modules = function(moduleCount) {
+        var modules = new Array(moduleCount);
+        for (var row = 0; row < moduleCount; row += 1) {
+          modules[row] = new Array(moduleCount);
+          for (var col = 0; col < moduleCount; col += 1) {
+            modules[row][col] = null;
+          }
+        }
+        return modules;
+      }(_moduleCount);
+
+      setupPositionProbePattern(0, 0);
+      setupPositionProbePattern(_moduleCount - 7, 0);
+      setupPositionProbePattern(0, _moduleCount - 7);
+      setupPositionAdjustPattern();
+      setupTimingPattern();
+      setupTypeInfo(test, maskPattern);
+
+      if (_typeNumber >= 7) {
+        setupTypeNumber(test);
+      }
+
+      if (_dataCache == null) {
+        _dataCache = createData(_typeNumber, _errorCorrectionLevel, _dataList);
+      }
+
+      mapData(_dataCache, maskPattern);
+    };
+
+    var setupPositionProbePattern = function(row, col) {
+
+      for (var r = -1; r <= 7; r += 1) {
+
+        if (row + r <= -1 || _moduleCount <= row + r) continue;
+
+        for (var c = -1; c <= 7; c += 1) {
+
+          if (col + c <= -1 || _moduleCount <= col + c) continue;
+
+          if ( (0 <= r && r <= 6 && (c == 0 || c == 6) )
+              || (0 <= c && c <= 6 && (r == 0 || r == 6) )
+              || (2 <= r && r <= 4 && 2 <= c && c <= 4) ) {
+            _modules[row + r][col + c] = true;
+          } else {
+            _modules[row + r][col + c] = false;
+          }
+        }
+      }
+    };
+
+    var getBestMaskPattern = function() {
+
+      var minLostPoint = 0;
+      var pattern = 0;
+
+      for (var i = 0; i < 8; i += 1) {
+
+        makeImpl(true, i);
+
+        var lostPoint = QRUtil.getLostPoint(_this);
+
+        if (i == 0 || minLostPoint > lostPoint) {
+          minLostPoint = lostPoint;
+          pattern = i;
+        }
+      }
+
+      return pattern;
+    };
+
+    var setupTimingPattern = function() {
+
+      for (var r = 8; r < _moduleCount - 8; r += 1) {
+        if (_modules[r][6] != null) {
+          continue;
+        }
+        _modules[r][6] = (r % 2 == 0);
+      }
+
+      for (var c = 8; c < _moduleCount - 8; c += 1) {
+        if (_modules[6][c] != null) {
+          continue;
+        }
+        _modules[6][c] = (c % 2 == 0);
+      }
+    };
+
+    var setupPositionAdjustPattern = function() {
+
+      var pos = QRUtil.getPatternPosition(_typeNumber);
+
+      for (var i = 0; i < pos.length; i += 1) {
+
+        for (var j = 0; j < pos.length; j += 1) {
+
+          var row = pos[i];
+          var col = pos[j];
+
+          if (_modules[row][col] != null) {
+            continue;
+          }
+
+          for (var r = -2; r <= 2; r += 1) {
+
+            for (var c = -2; c <= 2; c += 1) {
+
+              if (r == -2 || r == 2 || c == -2 || c == 2
+                  || (r == 0 && c == 0) ) {
+                _modules[row + r][col + c] = true;
+              } else {
+                _modules[row + r][col + c] = false;
+              }
+            }
+          }
+        }
+      }
+    };
+
+    var setupTypeNumber = function(test) {
+
+      var bits = QRUtil.getBCHTypeNumber(_typeNumber);
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[Math.floor(i / 3)][i % 3 + _moduleCount - 8 - 3] = mod;
+      }
+
+      for (var i = 0; i < 18; i += 1) {
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+        _modules[i % 3 + _moduleCount - 8 - 3][Math.floor(i / 3)] = mod;
+      }
+    };
+
+    var setupTypeInfo = function(test, maskPattern) {
+
+      var data = (_errorCorrectionLevel << 3) | maskPattern;
+      var bits = QRUtil.getBCHTypeInfo(data);
+
+      // vertical
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 6) {
+          _modules[i][8] = mod;
+        } else if (i < 8) {
+          _modules[i + 1][8] = mod;
+        } else {
+          _modules[_moduleCount - 15 + i][8] = mod;
+        }
+      }
+
+      // horizontal
+      for (var i = 0; i < 15; i += 1) {
+
+        var mod = (!test && ( (bits >> i) & 1) == 1);
+
+        if (i < 8) {
+          _modules[8][_moduleCount - i - 1] = mod;
+        } else if (i < 9) {
+          _modules[8][15 - i - 1 + 1] = mod;
+        } else {
+          _modules[8][15 - i - 1] = mod;
+        }
+      }
+
+      // fixed module
+      _modules[_moduleCount - 8][8] = (!test);
+    };
+
+    var mapData = function(data, maskPattern) {
+
+      var inc = -1;
+      var row = _moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      var maskFunc = QRUtil.getMaskFunction(maskPattern);
+
+      for (var col = _moduleCount - 1; col > 0; col -= 2) {
+
+        if (col == 6) col -= 1;
+
+        while (true) {
+
+          for (var c = 0; c < 2; c += 1) {
+
+            if (_modules[row][col - c] == null) {
+
+              var dark = false;
+
+              if (byteIndex < data.length) {
+                dark = ( ( (data[byteIndex] >>> bitIndex) & 1) == 1);
+              }
+
+              var mask = maskFunc(row, col - c);
+
+              if (mask) {
+                dark = !dark;
+              }
+
+              _modules[row][col - c] = dark;
+              bitIndex -= 1;
+
+              if (bitIndex == -1) {
+                byteIndex += 1;
+                bitIndex = 7;
+              }
+            }
+          }
+
+          row += inc;
+
+          if (row < 0 || _moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    };
+
+    var createBytes = function(buffer, rsBlocks) {
+
+      var offset = 0;
+
+      var maxDcCount = 0;
+      var maxEcCount = 0;
+
+      var dcdata = new Array(rsBlocks.length);
+      var ecdata = new Array(rsBlocks.length);
+
+      for (var r = 0; r < rsBlocks.length; r += 1) {
+
+        var dcCount = rsBlocks[r].dataCount;
+        var ecCount = rsBlocks[r].totalCount - dcCount;
+
+        maxDcCount = Math.max(maxDcCount, dcCount);
+        maxEcCount = Math.max(maxEcCount, ecCount);
+
+        dcdata[r] = new Array(dcCount);
+
+        for (var i = 0; i < dcdata[r].length; i += 1) {
+          dcdata[r][i] = 0xff & buffer.getBuffer()[i + offset];
+        }
+        offset += dcCount;
+
+        var rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount);
+        var rawPoly = qrPolynomial(dcdata[r], rsPoly.getLength() - 1);
+
+        var modPoly = rawPoly.mod(rsPoly);
+        ecdata[r] = new Array(rsPoly.getLength() - 1);
+        for (var i = 0; i < ecdata[r].length; i += 1) {
+          var modIndex = i + modPoly.getLength() - ecdata[r].length;
+          ecdata[r][i] = (modIndex >= 0)? modPoly.getAt(modIndex) : 0;
+        }
+      }
+
+      var totalCodeCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalCodeCount += rsBlocks[i].totalCount;
+      }
+
+      var data = new Array(totalCodeCount);
+      var index = 0;
+
+      for (var i = 0; i < maxDcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < dcdata[r].length) {
+            data[index] = dcdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      for (var i = 0; i < maxEcCount; i += 1) {
+        for (var r = 0; r < rsBlocks.length; r += 1) {
+          if (i < ecdata[r].length) {
+            data[index] = ecdata[r][i];
+            index += 1;
+          }
+        }
+      }
+
+      return data;
+    };
+
+    var createData = function(typeNumber, errorCorrectionLevel, dataList) {
+
+      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectionLevel);
+
+      var buffer = qrBitBuffer();
+
+      for (var i = 0; i < dataList.length; i += 1) {
+        var data = dataList[i];
+        buffer.put(data.getMode(), 4);
+        buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+        data.write(buffer);
+      }
+
+      // calc num max data.
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i += 1) {
+        totalDataCount += rsBlocks[i].dataCount;
+      }
+
+      if (buffer.getLengthInBits() > totalDataCount * 8) {
+        throw 'code length overflow. ('
+          + buffer.getLengthInBits()
+          + '>'
+          + totalDataCount * 8
+          + ')';
+      }
+
+      // end code
+      if (buffer.getLengthInBits() + 4 <= totalDataCount * 8) {
+        buffer.put(0, 4);
+      }
+
+      // padding
+      while (buffer.getLengthInBits() % 8 != 0) {
+        buffer.putBit(false);
+      }
+
+      // padding
+      while (true) {
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD0, 8);
+
+        if (buffer.getLengthInBits() >= totalDataCount * 8) {
+          break;
+        }
+        buffer.put(PAD1, 8);
+      }
+
+      return createBytes(buffer, rsBlocks);
+    };
+
+    _this.addData = function(data, mode) {
+
+      mode = mode || 'Byte';
+
+      var newData = null;
+
+      switch(mode) {
+      case 'Numeric' :
+        newData = qrNumber(data);
+        break;
+      case 'Alphanumeric' :
+        newData = qrAlphaNum(data);
+        break;
+      case 'Byte' :
+        newData = qr8BitByte(data);
+        break;
+      case 'Kanji' :
+        newData = qrKanji(data);
+        break;
+      default :
+        throw 'mode:' + mode;
+      }
+
+      _dataList.push(newData);
+      _dataCache = null;
+    };
+
+    _this.isDark = function(row, col) {
+      if (row < 0 || _moduleCount <= row || col < 0 || _moduleCount <= col) {
+        throw row + ',' + col;
+      }
+      return _modules[row][col];
+    };
+
+    _this.getModuleCount = function() {
+      return _moduleCount;
+    };
+
+    _this.make = function() {
+      if (_typeNumber < 1) {
+        var typeNumber = 1;
+
+        for (; typeNumber < 40; typeNumber++) {
+          var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, _errorCorrectionLevel);
+          var buffer = qrBitBuffer();
+
+          for (var i = 0; i < _dataList.length; i++) {
+            var data = _dataList[i];
+            buffer.put(data.getMode(), 4);
+            buffer.put(data.getLength(), QRUtil.getLengthInBits(data.getMode(), typeNumber) );
+            data.write(buffer);
+          }
+
+          var totalDataCount = 0;
+          for (var i = 0; i < rsBlocks.length; i++) {
+            totalDataCount += rsBlocks[i].dataCount;
+          }
+
+          if (buffer.getLengthInBits() <= totalDataCount * 8) {
+            break;
+          }
+        }
+
+        _typeNumber = typeNumber;
+      }
+
+      makeImpl(false, getBestMaskPattern() );
+    };
+
+    _this.createTableTag = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var qrHtml = '';
+
+      qrHtml += '<table style="';
+      qrHtml += ' border-width: 0px; border-style: none;';
+      qrHtml += ' border-collapse: collapse;';
+      qrHtml += ' padding: 0px; margin: ' + margin + 'px;';
+      qrHtml += '">';
+      qrHtml += '<tbody>';
+
+      for (var r = 0; r < _this.getModuleCount(); r += 1) {
+
+        qrHtml += '<tr>';
+
+        for (var c = 0; c < _this.getModuleCount(); c += 1) {
+          qrHtml += '<td style="';
+          qrHtml += ' border-width: 0px; border-style: none;';
+          qrHtml += ' border-collapse: collapse;';
+          qrHtml += ' padding: 0px; margin: 0px;';
+          qrHtml += ' width: ' + cellSize + 'px;';
+          qrHtml += ' height: ' + cellSize + 'px;';
+          qrHtml += ' background-color: ';
+          qrHtml += _this.isDark(r, c)? '#000000' : '#ffffff';
+          qrHtml += ';';
+          qrHtml += '"/>';
+        }
+
+        qrHtml += '</tr>';
+      }
+
+      qrHtml += '</tbody>';
+      qrHtml += '</table>';
+
+      return qrHtml;
+    };
+
+    _this.createSvgTag = function(cellSize, margin, alt, title) {
+
+      var opts = {};
+      if (typeof arguments[0] == 'object') {
+        // Called by options.
+        opts = arguments[0];
+        // overwrite cellSize and margin.
+        cellSize = opts.cellSize;
+        margin = opts.margin;
+        alt = opts.alt;
+        title = opts.title;
+      }
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      // Compose alt property surrogate
+      alt = (typeof alt === 'string') ? {text: alt} : alt || {};
+      alt.text = alt.text || null;
+      alt.id = (alt.text) ? alt.id || 'qrcode-description' : null;
+
+      // Compose title property surrogate
+      title = (typeof title === 'string') ? {text: title} : title || {};
+      title.text = title.text || null;
+      title.id = (title.text) ? title.id || 'qrcode-title' : null;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var c, mc, r, mr, qrSvg='', rect;
+
+      rect = 'l' + cellSize + ',0 0,' + cellSize +
+        ' -' + cellSize + ',0 0,-' + cellSize + 'z ';
+
+      qrSvg += '<svg version="1.1" xmlns="http://www.w3.org/2000/svg"';
+      qrSvg += !opts.scalable ? ' width="' + size + 'px" height="' + size + 'px"' : '';
+      qrSvg += ' viewBox="0 0 ' + size + ' ' + size + '" ';
+      qrSvg += ' preserveAspectRatio="xMinYMin meet"';
+      qrSvg += (title.text || alt.text) ? ' role="img" aria-labelledby="' +
+          escapeXml([title.id, alt.id].join(' ').trim() ) + '"' : '';
+      qrSvg += '>';
+      qrSvg += (title.text) ? '<title id="' + escapeXml(title.id) + '">' +
+          escapeXml(title.text) + '</title>' : '';
+      qrSvg += (alt.text) ? '<description id="' + escapeXml(alt.id) + '">' +
+          escapeXml(alt.text) + '</description>' : '';
+      qrSvg += '<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>';
+      qrSvg += '<path d="';
+
+      for (r = 0; r < _this.getModuleCount(); r += 1) {
+        mr = r * cellSize + margin;
+        for (c = 0; c < _this.getModuleCount(); c += 1) {
+          if (_this.isDark(r, c) ) {
+            mc = c*cellSize+margin;
+            qrSvg += 'M' + mc + ',' + mr + rect;
+          }
+        }
+      }
+
+      qrSvg += '" stroke="transparent" fill="black"/>';
+      qrSvg += '</svg>';
+
+      return qrSvg;
+    };
+
+    _this.createDataURL = function(cellSize, margin) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      return createDataURL(size, size, function(x, y) {
+        if (min <= x && x < max && min <= y && y < max) {
+          var c = Math.floor( (x - min) / cellSize);
+          var r = Math.floor( (y - min) / cellSize);
+          return _this.isDark(r, c)? 0 : 1;
+        } else {
+          return 1;
+        }
+      } );
+    };
+
+    _this.createImgTag = function(cellSize, margin, alt) {
+
+      cellSize = cellSize || 2;
+      margin = (typeof margin == 'undefined')? cellSize * 4 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+
+      var img = '';
+      img += '<img';
+      img += '\u0020src="';
+      img += _this.createDataURL(cellSize, margin);
+      img += '"';
+      img += '\u0020width="';
+      img += size;
+      img += '"';
+      img += '\u0020height="';
+      img += size;
+      img += '"';
+      if (alt) {
+        img += '\u0020alt="';
+        img += escapeXml(alt);
+        img += '"';
+      }
+      img += '/>';
+
+      return img;
+    };
+
+    var escapeXml = function(s) {
+      var escaped = '';
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charAt(i);
+        switch(c) {
+        case '<': escaped += '&lt;'; break;
+        case '>': escaped += '&gt;'; break;
+        case '&': escaped += '&amp;'; break;
+        case '"': escaped += '&quot;'; break;
+        default : escaped += c; break;
+        }
+      }
+      return escaped;
+    };
+
+    var _createHalfASCII = function(margin) {
+      var cellSize = 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r1, r2, p;
+
+      var blocks = {
+        '██': '█',
+        '█ ': '▀',
+        ' █': '▄',
+        '  ': ' '
+      };
+
+      var blocksLastLineNoMargin = {
+        '██': '▀',
+        '█ ': '▀',
+        ' █': ' ',
+        '  ': ' '
+      };
+
+      var ascii = '';
+      for (y = 0; y < size; y += 2) {
+        r1 = Math.floor((y - min) / cellSize);
+        r2 = Math.floor((y + 1 - min) / cellSize);
+        for (x = 0; x < size; x += 1) {
+          p = '█';
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r1, Math.floor((x - min) / cellSize))) {
+            p = ' ';
+          }
+
+          if (min <= x && x < max && min <= y+1 && y+1 < max && _this.isDark(r2, Math.floor((x - min) / cellSize))) {
+            p += ' ';
+          }
+          else {
+            p += '█';
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          ascii += (margin < 1 && y+1 >= max) ? blocksLastLineNoMargin[p] : blocks[p];
+        }
+
+        ascii += '\n';
+      }
+
+      if (size % 2 && margin > 0) {
+        return ascii.substring(0, ascii.length - size - 1) + Array(size+1).join('▀');
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.createASCII = function(cellSize, margin) {
+      cellSize = cellSize || 1;
+
+      if (cellSize < 2) {
+        return _createHalfASCII(margin);
+      }
+
+      cellSize -= 1;
+      margin = (typeof margin == 'undefined')? cellSize * 2 : margin;
+
+      var size = _this.getModuleCount() * cellSize + margin * 2;
+      var min = margin;
+      var max = size - margin;
+
+      var y, x, r, p;
+
+      var white = Array(cellSize+1).join('██');
+      var black = Array(cellSize+1).join('  ');
+
+      var ascii = '';
+      var line = '';
+      for (y = 0; y < size; y += 1) {
+        r = Math.floor( (y - min) / cellSize);
+        line = '';
+        for (x = 0; x < size; x += 1) {
+          p = 1;
+
+          if (min <= x && x < max && min <= y && y < max && _this.isDark(r, Math.floor((x - min) / cellSize))) {
+            p = 0;
+          }
+
+          // Output 2 characters per pixel, to create full square. 1 character per pixels gives only half width of square.
+          line += p ? white : black;
+        }
+
+        for (r = 0; r < cellSize; r += 1) {
+          ascii += line + '\n';
+        }
+      }
+
+      return ascii.substring(0, ascii.length-1);
+    };
+
+    _this.renderTo2dContext = function(context, cellSize) {
+      cellSize = cellSize || 2;
+      var length = _this.getModuleCount();
+      for (var row = 0; row < length; row++) {
+        for (var col = 0; col < length; col++) {
+          context.fillStyle = _this.isDark(row, col) ? 'black' : 'white';
+          context.fillRect(row * cellSize, col * cellSize, cellSize, cellSize);
+        }
+      }
+    }
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrcode.stringToBytes
+  //---------------------------------------------------------------------
+
+  qrcode.stringToBytesFuncs = {
+    'default' : function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        bytes.push(c & 0xff);
+      }
+      return bytes;
+    }
+  };
+
+  qrcode.stringToBytes = qrcode.stringToBytesFuncs['default'];
+
+  //---------------------------------------------------------------------
+  // qrcode.createStringToBytes
+  //---------------------------------------------------------------------
+
+  /**
+   * @param unicodeData base64 string of byte array.
+   * [16bit Unicode],[16bit Bytes], ...
+   * @param numChars
+   */
+  qrcode.createStringToBytes = function(unicodeData, numChars) {
+
+    // create conversion map.
+
+    var unicodeMap = function() {
+
+      var bin = base64DecodeInputStream(unicodeData);
+      var read = function() {
+        var b = bin.read();
+        if (b == -1) throw 'eof';
+        return b;
+      };
+
+      var count = 0;
+      var unicodeMap = {};
+      while (true) {
+        var b0 = bin.read();
+        if (b0 == -1) break;
+        var b1 = read();
+        var b2 = read();
+        var b3 = read();
+        var k = String.fromCharCode( (b0 << 8) | b1);
+        var v = (b2 << 8) | b3;
+        unicodeMap[k] = v;
+        count += 1;
+      }
+      if (count != numChars) {
+        throw count + ' != ' + numChars;
+      }
+
+      return unicodeMap;
+    }();
+
+    var unknownChar = '?'.charCodeAt(0);
+
+    return function(s) {
+      var bytes = [];
+      for (var i = 0; i < s.length; i += 1) {
+        var c = s.charCodeAt(i);
+        if (c < 128) {
+          bytes.push(c);
+        } else {
+          var b = unicodeMap[s.charAt(i)];
+          if (typeof b == 'number') {
+            if ( (b & 0xff) == b) {
+              // 1byte
+              bytes.push(b);
+            } else {
+              // 2bytes
+              bytes.push(b >>> 8);
+              bytes.push(b & 0xff);
+            }
+          } else {
+            bytes.push(unknownChar);
+          }
+        }
+      }
+      return bytes;
+    };
+  };
+
+  //---------------------------------------------------------------------
+  // QRMode
+  //---------------------------------------------------------------------
+
+  var QRMode = {
+    MODE_NUMBER :    1 << 0,
+    MODE_ALPHA_NUM : 1 << 1,
+    MODE_8BIT_BYTE : 1 << 2,
+    MODE_KANJI :     1 << 3
+  };
+
+  //---------------------------------------------------------------------
+  // QRErrorCorrectionLevel
+  //---------------------------------------------------------------------
+
+  var QRErrorCorrectionLevel = {
+    L : 1,
+    M : 0,
+    Q : 3,
+    H : 2
+  };
+
+  //---------------------------------------------------------------------
+  // QRMaskPattern
+  //---------------------------------------------------------------------
+
+  var QRMaskPattern = {
+    PATTERN000 : 0,
+    PATTERN001 : 1,
+    PATTERN010 : 2,
+    PATTERN011 : 3,
+    PATTERN100 : 4,
+    PATTERN101 : 5,
+    PATTERN110 : 6,
+    PATTERN111 : 7
+  };
+
+  //---------------------------------------------------------------------
+  // QRUtil
+  //---------------------------------------------------------------------
+
+  var QRUtil = function() {
+
+    var PATTERN_POSITION_TABLE = [
+      [],
+      [6, 18],
+      [6, 22],
+      [6, 26],
+      [6, 30],
+      [6, 34],
+      [6, 22, 38],
+      [6, 24, 42],
+      [6, 26, 46],
+      [6, 28, 50],
+      [6, 30, 54],
+      [6, 32, 58],
+      [6, 34, 62],
+      [6, 26, 46, 66],
+      [6, 26, 48, 70],
+      [6, 26, 50, 74],
+      [6, 30, 54, 78],
+      [6, 30, 56, 82],
+      [6, 30, 58, 86],
+      [6, 34, 62, 90],
+      [6, 28, 50, 72, 94],
+      [6, 26, 50, 74, 98],
+      [6, 30, 54, 78, 102],
+      [6, 28, 54, 80, 106],
+      [6, 32, 58, 84, 110],
+      [6, 30, 58, 86, 114],
+      [6, 34, 62, 90, 118],
+      [6, 26, 50, 74, 98, 122],
+      [6, 30, 54, 78, 102, 126],
+      [6, 26, 52, 78, 104, 130],
+      [6, 30, 56, 82, 108, 134],
+      [6, 34, 60, 86, 112, 138],
+      [6, 30, 58, 86, 114, 142],
+      [6, 34, 62, 90, 118, 146],
+      [6, 30, 54, 78, 102, 126, 150],
+      [6, 24, 50, 76, 102, 128, 154],
+      [6, 28, 54, 80, 106, 132, 158],
+      [6, 32, 58, 84, 110, 136, 162],
+      [6, 26, 54, 82, 110, 138, 166],
+      [6, 30, 58, 86, 114, 142, 170]
+    ];
+    var G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0);
+    var G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0);
+    var G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1);
+
+    var _this = {};
+
+    var getBCHDigit = function(data) {
+      var digit = 0;
+      while (data != 0) {
+        digit += 1;
+        data >>>= 1;
+      }
+      return digit;
+    };
+
+    _this.getBCHTypeInfo = function(data) {
+      var d = data << 10;
+      while (getBCHDigit(d) - getBCHDigit(G15) >= 0) {
+        d ^= (G15 << (getBCHDigit(d) - getBCHDigit(G15) ) );
+      }
+      return ( (data << 10) | d) ^ G15_MASK;
+    };
+
+    _this.getBCHTypeNumber = function(data) {
+      var d = data << 12;
+      while (getBCHDigit(d) - getBCHDigit(G18) >= 0) {
+        d ^= (G18 << (getBCHDigit(d) - getBCHDigit(G18) ) );
+      }
+      return (data << 12) | d;
+    };
+
+    _this.getPatternPosition = function(typeNumber) {
+      return PATTERN_POSITION_TABLE[typeNumber - 1];
+    };
+
+    _this.getMaskFunction = function(maskPattern) {
+
+      switch (maskPattern) {
+
+      case QRMaskPattern.PATTERN000 :
+        return function(i, j) { return (i + j) % 2 == 0; };
+      case QRMaskPattern.PATTERN001 :
+        return function(i, j) { return i % 2 == 0; };
+      case QRMaskPattern.PATTERN010 :
+        return function(i, j) { return j % 3 == 0; };
+      case QRMaskPattern.PATTERN011 :
+        return function(i, j) { return (i + j) % 3 == 0; };
+      case QRMaskPattern.PATTERN100 :
+        return function(i, j) { return (Math.floor(i / 2) + Math.floor(j / 3) ) % 2 == 0; };
+      case QRMaskPattern.PATTERN101 :
+        return function(i, j) { return (i * j) % 2 + (i * j) % 3 == 0; };
+      case QRMaskPattern.PATTERN110 :
+        return function(i, j) { return ( (i * j) % 2 + (i * j) % 3) % 2 == 0; };
+      case QRMaskPattern.PATTERN111 :
+        return function(i, j) { return ( (i * j) % 3 + (i + j) % 2) % 2 == 0; };
+
+      default :
+        throw 'bad maskPattern:' + maskPattern;
+      }
+    };
+
+    _this.getErrorCorrectPolynomial = function(errorCorrectLength) {
+      var a = qrPolynomial([1], 0);
+      for (var i = 0; i < errorCorrectLength; i += 1) {
+        a = a.multiply(qrPolynomial([1, QRMath.gexp(i)], 0) );
+      }
+      return a;
+    };
+
+    _this.getLengthInBits = function(mode, type) {
+
+      if (1 <= type && type < 10) {
+
+        // 1 - 9
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 10;
+        case QRMode.MODE_ALPHA_NUM : return 9;
+        case QRMode.MODE_8BIT_BYTE : return 8;
+        case QRMode.MODE_KANJI     : return 8;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 27) {
+
+        // 10 - 26
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 12;
+        case QRMode.MODE_ALPHA_NUM : return 11;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 10;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else if (type < 41) {
+
+        // 27 - 40
+
+        switch(mode) {
+        case QRMode.MODE_NUMBER    : return 14;
+        case QRMode.MODE_ALPHA_NUM : return 13;
+        case QRMode.MODE_8BIT_BYTE : return 16;
+        case QRMode.MODE_KANJI     : return 12;
+        default :
+          throw 'mode:' + mode;
+        }
+
+      } else {
+        throw 'type:' + type;
+      }
+    };
+
+    _this.getLostPoint = function(qrcode) {
+
+      var moduleCount = qrcode.getModuleCount();
+
+      var lostPoint = 0;
+
+      // LEVEL1
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount; col += 1) {
+
+          var sameCount = 0;
+          var dark = qrcode.isDark(row, col);
+
+          for (var r = -1; r <= 1; r += 1) {
+
+            if (row + r < 0 || moduleCount <= row + r) {
+              continue;
+            }
+
+            for (var c = -1; c <= 1; c += 1) {
+
+              if (col + c < 0 || moduleCount <= col + c) {
+                continue;
+              }
+
+              if (r == 0 && c == 0) {
+                continue;
+              }
+
+              if (dark == qrcode.isDark(row + r, col + c) ) {
+                sameCount += 1;
+              }
+            }
+          }
+
+          if (sameCount > 5) {
+            lostPoint += (3 + sameCount - 5);
+          }
+        }
+      };
+
+      // LEVEL2
+
+      for (var row = 0; row < moduleCount - 1; row += 1) {
+        for (var col = 0; col < moduleCount - 1; col += 1) {
+          var count = 0;
+          if (qrcode.isDark(row, col) ) count += 1;
+          if (qrcode.isDark(row + 1, col) ) count += 1;
+          if (qrcode.isDark(row, col + 1) ) count += 1;
+          if (qrcode.isDark(row + 1, col + 1) ) count += 1;
+          if (count == 0 || count == 4) {
+            lostPoint += 3;
+          }
+        }
+      }
+
+      // LEVEL3
+
+      for (var row = 0; row < moduleCount; row += 1) {
+        for (var col = 0; col < moduleCount - 6; col += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row, col + 1)
+              &&  qrcode.isDark(row, col + 2)
+              &&  qrcode.isDark(row, col + 3)
+              &&  qrcode.isDark(row, col + 4)
+              && !qrcode.isDark(row, col + 5)
+              &&  qrcode.isDark(row, col + 6) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount - 6; row += 1) {
+          if (qrcode.isDark(row, col)
+              && !qrcode.isDark(row + 1, col)
+              &&  qrcode.isDark(row + 2, col)
+              &&  qrcode.isDark(row + 3, col)
+              &&  qrcode.isDark(row + 4, col)
+              && !qrcode.isDark(row + 5, col)
+              &&  qrcode.isDark(row + 6, col) ) {
+            lostPoint += 40;
+          }
+        }
+      }
+
+      // LEVEL4
+
+      var darkCount = 0;
+
+      for (var col = 0; col < moduleCount; col += 1) {
+        for (var row = 0; row < moduleCount; row += 1) {
+          if (qrcode.isDark(row, col) ) {
+            darkCount += 1;
+          }
+        }
+      }
+
+      var ratio = Math.abs(100 * darkCount / moduleCount / moduleCount - 50) / 5;
+      lostPoint += ratio * 10;
+
+      return lostPoint;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // QRMath
+  //---------------------------------------------------------------------
+
+  var QRMath = function() {
+
+    var EXP_TABLE = new Array(256);
+    var LOG_TABLE = new Array(256);
+
+    // initialize tables
+    for (var i = 0; i < 8; i += 1) {
+      EXP_TABLE[i] = 1 << i;
+    }
+    for (var i = 8; i < 256; i += 1) {
+      EXP_TABLE[i] = EXP_TABLE[i - 4]
+        ^ EXP_TABLE[i - 5]
+        ^ EXP_TABLE[i - 6]
+        ^ EXP_TABLE[i - 8];
+    }
+    for (var i = 0; i < 255; i += 1) {
+      LOG_TABLE[EXP_TABLE[i] ] = i;
+    }
+
+    var _this = {};
+
+    _this.glog = function(n) {
+
+      if (n < 1) {
+        throw 'glog(' + n + ')';
+      }
+
+      return LOG_TABLE[n];
+    };
+
+    _this.gexp = function(n) {
+
+      while (n < 0) {
+        n += 255;
+      }
+
+      while (n >= 256) {
+        n -= 255;
+      }
+
+      return EXP_TABLE[n];
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrPolynomial
+  //---------------------------------------------------------------------
+
+  function qrPolynomial(num, shift) {
+
+    if (typeof num.length == 'undefined') {
+      throw num.length + '/' + shift;
+    }
+
+    var _num = function() {
+      var offset = 0;
+      while (offset < num.length && num[offset] == 0) {
+        offset += 1;
+      }
+      var _num = new Array(num.length - offset + shift);
+      for (var i = 0; i < num.length - offset; i += 1) {
+        _num[i] = num[i + offset];
+      }
+      return _num;
+    }();
+
+    var _this = {};
+
+    _this.getAt = function(index) {
+      return _num[index];
+    };
+
+    _this.getLength = function() {
+      return _num.length;
+    };
+
+    _this.multiply = function(e) {
+
+      var num = new Array(_this.getLength() + e.getLength() - 1);
+
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        for (var j = 0; j < e.getLength(); j += 1) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(_this.getAt(i) ) + QRMath.glog(e.getAt(j) ) );
+        }
+      }
+
+      return qrPolynomial(num, 0);
+    };
+
+    _this.mod = function(e) {
+
+      if (_this.getLength() - e.getLength() < 0) {
+        return _this;
+      }
+
+      var ratio = QRMath.glog(_this.getAt(0) ) - QRMath.glog(e.getAt(0) );
+
+      var num = new Array(_this.getLength() );
+      for (var i = 0; i < _this.getLength(); i += 1) {
+        num[i] = _this.getAt(i);
+      }
+
+      for (var i = 0; i < e.getLength(); i += 1) {
+        num[i] ^= QRMath.gexp(QRMath.glog(e.getAt(i) ) + ratio);
+      }
+
+      // recursive call
+      return qrPolynomial(num, 0).mod(e);
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // QRRSBlock
+  //---------------------------------------------------------------------
+
+  var QRRSBlock = function() {
+
+    var RS_BLOCK_TABLE = [
+
+      // L
+      // M
+      // Q
+      // H
+
+      // 1
+      [1, 26, 19],
+      [1, 26, 16],
+      [1, 26, 13],
+      [1, 26, 9],
+
+      // 2
+      [1, 44, 34],
+      [1, 44, 28],
+      [1, 44, 22],
+      [1, 44, 16],
+
+      // 3
+      [1, 70, 55],
+      [1, 70, 44],
+      [2, 35, 17],
+      [2, 35, 13],
+
+      // 4
+      [1, 100, 80],
+      [2, 50, 32],
+      [2, 50, 24],
+      [4, 25, 9],
+
+      // 5
+      [1, 134, 108],
+      [2, 67, 43],
+      [2, 33, 15, 2, 34, 16],
+      [2, 33, 11, 2, 34, 12],
+
+      // 6
+      [2, 86, 68],
+      [4, 43, 27],
+      [4, 43, 19],
+      [4, 43, 15],
+
+      // 7
+      [2, 98, 78],
+      [4, 49, 31],
+      [2, 32, 14, 4, 33, 15],
+      [4, 39, 13, 1, 40, 14],
+
+      // 8
+      [2, 121, 97],
+      [2, 60, 38, 2, 61, 39],
+      [4, 40, 18, 2, 41, 19],
+      [4, 40, 14, 2, 41, 15],
+
+      // 9
+      [2, 146, 116],
+      [3, 58, 36, 2, 59, 37],
+      [4, 36, 16, 4, 37, 17],
+      [4, 36, 12, 4, 37, 13],
+
+      // 10
+      [2, 86, 68, 2, 87, 69],
+      [4, 69, 43, 1, 70, 44],
+      [6, 43, 19, 2, 44, 20],
+      [6, 43, 15, 2, 44, 16],
+
+      // 11
+      [4, 101, 81],
+      [1, 80, 50, 4, 81, 51],
+      [4, 50, 22, 4, 51, 23],
+      [3, 36, 12, 8, 37, 13],
+
+      // 12
+      [2, 116, 92, 2, 117, 93],
+      [6, 58, 36, 2, 59, 37],
+      [4, 46, 20, 6, 47, 21],
+      [7, 42, 14, 4, 43, 15],
+
+      // 13
+      [4, 133, 107],
+      [8, 59, 37, 1, 60, 38],
+      [8, 44, 20, 4, 45, 21],
+      [12, 33, 11, 4, 34, 12],
+
+      // 14
+      [3, 145, 115, 1, 146, 116],
+      [4, 64, 40, 5, 65, 41],
+      [11, 36, 16, 5, 37, 17],
+      [11, 36, 12, 5, 37, 13],
+
+      // 15
+      [5, 109, 87, 1, 110, 88],
+      [5, 65, 41, 5, 66, 42],
+      [5, 54, 24, 7, 55, 25],
+      [11, 36, 12, 7, 37, 13],
+
+      // 16
+      [5, 122, 98, 1, 123, 99],
+      [7, 73, 45, 3, 74, 46],
+      [15, 43, 19, 2, 44, 20],
+      [3, 45, 15, 13, 46, 16],
+
+      // 17
+      [1, 135, 107, 5, 136, 108],
+      [10, 74, 46, 1, 75, 47],
+      [1, 50, 22, 15, 51, 23],
+      [2, 42, 14, 17, 43, 15],
+
+      // 18
+      [5, 150, 120, 1, 151, 121],
+      [9, 69, 43, 4, 70, 44],
+      [17, 50, 22, 1, 51, 23],
+      [2, 42, 14, 19, 43, 15],
+
+      // 19
+      [3, 141, 113, 4, 142, 114],
+      [3, 70, 44, 11, 71, 45],
+      [17, 47, 21, 4, 48, 22],
+      [9, 39, 13, 16, 40, 14],
+
+      // 20
+      [3, 135, 107, 5, 136, 108],
+      [3, 67, 41, 13, 68, 42],
+      [15, 54, 24, 5, 55, 25],
+      [15, 43, 15, 10, 44, 16],
+
+      // 21
+      [4, 144, 116, 4, 145, 117],
+      [17, 68, 42],
+      [17, 50, 22, 6, 51, 23],
+      [19, 46, 16, 6, 47, 17],
+
+      // 22
+      [2, 139, 111, 7, 140, 112],
+      [17, 74, 46],
+      [7, 54, 24, 16, 55, 25],
+      [34, 37, 13],
+
+      // 23
+      [4, 151, 121, 5, 152, 122],
+      [4, 75, 47, 14, 76, 48],
+      [11, 54, 24, 14, 55, 25],
+      [16, 45, 15, 14, 46, 16],
+
+      // 24
+      [6, 147, 117, 4, 148, 118],
+      [6, 73, 45, 14, 74, 46],
+      [11, 54, 24, 16, 55, 25],
+      [30, 46, 16, 2, 47, 17],
+
+      // 25
+      [8, 132, 106, 4, 133, 107],
+      [8, 75, 47, 13, 76, 48],
+      [7, 54, 24, 22, 55, 25],
+      [22, 45, 15, 13, 46, 16],
+
+      // 26
+      [10, 142, 114, 2, 143, 115],
+      [19, 74, 46, 4, 75, 47],
+      [28, 50, 22, 6, 51, 23],
+      [33, 46, 16, 4, 47, 17],
+
+      // 27
+      [8, 152, 122, 4, 153, 123],
+      [22, 73, 45, 3, 74, 46],
+      [8, 53, 23, 26, 54, 24],
+      [12, 45, 15, 28, 46, 16],
+
+      // 28
+      [3, 147, 117, 10, 148, 118],
+      [3, 73, 45, 23, 74, 46],
+      [4, 54, 24, 31, 55, 25],
+      [11, 45, 15, 31, 46, 16],
+
+      // 29
+      [7, 146, 116, 7, 147, 117],
+      [21, 73, 45, 7, 74, 46],
+      [1, 53, 23, 37, 54, 24],
+      [19, 45, 15, 26, 46, 16],
+
+      // 30
+      [5, 145, 115, 10, 146, 116],
+      [19, 75, 47, 10, 76, 48],
+      [15, 54, 24, 25, 55, 25],
+      [23, 45, 15, 25, 46, 16],
+
+      // 31
+      [13, 145, 115, 3, 146, 116],
+      [2, 74, 46, 29, 75, 47],
+      [42, 54, 24, 1, 55, 25],
+      [23, 45, 15, 28, 46, 16],
+
+      // 32
+      [17, 145, 115],
+      [10, 74, 46, 23, 75, 47],
+      [10, 54, 24, 35, 55, 25],
+      [19, 45, 15, 35, 46, 16],
+
+      // 33
+      [17, 145, 115, 1, 146, 116],
+      [14, 74, 46, 21, 75, 47],
+      [29, 54, 24, 19, 55, 25],
+      [11, 45, 15, 46, 46, 16],
+
+      // 34
+      [13, 145, 115, 6, 146, 116],
+      [14, 74, 46, 23, 75, 47],
+      [44, 54, 24, 7, 55, 25],
+      [59, 46, 16, 1, 47, 17],
+
+      // 35
+      [12, 151, 121, 7, 152, 122],
+      [12, 75, 47, 26, 76, 48],
+      [39, 54, 24, 14, 55, 25],
+      [22, 45, 15, 41, 46, 16],
+
+      // 36
+      [6, 151, 121, 14, 152, 122],
+      [6, 75, 47, 34, 76, 48],
+      [46, 54, 24, 10, 55, 25],
+      [2, 45, 15, 64, 46, 16],
+
+      // 37
+      [17, 152, 122, 4, 153, 123],
+      [29, 74, 46, 14, 75, 47],
+      [49, 54, 24, 10, 55, 25],
+      [24, 45, 15, 46, 46, 16],
+
+      // 38
+      [4, 152, 122, 18, 153, 123],
+      [13, 74, 46, 32, 75, 47],
+      [48, 54, 24, 14, 55, 25],
+      [42, 45, 15, 32, 46, 16],
+
+      // 39
+      [20, 147, 117, 4, 148, 118],
+      [40, 75, 47, 7, 76, 48],
+      [43, 54, 24, 22, 55, 25],
+      [10, 45, 15, 67, 46, 16],
+
+      // 40
+      [19, 148, 118, 6, 149, 119],
+      [18, 75, 47, 31, 76, 48],
+      [34, 54, 24, 34, 55, 25],
+      [20, 45, 15, 61, 46, 16]
+    ];
+
+    var qrRSBlock = function(totalCount, dataCount) {
+      var _this = {};
+      _this.totalCount = totalCount;
+      _this.dataCount = dataCount;
+      return _this;
+    };
+
+    var _this = {};
+
+    var getRsBlockTable = function(typeNumber, errorCorrectionLevel) {
+
+      switch(errorCorrectionLevel) {
+      case QRErrorCorrectionLevel.L :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+      case QRErrorCorrectionLevel.M :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+      case QRErrorCorrectionLevel.Q :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+      case QRErrorCorrectionLevel.H :
+        return RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+      default :
+        return undefined;
+      }
+    };
+
+    _this.getRSBlocks = function(typeNumber, errorCorrectionLevel) {
+
+      var rsBlock = getRsBlockTable(typeNumber, errorCorrectionLevel);
+
+      if (typeof rsBlock == 'undefined') {
+        throw 'bad rs block @ typeNumber:' + typeNumber +
+            '/errorCorrectionLevel:' + errorCorrectionLevel;
+      }
+
+      var length = rsBlock.length / 3;
+
+      var list = [];
+
+      for (var i = 0; i < length; i += 1) {
+
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+
+        for (var j = 0; j < count; j += 1) {
+          list.push(qrRSBlock(totalCount, dataCount) );
+        }
+      }
+
+      return list;
+    };
+
+    return _this;
+  }();
+
+  //---------------------------------------------------------------------
+  // qrBitBuffer
+  //---------------------------------------------------------------------
+
+  var qrBitBuffer = function() {
+
+    var _buffer = [];
+    var _length = 0;
+
+    var _this = {};
+
+    _this.getBuffer = function() {
+      return _buffer;
+    };
+
+    _this.getAt = function(index) {
+      var bufIndex = Math.floor(index / 8);
+      return ( (_buffer[bufIndex] >>> (7 - index % 8) ) & 1) == 1;
+    };
+
+    _this.put = function(num, length) {
+      for (var i = 0; i < length; i += 1) {
+        _this.putBit( ( (num >>> (length - i - 1) ) & 1) == 1);
+      }
+    };
+
+    _this.getLengthInBits = function() {
+      return _length;
+    };
+
+    _this.putBit = function(bit) {
+
+      var bufIndex = Math.floor(_length / 8);
+      if (_buffer.length <= bufIndex) {
+        _buffer.push(0);
+      }
+
+      if (bit) {
+        _buffer[bufIndex] |= (0x80 >>> (_length % 8) );
+      }
+
+      _length += 1;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrNumber
+  //---------------------------------------------------------------------
+
+  var qrNumber = function(data) {
+
+    var _mode = QRMode.MODE_NUMBER;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _data;
+
+      var i = 0;
+
+      while (i + 2 < data.length) {
+        buffer.put(strToNum(data.substring(i, i + 3) ), 10);
+        i += 3;
+      }
+
+      if (i < data.length) {
+        if (data.length - i == 1) {
+          buffer.put(strToNum(data.substring(i, i + 1) ), 4);
+        } else if (data.length - i == 2) {
+          buffer.put(strToNum(data.substring(i, i + 2) ), 7);
+        }
+      }
+    };
+
+    var strToNum = function(s) {
+      var num = 0;
+      for (var i = 0; i < s.length; i += 1) {
+        num = num * 10 + chatToNum(s.charAt(i) );
+      }
+      return num;
+    };
+
+    var chatToNum = function(c) {
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      }
+      throw 'illegal char :' + c;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrAlphaNum
+  //---------------------------------------------------------------------
+
+  var qrAlphaNum = function(data) {
+
+    var _mode = QRMode.MODE_ALPHA_NUM;
+    var _data = data;
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _data.length;
+    };
+
+    _this.write = function(buffer) {
+
+      var s = _data;
+
+      var i = 0;
+
+      while (i + 1 < s.length) {
+        buffer.put(
+          getCode(s.charAt(i) ) * 45 +
+          getCode(s.charAt(i + 1) ), 11);
+        i += 2;
+      }
+
+      if (i < s.length) {
+        buffer.put(getCode(s.charAt(i) ), 6);
+      }
+    };
+
+    var getCode = function(c) {
+
+      if ('0' <= c && c <= '9') {
+        return c.charCodeAt(0) - '0'.charCodeAt(0);
+      } else if ('A' <= c && c <= 'Z') {
+        return c.charCodeAt(0) - 'A'.charCodeAt(0) + 10;
+      } else {
+        switch (c) {
+        case ' ' : return 36;
+        case '$' : return 37;
+        case '%' : return 38;
+        case '*' : return 39;
+        case '+' : return 40;
+        case '-' : return 41;
+        case '.' : return 42;
+        case '/' : return 43;
+        case ':' : return 44;
+        default :
+          throw 'illegal char :' + c;
+        }
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qr8BitByte
+  //---------------------------------------------------------------------
+
+  var qr8BitByte = function(data) {
+
+    var _mode = QRMode.MODE_8BIT_BYTE;
+    var _data = data;
+    var _bytes = qrcode.stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return _bytes.length;
+    };
+
+    _this.write = function(buffer) {
+      for (var i = 0; i < _bytes.length; i += 1) {
+        buffer.put(_bytes[i], 8);
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // qrKanji
+  //---------------------------------------------------------------------
+
+  var qrKanji = function(data) {
+
+    var _mode = QRMode.MODE_KANJI;
+    var _data = data;
+
+    var stringToBytes = qrcode.stringToBytesFuncs['SJIS'];
+    if (!stringToBytes) {
+      throw 'sjis not supported.';
+    }
+    !function(c, code) {
+      // self test for sjis support.
+      var test = stringToBytes(c);
+      if (test.length != 2 || ( (test[0] << 8) | test[1]) != code) {
+        throw 'sjis not supported.';
+      }
+    }('\u53cb', 0x9746);
+
+    var _bytes = stringToBytes(data);
+
+    var _this = {};
+
+    _this.getMode = function() {
+      return _mode;
+    };
+
+    _this.getLength = function(buffer) {
+      return ~~(_bytes.length / 2);
+    };
+
+    _this.write = function(buffer) {
+
+      var data = _bytes;
+
+      var i = 0;
+
+      while (i + 1 < data.length) {
+
+        var c = ( (0xff & data[i]) << 8) | (0xff & data[i + 1]);
+
+        if (0x8140 <= c && c <= 0x9FFC) {
+          c -= 0x8140;
+        } else if (0xE040 <= c && c <= 0xEBBF) {
+          c -= 0xC140;
+        } else {
+          throw 'illegal char at ' + (i + 1) + '/' + c;
+        }
+
+        c = ( (c >>> 8) & 0xff) * 0xC0 + (c & 0xff);
+
+        buffer.put(c, 13);
+
+        i += 2;
+      }
+
+      if (i < data.length) {
+        throw 'illegal char at ' + (i + 1);
+      }
+    };
+
+    return _this;
+  };
+
+  //=====================================================================
+  // GIF Support etc.
+  //
+
+  //---------------------------------------------------------------------
+  // byteArrayOutputStream
+  //---------------------------------------------------------------------
+
+  var byteArrayOutputStream = function() {
+
+    var _bytes = [];
+
+    var _this = {};
+
+    _this.writeByte = function(b) {
+      _bytes.push(b & 0xff);
+    };
+
+    _this.writeShort = function(i) {
+      _this.writeByte(i);
+      _this.writeByte(i >>> 8);
+    };
+
+    _this.writeBytes = function(b, off, len) {
+      off = off || 0;
+      len = len || b.length;
+      for (var i = 0; i < len; i += 1) {
+        _this.writeByte(b[i + off]);
+      }
+    };
+
+    _this.writeString = function(s) {
+      for (var i = 0; i < s.length; i += 1) {
+        _this.writeByte(s.charCodeAt(i) );
+      }
+    };
+
+    _this.toByteArray = function() {
+      return _bytes;
+    };
+
+    _this.toString = function() {
+      var s = '';
+      s += '[';
+      for (var i = 0; i < _bytes.length; i += 1) {
+        if (i > 0) {
+          s += ',';
+        }
+        s += _bytes[i];
+      }
+      s += ']';
+      return s;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64EncodeOutputStream
+  //---------------------------------------------------------------------
+
+  var base64EncodeOutputStream = function() {
+
+    var _buffer = 0;
+    var _buflen = 0;
+    var _length = 0;
+    var _base64 = '';
+
+    var _this = {};
+
+    var writeEncoded = function(b) {
+      _base64 += String.fromCharCode(encode(b & 0x3f) );
+    };
+
+    var encode = function(n) {
+      if (n < 0) {
+        // error.
+      } else if (n < 26) {
+        return 0x41 + n;
+      } else if (n < 52) {
+        return 0x61 + (n - 26);
+      } else if (n < 62) {
+        return 0x30 + (n - 52);
+      } else if (n == 62) {
+        return 0x2b;
+      } else if (n == 63) {
+        return 0x2f;
+      }
+      throw 'n:' + n;
+    };
+
+    _this.writeByte = function(n) {
+
+      _buffer = (_buffer << 8) | (n & 0xff);
+      _buflen += 8;
+      _length += 1;
+
+      while (_buflen >= 6) {
+        writeEncoded(_buffer >>> (_buflen - 6) );
+        _buflen -= 6;
+      }
+    };
+
+    _this.flush = function() {
+
+      if (_buflen > 0) {
+        writeEncoded(_buffer << (6 - _buflen) );
+        _buffer = 0;
+        _buflen = 0;
+      }
+
+      if (_length % 3 != 0) {
+        // padding
+        var padlen = 3 - _length % 3;
+        for (var i = 0; i < padlen; i += 1) {
+          _base64 += '=';
+        }
+      }
+    };
+
+    _this.toString = function() {
+      return _base64;
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // base64DecodeInputStream
+  //---------------------------------------------------------------------
+
+  var base64DecodeInputStream = function(str) {
+
+    var _str = str;
+    var _pos = 0;
+    var _buffer = 0;
+    var _buflen = 0;
+
+    var _this = {};
+
+    _this.read = function() {
+
+      while (_buflen < 8) {
+
+        if (_pos >= _str.length) {
+          if (_buflen == 0) {
+            return -1;
+          }
+          throw 'unexpected end of file./' + _buflen;
+        }
+
+        var c = _str.charAt(_pos);
+        _pos += 1;
+
+        if (c == '=') {
+          _buflen = 0;
+          return -1;
+        } else if (c.match(/^\s$/) ) {
+          // ignore if whitespace.
+          continue;
+        }
+
+        _buffer = (_buffer << 6) | decode(c.charCodeAt(0) );
+        _buflen += 6;
+      }
+
+      var n = (_buffer >>> (_buflen - 8) ) & 0xff;
+      _buflen -= 8;
+      return n;
+    };
+
+    var decode = function(c) {
+      if (0x41 <= c && c <= 0x5a) {
+        return c - 0x41;
+      } else if (0x61 <= c && c <= 0x7a) {
+        return c - 0x61 + 26;
+      } else if (0x30 <= c && c <= 0x39) {
+        return c - 0x30 + 52;
+      } else if (c == 0x2b) {
+        return 62;
+      } else if (c == 0x2f) {
+        return 63;
+      } else {
+        throw 'c:' + c;
+      }
+    };
+
+    return _this;
+  };
+
+  //---------------------------------------------------------------------
+  // gifImage (B/W)
+  //---------------------------------------------------------------------
+
+  var gifImage = function(width, height) {
+
+    var _width = width;
+    var _height = height;
+    var _data = new Array(width * height);
+
+    var _this = {};
+
+    _this.setPixel = function(x, y, pixel) {
+      _data[y * _width + x] = pixel;
+    };
+
+    _this.write = function(out) {
+
+      //---------------------------------
+      // GIF Signature
+
+      out.writeString('GIF87a');
+
+      //---------------------------------
+      // Screen Descriptor
+
+      out.writeShort(_width);
+      out.writeShort(_height);
+
+      out.writeByte(0x80); // 2bit
+      out.writeByte(0);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Global Color Map
+
+      // black
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+      out.writeByte(0x00);
+
+      // white
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+      out.writeByte(0xff);
+
+      //---------------------------------
+      // Image Descriptor
+
+      out.writeString(',');
+      out.writeShort(0);
+      out.writeShort(0);
+      out.writeShort(_width);
+      out.writeShort(_height);
+      out.writeByte(0);
+
+      //---------------------------------
+      // Local Color Map
+
+      //---------------------------------
+      // Raster Data
+
+      var lzwMinCodeSize = 2;
+      var raster = getLZWRaster(lzwMinCodeSize);
+
+      out.writeByte(lzwMinCodeSize);
+
+      var offset = 0;
+
+      while (raster.length - offset > 255) {
+        out.writeByte(255);
+        out.writeBytes(raster, offset, 255);
+        offset += 255;
+      }
+
+      out.writeByte(raster.length - offset);
+      out.writeBytes(raster, offset, raster.length - offset);
+      out.writeByte(0x00);
+
+      //---------------------------------
+      // GIF Terminator
+      out.writeString(';');
+    };
+
+    var bitOutputStream = function(out) {
+
+      var _out = out;
+      var _bitLength = 0;
+      var _bitBuffer = 0;
+
+      var _this = {};
+
+      _this.write = function(data, length) {
+
+        if ( (data >>> length) != 0) {
+          throw 'length over';
+        }
+
+        while (_bitLength + length >= 8) {
+          _out.writeByte(0xff & ( (data << _bitLength) | _bitBuffer) );
+          length -= (8 - _bitLength);
+          data >>>= (8 - _bitLength);
+          _bitBuffer = 0;
+          _bitLength = 0;
+        }
+
+        _bitBuffer = (data << _bitLength) | _bitBuffer;
+        _bitLength = _bitLength + length;
+      };
+
+      _this.flush = function() {
+        if (_bitLength > 0) {
+          _out.writeByte(_bitBuffer);
+        }
+      };
+
+      return _this;
+    };
+
+    var getLZWRaster = function(lzwMinCodeSize) {
+
+      var clearCode = 1 << lzwMinCodeSize;
+      var endCode = (1 << lzwMinCodeSize) + 1;
+      var bitLength = lzwMinCodeSize + 1;
+
+      // Setup LZWTable
+      var table = lzwTable();
+
+      for (var i = 0; i < clearCode; i += 1) {
+        table.add(String.fromCharCode(i) );
+      }
+      table.add(String.fromCharCode(clearCode) );
+      table.add(String.fromCharCode(endCode) );
+
+      var byteOut = byteArrayOutputStream();
+      var bitOut = bitOutputStream(byteOut);
+
+      // clear code
+      bitOut.write(clearCode, bitLength);
+
+      var dataIndex = 0;
+
+      var s = String.fromCharCode(_data[dataIndex]);
+      dataIndex += 1;
+
+      while (dataIndex < _data.length) {
+
+        var c = String.fromCharCode(_data[dataIndex]);
+        dataIndex += 1;
+
+        if (table.contains(s + c) ) {
+
+          s = s + c;
+
+        } else {
+
+          bitOut.write(table.indexOf(s), bitLength);
+
+          if (table.size() < 0xfff) {
+
+            if (table.size() == (1 << bitLength) ) {
+              bitLength += 1;
+            }
+
+            table.add(s + c);
+          }
+
+          s = c;
+        }
+      }
+
+      bitOut.write(table.indexOf(s), bitLength);
+
+      // end code
+      bitOut.write(endCode, bitLength);
+
+      bitOut.flush();
+
+      return byteOut.toByteArray();
+    };
+
+    var lzwTable = function() {
+
+      var _map = {};
+      var _size = 0;
+
+      var _this = {};
+
+      _this.add = function(key) {
+        if (_this.contains(key) ) {
+          throw 'dup key:' + key;
+        }
+        _map[key] = _size;
+        _size += 1;
+      };
+
+      _this.size = function() {
+        return _size;
+      };
+
+      _this.indexOf = function(key) {
+        return _map[key];
+      };
+
+      _this.contains = function(key) {
+        return typeof _map[key] != 'undefined';
+      };
+
+      return _this;
+    };
+
+    return _this;
+  };
+
+  var createDataURL = function(width, height, getPixel) {
+    var gif = gifImage(width, height);
+    for (var y = 0; y < height; y += 1) {
+      for (var x = 0; x < width; x += 1) {
+        gif.setPixel(x, y, getPixel(x, y) );
+      }
+    }
+
+    var b = byteArrayOutputStream();
+    gif.write(b);
+
+    var base64 = base64EncodeOutputStream();
+    var bytes = b.toByteArray();
+    for (var i = 0; i < bytes.length; i += 1) {
+      base64.writeByte(bytes[i]);
+    }
+    base64.flush();
+
+    return 'data:image/gif;base64,' + base64;
+  };
+
+  //---------------------------------------------------------------------
+  // returns qrcode function.
+
+  return qrcode;
+}();
+
+// multibyte support
+!function() {
+
+  qrcode.stringToBytesFuncs['UTF-8'] = function(s) {
+    // http://stackoverflow.com/questions/18729405/how-to-convert-utf8-string-to-byte-array
+    function toUTF8Array(str) {
+      var utf8 = [];
+      for (var i=0; i < str.length; i++) {
+        var charcode = str.charCodeAt(i);
+        if (charcode < 0x80) utf8.push(charcode);
+        else if (charcode < 0x800) {
+          utf8.push(0xc0 | (charcode >> 6),
+              0x80 | (charcode & 0x3f));
+        }
+        else if (charcode < 0xd800 || charcode >= 0xe000) {
+          utf8.push(0xe0 | (charcode >> 12),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+        // surrogate pair
+        else {
+          i++;
+          // UTF-16 encodes 0x10000-0x10FFFF by
+          // subtracting 0x10000 and splitting the
+          // 20 bits of 0x0-0xFFFFF into two halves
+          charcode = 0x10000 + (((charcode & 0x3ff)<<10)
+            | (str.charCodeAt(i) & 0x3ff));
+          utf8.push(0xf0 | (charcode >>18),
+              0x80 | ((charcode>>12) & 0x3f),
+              0x80 | ((charcode>>6) & 0x3f),
+              0x80 | (charcode & 0x3f));
+        }
+      }
+      return utf8;
+    }
+    return toUTF8Array(s);
+  };
+
+}();
+
+(function (factory) {
+  if (typeof define === 'function' && define.amd) {
+      define([], factory);
+  } else if (typeof exports === 'object') {
+      module.exports = factory();
+  }
+}(function () {
+    return qrcode;
+}));
+
+</script>
+<script>
+/* ================= CONFIG ================= */
+const BASE = "https://tiendamax.org";
+const WHATSAPP = "5354320170";
+const ACENTOS = {
+  "WIFI":"#3B82F6","ENERGIA":"#F59E0B","CELULARES":"#A855F7","SEGURIDAD":"#EF4444",
+  "CARROS":"#6366F1","MOTOS":"#FF6B1A","HOGAR":"#14B8A6","UTILES":"#06B6D4",
+  "GYM":"#22C55E","JUEGOS":"#EAB308","PC Y LAPTOPS":"#EC4899","ROPA":"#FF6B35","AUDIO":"#FF6B35"
+};
+const ICONS_CAT = {"WIFI":"📡","ENERGIA":"⚡","CELULARES":"📱","SEGURIDAD":"🔒","CARROS":"🚗","MOTOS":"🛵","HOGAR":"🏠","UTILES":"🛠️","GYM":"🏋️","JUEGOS":"🎮","PC Y LAPTOPS":"💻","ROPA":"👕","AUDIO":"🔊"};
+const SERIF = "Georgia, 'Times New Roman', serif";
+let SANS  = "'Segoe UI', system-ui, Arial, sans-serif";
+/* cargar Poppins para que las imágenes se vean idénticas en cualquier dispositivo */
+(async function(){
+  try{
+    const pesos = [
+      ["Poppins","https://fonts.gstatic.com/s/poppins/v21/pxiEyp8kv8JHgFVrJJfecg.woff2","400"],
+      ["Poppins","https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLEj6Z1xlFQ.woff2","600"],
+      ["Poppins","https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLCz7Z1xlFQ.woff2","700"],
+      ["Poppins","https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLDD4Z1xlFQ.woff2","800"],
+      ["Poppins","https://fonts.gstatic.com/s/poppins/v21/pxiByp8kv8JHgFVrLBT5Z1xlFQ.woff2","900"]
+    ];
+    await Promise.all(pesos.map(async ([fam,url,w])=>{
+      const f = new FontFace(fam, `url(${url})`, {weight:w});
+      await f.load();
+      document.fonts.add(f);
+    }));
+    SANS = "Poppins, 'Segoe UI', system-ui, Arial, sans-serif";
+    if(typeof dibujar==="function") dibujar();
+  }catch(e){ /* sin red: se queda la fuente del sistema */ }
+})();
+
+let productos = [], tasaMN = 685, sel = null, estilo = "vitrina", logoImg = null, fotoSinFondo = null;
+let comboMode = false, comboSel = [], comboPngs = {};
+let escalaProducto = 1, escalaCombo = 1;
+let resenas = {}, nuevosIds = new Set();
+function tieneResena(p){ return !!resenas[String(p.id)]; }
+let multiSel = new Set();
+function guardarPref(k,v){try{localStorage.setItem("tmgen_"+k,JSON.stringify(v))}catch(e){}}
+function leerPref(k,d){try{const v=JSON.parse(localStorage.getItem("tmgen_"+k));return v==null?d:v}catch(e){return d}}
+
+/* ============ REGISTRO DE PUBLICACIONES (#3) ============ */
+function pubLog(){return leerPref("publog",[]);}
+function registrarPub(p){
+  if(!p) return;
+  const l = pubLog().filter(x=>x.id!==p.id);
+  l.push({id:p.id, ts:Date.now()});
+  guardarPref("publog", l.slice(-600));
+  render();
+}
+function diasSinPub(id){
+  const e = pubLog().find(x=>x.id===id);
+  return e ? Math.floor((Date.now()-e.ts)/864e5) : null;
+}
+const imgCache = {};
+
+/* ================= UTIL ================= */
+const $ = s => document.querySelector(s);
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2600);}
+function fmtMN(usd){return Math.round(usd*tasaMN).toLocaleString("es-CU").replace(/,/g," ");}
+function acento(cat){return ACENTOS[cat]||"#FF6B35";}
+function hex2rgba(h,a){const n=parseInt(h.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`;}
+function keyword(p){
+  const w = p.nombre.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9 ]/g," ").trim().split(/\s+/);
+  const skip = ["de","la","el","con","para","tipo","kit"];
+  for(const x of w){ if(x.length>2 && !skip.includes(x.toLowerCase())) return x.toUpperCase(); }
+  return (w[0]||"PRODUCTO").toUpperCase();
+}
+function linkProducto(p){return `${BASE}/#producto-${p.id}`;}
+/* ===== Variables de plantilla — mismo sistema que el generador de tiendamax.org ===== */
+function varsProducto(p){
+  const pa = Number(p.precioActual)||0;
+  const po = Number(p.precioOriginal)||pa;
+  const ahorro = Math.max(0, po-pa);
+  const desc = String(p.descripcion||"").trim();
+  const url = linkProducto(p);
+  const waLink = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent("Hola, quiero: "+(p.nombre||"")+"\n"+url)}`;
+  const dcto = ahorro>0 && po>0 ? Math.round(ahorro/po*100) : 0;
+  return {
+    nombre: p.nombre||"",
+    inicio_desc: desc.split("\n").slice(0,2).join("\n"),
+    precioActual: String(pa),
+    linea_precio: ahorro>0 ? `💰 Antes $${po} → AHORA $${pa} USD` : `💰 Precio: $${pa} USD`,
+    linea_ahorro: ahorro>0 ? `🎉 Ahorras $${ahorro} USD${dcto?` (${dcto}%)`:""}` : "",
+    linea_garantia: p.garantia && String(p.garantia).trim() ? `🛡️ Garantía: ${String(p.garantia).trim()}` : "",
+    linea_stock: Number(p.stock)>0 ? (Number(p.stock)<=3 ? `⚠️ ¡Solo quedan ${Number(p.stock)}! Se acaban rápido` : `📦 Quedan ${Number(p.stock)} unidades`) : "",
+    wa_link: waLink,
+    url_producto: url,
+    hashtags: (`#TiendaMax #Cuba `+(p.categoria?`#${p.categoria.replace(/\s+/g,"")}`:"")).trim()
+  };
+}
+const PLANTILLAS = [
+  {id:"fb", nombre:"📘 Facebook — completa", texto:`🛍️ {nombre}
+
+{inicio_desc}
+
+{linea_precio}
+{linea_garantia}
+{linea_stock}
+
+📲 Pídelo aquí:
+{wa_link}
+
+🌐 Fotos y detalles:
+{url_producto}
+
+{hashtags}`},
+  {id:"oferta", nombre:"🔥 Facebook — con descuento", texto:`🔥 OFERTA — {nombre}
+
+{inicio_desc}
+
+{linea_precio}
+{linea_ahorro}
+{linea_garantia}
+{linea_stock}
+
+📲 {wa_link}
+
+{hashtags}`},
+  {id:"revolico", nombre:"🏠 Revolico — anuncio", texto:`{nombre}
+
+{inicio_desc}
+
+{linea_precio}
+{linea_garantia}
+{linea_stock}
+
+Pedir por WhatsApp: {wa_link}`},
+  {id:"wa", nombre:"🟢 Estado de WhatsApp — corta", texto:`{nombre} — \${precioActual} USD
+{linea_garantia}
+Pídelo: {wa_link}`}
+];
+function captionCombo(){
+  const suma = comboSel.reduce((s,it)=>s+Number(it.precioActual),0);
+  const pcInp = parseFloat(document.getElementById("inpComboPrecio").value);
+  const pc = isFinite(pcInp)&&pcInp>0&&pcInp<suma ? pcInp : suma;
+  const ahorro = suma-pc;
+  let t = `🎁 COMBO ESPECIAL — Llévate más por menos\n\n`;
+  comboSel.forEach((it,i)=>{ t += `${i+1}️⃣ ${it.nombre} — $${it.precioActual} USD\n`; });
+  t += `\n💰 ${ahorro>0?`Por separado: $${suma} → COMBO: $${pc} USD\n🎉 Ahorras $${ahorro} USD`:`Total: $${pc} USD`}\n`;
+  t += `💵 Pagas al recibir — sin adelantar nada\n🚚 Entrega a domicilio\n\n`;
+  t += `📲 Escribe "COMBO" al WhatsApp: https://wa.me/${WHATSAPP}\n🌐 ${BASE}\n\n#TiendaMax #Cuba #Combo`;
+  return t;
+}
+function caption(p){
+  if(comboMode && comboSel.length>=2) return captionCombo();
+  if(estilo==="resena" && resenas[String(p.id)]){
+    const rv = resenas[String(p.id)];
+    const stars = "⭐".repeat(rv.estrellas);
+    return `${stars} OPINIÓN REAL DE CLIENTE\n\n"${rv.texto}"\n— ${rv.autor||"Cliente"}, ${rv.fecha||""}\n\n🛒 Compró: ${p.nombre} — $${p.precioActual} USD\n💵 Pago al recibir · 🚚 Domicilio · 🛡️ Garantía\n\n📲 Escribe "${keyword(p)}" al WhatsApp: https://wa.me/${WHATSAPP}\n🌐 ${linkProducto(p)}\n\n#TiendaMax #Cuba #OpinionesReales #${p.categoria.replace(/\s+/g,"")}`;
+  }
+  const sel = document.getElementById("selPlantilla");
+  const pl = PLANTILLAS.find(x=>x.id===(sel?sel.value:"fb")) || PLANTILLAS[0];
+  const v = varsProducto(p);
+  return pl.texto
+    .replace(/\{(\w+)\}/g,(m,k)=>Object.prototype.hasOwnProperty.call(v,k)?v[k]:m)
+    .replace(/[ \t]+$/gm,"")
+    .replace(/\n{3,}/g,"\n\n")
+    .trim();
+}
+function loadImage(url){
+  return new Promise((res,rej)=>{
+    if(imgCache[url]) return res(imgCache[url]);
+    const im = new Image();
+    im.crossOrigin = "anonymous";
+    im.onload = ()=>{imgCache[url]=im;res(im);};
+    im.onerror = rej;
+    im.src = url;
+  });
+}
+
+/* ================= CARGA DE DATOS ================= */
+async function init(){
+  try{
+    const [prods, conf, resenasRaw] = await Promise.all([
+      fetch(BASE+"/productos.json?_="+Date.now()).then(r=>r.json()),
+      fetch(BASE+"/config.json?_="+Date.now()).then(r=>r.json()).catch(()=>({})),
+      fetch(BASE+"/resenas-cache.json?_="+Date.now()).then(r=>r.json()).catch(()=>null)
+    ]);
+    /* indexar reseñas por producto (acepta objeto o lista) */
+    resenas = {};
+    try{
+      const pp = resenasRaw && resenasRaw.por_producto ? resenasRaw.por_producto : {};
+      for(const pid in pp){
+        const v = pp[pid];
+        const lista = Array.isArray(v) ? v : [v];
+        /* la mejor reseña: más estrellas, luego más reciente */
+        lista.sort((a,b)=>(b.estrellas-a.estrellas)||(b.ts-a.ts));
+        if(lista[0] && lista[0].texto) resenas[pid] = lista[0];
+      }
+    }catch(e){}
+    productos = prods.filter(p=>p && p.nombre && Number(p.stock)>0);
+    if(conf.tasaMN) tasaMN = conf.tasaMN;
+    $("#tasa").textContent = tasaMN;
+    $("#status").textContent = `✅ Conectado · ${productos.length} productos con stock · ${VERSION}`;
+    const cats = [...new Set(productos.map(p=>p.categoria))].sort();
+    for(const c of cats){
+      const o = document.createElement("option");
+      o.value = c; o.textContent = `${ICONS_CAT[c]||"📦"} ${c} (${productos.filter(p=>p.categoria===c).length})`;
+      $("#selCat").appendChild(o);
+    }
+    try{ logoImg = await loadImage(BASE+"/iconos/icon-192.png"); }catch(e){}
+    /* detectar productos nuevos desde la última visita */
+    const vistos = new Set(leerPref("ids_vistos",[]));
+    if(vistos.size){
+      productos.forEach(p=>{ if(!vistos.has(p.id)) nuevosIds.add(p.id); });
+      if(nuevosIds.size) toast(`🆕 ${nuevosIds.size} producto${nuevosIds.size>1?"s":""} nuevo${nuevosIds.size>1?"s":""} desde tu última visita`);
+    }
+    guardarPref("ids_vistos", productos.map(p=>p.id));
+    render();
+    if(productos.length){ seleccionar(productos[0]); }
+    /* accesos directos del ícono de la app */
+    const acc = new URLSearchParams(location.search).get("accion");
+    if(acc==="semana"){ setTimeout(()=>$("#btnSemana").click(), 600); }
+    else if(acc==="combo"){ setTimeout(()=>$("#btnComboMode").click(), 400); }
+    else if(acc==="oferta"){
+      const reb = productos.filter(p=>p.precioOriginal>p.precioActual);
+      if(reb.length){
+        const b = document.querySelector('[data-sty=oferta]');
+        if(b) b.click();
+        seleccionar(reb[0]);
+        toast(`🔥 ${reb.length} producto${reb.length>1?"s":""} en oferta ahora mismo`);
+      } else toast("No hay productos rebajados en este momento");
+    }
+  }catch(e){
+    $("#status").textContent = "❌ No se pudo conectar";
+    $("#status").classList.add("err");
+    $("#grid").innerHTML = `<div class="empty" style="grid-column:1/-1;">No se pudo cargar tiendamax.org.<br>Revisa tu conexión e intenta de nuevo.</div>`;
+  }
+}
+
+/* ================= LISTA ================= */
+function filtrados(){
+  const cat = $("#selCat").value, q = $("#txtBuscar").value.toLowerCase().trim(), ord = $("#selOrden").value;
+  let l = productos.filter(p => (!cat||p.categoria===cat) && (!q||p.nombre.toLowerCase().includes(q)));
+  if(ord==="pub") l.sort((a,b)=>{
+    const A=diasSinPub(a.id), B=diasSinPub(b.id);
+    const sA=A==null?1e9:A, sB=B==null?1e9:B;
+    return sB-sA;
+  });
+  if(ord==="pmenor") l.sort((a,b)=>a.precioActual-b.precioActual);
+  if(ord==="pmayor") l.sort((a,b)=>b.precioActual-a.precioActual);
+  if(ord==="nom") l.sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  return l;
+}
+function render(){
+  const l = filtrados();
+  $("#count").textContent = `${l.length} producto${l.length!==1?"s":""}`;
+  const g = $("#grid"); g.innerHTML = "";
+  if(!l.length){g.innerHTML = `<div class="empty" style="grid-column:1/-1;">Sin resultados 🤷</div>`;return;}
+  for(const p of l){
+    const d = document.createElement("div");
+    const enCombo = comboSel.findIndex(x=>x.id===p.id);
+    d.className = "card"+((!comboMode && sel&&sel.id===p.id)||(comboMode&&enCombo>=0)?" sel":"");
+    const disc = p.precioOriginal>p.precioActual ? Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100) : 0;
+    const dsp = diasSinPub(p.id);
+    d.innerHTML = `
+      <span class="cc" style="color:${acento(p.categoria)}">${p.categoria}</span>
+      ${disc?`<span class="cdisc">−${disc}%</span>`:""}
+      ${comboMode&&enCombo>=0?`<span class="combobadge">${enCombo+1}</span>`:""}
+      ${dsp!=null?`<span class="pubbadge" title="Publicado hace ${dsp} día(s)">✅ ${dsp===0?"hoy":dsp+"d"}</span>`:""}
+      ${nuevosIds.has(p.id)?`<span class="newbadge">🆕 NUEVO</span>`:""}
+      ${tieneResena(p)?`<span class="revbadge" title="Tiene reseña de cliente">⭐</span>`:""}
+      ${!comboMode?`<span class="selbox ${multiSel.has(p.id)?"on":""}">✓</span>`:""}
+      <img loading="lazy" src="${p.imagen}" alt="">
+      <div class="cd"><div class="cn">${p.nombre}</div>
+      <div class="cp">${p.precioOriginal>p.precioActual?`<s>$${p.precioOriginal}</s>`:""}$${p.precioActual}</div></div>`;
+    d.onclick = ()=>seleccionar(p);
+    const sb = d.querySelector(".selbox");
+    if(sb) sb.onclick = e=>{
+      e.stopPropagation();
+      if(multiSel.has(p.id)) multiSel.delete(p.id); else multiSel.add(p.id);
+      render(); selBarUpd();
+    };
+    g.appendChild(d);
+  }
+}
+function updCapPrev(){
+  const el = document.getElementById("capPrev");
+  if(el && sel) el.textContent = caption(sel);
+}
+function toggleCombo(p){
+  const i = comboSel.findIndex(x=>x.id===p.id);
+  if(i>=0) comboSel.splice(i,1);
+  else{
+    if(comboSel.length>=3){ toast("Máximo 3 productos por combo"); return; }
+    comboSel.push(p);
+  }
+  renderComboList();
+  render();
+  dibujar();
+  actualizarComboBar();
+}
+function renderComboList(){
+  const el = $("#comboList");
+  el.innerHTML = "";
+  const uz = document.getElementById("uzoneCombo");
+  if(uz){
+    const todos = comboSel.length && comboSel.every(it=>comboPngs[it.id]);
+    uz.classList.toggle("ok", !!todos);
+  }
+  for(const it of comboSel){
+    const d = document.createElement("div");
+    d.className = "comboitem";
+    const tienePng = !!comboPngs[it.id];
+    d.style.cursor = "pointer";
+    d.title = "Toca para ponerle su foto PNG sin fondo";
+    d.innerHTML = `<img src="${tienePng?comboPngs[it.id].src:it.imagen}" style="${tienePng?'background:linear-gradient(135deg,#26262b,#141417);':''}">`+
+      `<span class="cn2">${it.nombre}</span>`+
+      `<span style="flex:none;font-size:13px;font-weight:800;padding:3px 9px;border-radius:12px;${tienePng?'background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.45);color:#7ee8a5;':'background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#9a9aa2;'}">${tienePng?'✨ sin fondo':'📤 foto'}</span>`+
+      `<span class="cp2">$${it.precioActual}</span><span class="cx" data-id="${it.id}">✕</span>`;
+    d.querySelector(".cx").onclick = e=>{ e.stopPropagation(); delete comboPngs[it.id]; toggleCombo(it); };
+    d.onclick = ()=>{
+      const inp = $("#fileComboUno");
+      inp.dataset.target = it.id;
+      inp.click();
+    };
+    el.appendChild(d);
+  }
+}
+function seleccionar(p){
+  if(comboMode){ toggleCombo(p); return; }
+  sel = p; fotoSinFondo = null;
+  escalaProducto = 1;
+  const sr = document.getElementById("sizeRow");
+  if(sr){ sr.style.display = "none"; }
+  const rg = document.getElementById("rngEscala");
+  if(rg){ rg.value = 100; document.getElementById("escalaVal").textContent = "100%"; }
+  $("#uzone").classList.remove("ok");
+  $("#uzone").innerHTML = "📤 <b>Sube aquí la foto PNG sin fondo</b><br>Los datos (nombre, precio, specs) se toman solos de la tienda";
+  document.querySelectorAll(".card").forEach(c=>c.classList.remove("sel"));
+  render();
+  dibujar();
+  updCapPrev();
+}
+
+/* ================= HELPERS CANVAS ================= */
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+function calcLines(ctx,text,maxW,maxLines){
+  const words=text.split(" ");let line="",lines=[];
+  for(const w of words){
+    if(ctx.measureText(line+w).width>maxW&&line){lines.push(line.trim());line=w+" ";}
+    else line+=w+" ";
+  }
+  lines.push(line.trim());
+  if(lines.length>maxLines){lines=lines.slice(0,maxLines);lines[maxLines-1]=lines[maxLines-1].replace(/\s?\S*$/,"…");}
+  return lines;
+}
+function wrap(ctx,text,x,y,maxW,lh,maxLines=2,align="left"){
+  const words = text.split(" "); let line="",lines=[];
+  for(const w of words){
+    if(ctx.measureText(line+w).width>maxW && line){lines.push(line.trim());line=w+" ";}
+    else line+=w+" ";
+  }
+  lines.push(line.trim());
+  if(lines.length>maxLines){lines=lines.slice(0,maxLines);lines[maxLines-1]=lines[maxLines-1].replace(/\s?\S*$/,"…");}
+  ctx.textAlign=align;
+  lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lh));
+  return lines.length;
+}
+function dots(ctx,W,H,alpha=.035){
+  ctx.save();ctx.fillStyle=`rgba(255,255,255,${alpha})`;
+  for(let x=20;x<W;x+=44)for(let y=20;y<H;y+=44){ctx.beginPath();ctx.arc(x,y,2,0,7);ctx.fill();}
+  ctx.restore();
+}
+function dither(ctx,x,y,w,h,st=3){
+  /* dithering por píxel: altera cada píxel ±st niveles — elimina el banding de raíz */
+  const cw = ctx.canvas.width, ch = ctx.canvas.height;
+  x=Math.max(0,x|0); y=Math.max(0,y|0);
+  w=Math.min(cw-x,w|0); h=Math.min(ch-y,h|0);
+  if(w<=0||h<=0) return;
+  try{
+    const im = ctx.getImageData(x,y,w,h);
+    const d = im.data;
+    for(let i=0;i<d.length;i+=4){
+      const n = ((Math.random()*2-1)*st)|0;
+      d[i]+=n; d[i+1]+=n; d[i+2]+=n;
+    }
+    ctx.putImageData(im,x,y);
+  }catch(e){}
+}
+function ruido(ctx,W,H){ dither(ctx,0,0,W,H); }
+function fondoOscuro(ctx,W,H,ac){
+  /* base casi plana con 5 paradas — transición imperceptible, como CSS */
+  const g = ctx.createLinearGradient(0,0,W*.35,H);
+  g.addColorStop(0,"#131315");
+  g.addColorStop(.25,"#101012");
+  g.addColorStop(.5,"#0e0e10");
+  g.addColorStop(.75,"#0c0c0e");
+  g.addColorStop(1,"#0B0B0D");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* halo del acento: intensidad baja y caída con 6 paradas (curva suave, sin bordes) */
+  let r = ctx.createRadialGradient(W*.82,H*.05,0,W*.82,H*.05,W*.85);
+  r.addColorStop(0,hex2rgba(ac,.14));
+  r.addColorStop(.2,hex2rgba(ac,.09));
+  r.addColorStop(.4,hex2rgba(ac,.05));
+  r.addColorStop(.6,hex2rgba(ac,.025));
+  r.addColorStop(.8,hex2rgba(ac,.01));
+  r.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=r;ctx.fillRect(0,0,W,H);
+  r = ctx.createRadialGradient(0,H,0,0,H,W*.7);
+  r.addColorStop(0,hex2rgba(ac,.06));
+  r.addColorStop(.35,hex2rgba(ac,.03));
+  r.addColorStop(.7,hex2rgba(ac,.012));
+  r.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=r;ctx.fillRect(0,0,W,H);
+  dither(ctx,0,0,W,H);
+  dots(ctx,W,H);
+}
+function chipMarca(ctx,x,y,s=1){
+  const ih = 64*s;
+  if(logoImg){
+    ctx.save();rr(ctx,x,y,ih,ih,16*s);ctx.clip();ctx.drawImage(logoImg,x,y,ih,ih);ctx.restore();
+    ctx.save();ctx.shadowColor="rgba(232,80,30,.5)";ctx.shadowBlur=20*s;rr(ctx,x,y,ih,ih,16*s);ctx.strokeStyle="rgba(255,255,255,.15)";ctx.stroke();ctx.restore();
+  }
+  ctx.textBaseline="middle";ctx.textAlign="left";
+  ctx.font = `bold ${40*s}px ${SERIF}`;
+  ctx.fillStyle="#fff";ctx.fillText("Tienda", x+ih+18*s, y+ih/2+2);
+  const w1 = ctx.measureText("Tienda").width;
+  ctx.fillStyle="#F98127";ctx.fillText("Max", x+ih+18*s+w1+10*s, y+ih/2+2);
+  return ih;
+}
+function pillCat(ctx,cx,y,cat,s=1){
+  const ac = acento(cat), txt = `${ICONS_CAT[cat]||""} ${cat}`.trim();
+  ctx.font=`bold ${24*s}px ${SANS}`;
+  const w = ctx.measureText(txt).width+44*s;
+  rr(ctx,cx-w,y,w,46*s,23*s);
+  ctx.fillStyle=hex2rgba(ac,.14);ctx.fill();
+  ctx.strokeStyle=hex2rgba(ac,.65);ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle=ac;ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(txt,cx-w/2,y+24*s);
+}
+function vitrina(ctx,x,y,w,h,img,ac,pad=26){
+  ctx.save();
+  const halo = ctx.createRadialGradient(x+w/2,y+h/2,0,x+w/2,y+h/2,Math.max(w,h)*.7);
+  halo.addColorStop(0,hex2rgba(ac,.32));
+  halo.addColorStop(.4,hex2rgba(ac,.16));
+  halo.addColorStop(.7,hex2rgba(ac,.06));
+  halo.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=halo;ctx.fillRect(x-80,y-80,w+160,h+160);
+  dither(ctx,x-80,y-80,w+160,h+160);
+  ctx.shadowColor="rgba(0,0,0,.5)";ctx.shadowBlur=40;ctx.shadowOffsetY=20;
+  rr(ctx,x,y,w,h,26);ctx.fillStyle="#fff";ctx.fill();
+  ctx.restore();
+  if(img){
+    ctx.save();rr(ctx,x,y,w,h,26);ctx.clip();
+    const iw=w-pad*2, ih=h-pad*2, r=Math.min(iw/img.width, ih/img.height);
+    const dw=img.width*r, dh=img.height*r;
+    ctx.drawImage(img, x+(w-dw)/2, y+(h-dh)/2, dw, dh);
+    const gl = ctx.createLinearGradient(x,y,x+w*.5,y+h*.5);
+    gl.addColorStop(0,"rgba(255,255,255,.4)");gl.addColorStop(.35,"rgba(255,255,255,0)");
+    ctx.fillStyle=gl;ctx.fillRect(x,y,w,h);
+    ctx.restore();
+  }
+}
+function badgeUltimas(ctx,x,y,stock){
+  const t = stock===1 ? "🔥 ¡ÚLTIMA UNIDAD!" : `🔥 ¡ÚLTIMAS ${stock}!`;
+  ctx.font=`900 26px ${SANS}`;
+  const w = ctx.measureText(t).width+52;
+  ctx.save();
+  const g = ctx.createLinearGradient(x,y,x+w,y);
+  g.addColorStop(0,"#ff3d00");g.addColorStop(1,"#E8501E");
+  ctx.shadowColor="rgba(255,61,0,.55)";ctx.shadowBlur=24;
+  rr(ctx,x,y,w,52,26);ctx.fillStyle=g;ctx.fill();
+  ctx.shadowBlur=0;ctx.strokeStyle="rgba(255,255,255,.35)";ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(t,x+w/2,y+27);
+  ctx.restore();
+  ctx.textBaseline="alphabetic";
+  return w;
+}
+function badgeDesc(ctx,cx,cy,disc){
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(.14);
+  const g = ctx.createLinearGradient(-70,-70,70,70);
+  g.addColorStop(0,"#ff3d00");g.addColorStop(.5,"#FF6B35");g.addColorStop(1,"#f5a623");
+  ctx.shadowColor="rgba(255,61,0,.6)";ctx.shadowBlur=30;
+  ctx.beginPath();ctx.arc(0,0,70,0,7);ctx.fillStyle=g;ctx.fill();
+  ctx.shadowBlur=0;ctx.strokeStyle="rgba(255,255,255,.4)";ctx.lineWidth=4;ctx.stroke();
+  ctx.fillStyle="#fff";ctx.font=`900 44px ${SANS}`;ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(`−${disc}%`,0,2);
+  ctx.restore();
+}
+function precioGrad(ctx,x,y,size,txt){
+  ctx.font=`900 ${size}px ${SANS}`;
+  const w = ctx.measureText(txt).width;
+  const g = ctx.createLinearGradient(x,0,x+w,0);
+  g.addColorStop(0,"#FF6B35");g.addColorStop(1,"#f5a623");
+  ctx.save();ctx.shadowColor="rgba(255,107,53,.4)";ctx.shadowBlur=26;
+  ctx.fillStyle=g;ctx.textAlign="left";ctx.textBaseline="alphabetic";ctx.fillText(txt,x,y);
+  ctx.restore();
+  return w;
+}
+function ctaVerde(ctx,x,y,w,h,main,sub){
+  ctx.save();
+  const g = ctx.createLinearGradient(x,y,x+w,y+h);
+  g.addColorStop(0,"#2ee578");g.addColorStop(1,"#1eb257");
+  ctx.shadowColor="rgba(37,211,102,.45)";ctx.shadowBlur=34;ctx.shadowOffsetY=10;
+  rr(ctx,x,y,w,h,h/2.6);ctx.fillStyle=g;ctx.fill();
+  ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+  ctx.strokeStyle="rgba(255,255,255,.35)";ctx.lineWidth=2;rr(ctx,x+2,y+2,w-4,h-4,h/2.8);ctx.stroke();
+  ctx.fillStyle="#fff";ctx.textAlign="left";ctx.textBaseline="middle";
+  ctx.font=`800 ${h*.30}px ${SANS}`;ctx.fillText(main, x+h*.42, y+h*(sub?.38:.5));
+  if(sub){ctx.font=`600 ${h*.18}px ${SANS}`;ctx.fillStyle="rgba(255,255,255,.92)";ctx.fillText(sub, x+h*.42, y+h*.68);}
+  ctx.font=`800 ${h*.42}px ${SANS}`;ctx.textAlign="right";ctx.fillStyle="#fff";ctx.fillText("→", x+w-h*.34, y+h/2);
+  ctx.restore();
+}
+function chipsConfianza(ctx,x,y,w,items,s=1){
+  const gap=16*s, cw=(w-gap*(items.length-1))/items.length, ch=86*s;
+  items.forEach((it,i)=>{
+    const cx = x+i*(cw+gap);
+    rr(ctx,cx,y,cw,ch,14*s);
+    ctx.fillStyle="rgba(255,255,255,.06)";ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.11)";ctx.lineWidth=1.5;ctx.stroke();
+    ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.font=`${30*s}px ${SANS}`;ctx.fillStyle="#fff";ctx.fillText(it[0], cx+cw/2, y+ch*.34);
+    ctx.font=`600 ${17*s}px ${SANS}`;ctx.fillStyle="#c9c9cf";ctx.fillText(it[1], cx+cw/2, y+ch*.72);
+  });
+}
+function footerUrl(ctx,W,y,s=1){
+  ctx.textAlign="center";ctx.textBaseline="alphabetic";
+  ctx.font=`600 ${22*s}px ${SANS}`;
+  ctx.fillStyle="#6b6b72";
+  const t1="pídelo en  ", t2="tiendamax.org";
+  const tw = ctx.measureText(t1).width + ctx.measureText(t2).width;
+  ctx.textAlign="left";
+  const sx = (W-tw)/2;
+  ctx.fillText(t1,sx,y);
+  ctx.fillStyle="#FF6B35";ctx.font=`800 ${22*s}px ${SANS}`;
+  ctx.fillText(t2,sx+ctx.measureText(t1).width,y);
+}
+
+/* ================= BADGE ATEMPORAL ================= */
+function badgeTexto(p){
+  if(p.precioOriginal>p.precioActual) return "🔥 EN OFERTA";
+  const st = Number(p.stock);
+  if(st>0 && st<=3) return "⚠️ ÚLTIMAS UNIDADES";
+  if(p.masVendido) return "⭐ MÁS VENDIDO";
+  return "✨ DISPONIBLE AHORA";
+}
+
+/* ================= QR ================= */
+function dibujarQR(ctx, url, x, y, size){
+  try{
+    const q = qrcode(0, "M");
+    q.addData(url); q.make();
+    const n = q.getModuleCount();
+    const pad = size*0.09, cell = (size-pad*2)/n;
+    ctx.save();
+    ctx.shadowColor="rgba(0,0,0,.4)";ctx.shadowBlur=18;ctx.shadowOffsetY=6;
+    rr(ctx,x,y,size,size,size*0.12);ctx.fillStyle="#fff";ctx.fill();
+    ctx.restore();
+    ctx.fillStyle="#0B0B0D";
+    for(let r=0;r<n;r++)for(let c=0;c<n;c++)
+      if(q.isDark(r,c)) ctx.fillRect(x+pad+c*cell, y+pad+r*cell, cell+0.5, cell+0.5);
+    ctx.font=`700 ${size*0.11}px ${SANS}`;ctx.fillStyle="#9a9aa2";ctx.textAlign="center";ctx.textBaseline="alphabetic";
+    ctx.fillText("Escanéame", x+size/2, y+size+size*0.16);
+  }catch(e){}
+}
+function qrOn(){const c=document.getElementById("chkQR");return c && c.checked;}
+
+/* ================= DISEÑOS ================= */
+const VERSION = "v3.8 PWA";
+async function dibujar(){
+  const cv = $("#cv");
+  try{
+  if(comboMode){
+    if(comboSel.length<2){
+      cv.width=1080;cv.height=1080;
+      const ctx=cv.getContext("2d");
+      fondoOscuro(ctx,1080,1080,"#FF6B35");
+      chipMarca(ctx,56,50);
+      ctx.fillStyle="#9a9aa2";ctx.font=`600 40px ${SANS}`;ctx.textAlign="center";
+      ctx.fillText("🎁 Toca 2 o 3 productos del catálogo",540,520);
+      ctx.fillText("para armar tu combo",540,580);
+      return;
+    }
+    cv.width=1080;cv.height=1080;
+    const ctx=cv.getContext("2d");
+    for(const it of comboSel){ try{ await loadImage(it.imagen); }catch(e){} }
+    const pcInp = parseFloat($("#inpComboPrecio").value);
+    dCombo(ctx, comboSel, isFinite(pcInp)?pcInp:0);
+    return;
+  }
+  if(!sel) return;
+  const story = estilo==="story" || estilo==="claro";
+  cv.width = 1080; cv.height = story?1920:(estilo==="flotante"?1350:1080);
+  const ctx = cv.getContext("2d");
+  let img = null;
+  try{
+    img = (estilo==="flotante" && fotoSinFondo) ? fotoSinFondo : await loadImage(sel.imagen);
+  }catch(e){}
+  if(estilo==="vitrina") dVitrina(ctx,sel,img);
+  else if(estilo==="oferta") dOferta(ctx,sel,img);
+  else if(estilo==="story") dStory(ctx,sel,img);
+  else if(estilo==="claro") dClaro(ctx,sel,img);
+  else if(estilo==="resena") dResena(ctx,sel,img);
+  else dFlotante(ctx,sel,img);
+  }catch(err){ toast("⚠️ Error al dibujar: "+err.message); }
+}
+
+function dVitrina(ctx,p,img){
+  const W=1080,H=1080, ac=acento(p.categoria);
+  fondoOscuro(ctx,W,H,ac);
+  chipMarca(ctx,56,50);
+  pillCat(ctx,W-56,58,p.categoria);
+  /* ---- layout de abajo hacia arriba: nada se puede pisar ---- */
+  const ctaH=96, ctaY=H-88-ctaH;                 /* botón: 896..992 */
+  const trustH=86, trustY=ctaY-16-trustH;        /* sellos: 794..880 */
+  const priceBase=trustY-34;                     /* precio baseline: 760 */
+  const hasSpecs = !!(p.specs && p.specs.length);
+  const specsTop = priceBase-84-20-46;           /* chips specs: 610..656 */
+  ctx.font=`800 46px ${SANS}`;
+  const lines = calcLines(ctx,p.nombre,W-112,2);
+  const lastBase = (hasSpecs?specsTop:priceBase-84-20) - 26;
+  const firstBase = lastBase-(lines.length-1)*56;
+  const fy=170, fx=110, fw=W-220;
+  const fh = Math.max(260, firstBase-46-26-fy);
+  /* foto */
+  vitrina(ctx,fx,fy,fw,fh,img,ac);
+  const disc = p.precioOriginal>p.precioActual?Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100):0;
+  if(disc) badgeDesc(ctx,fx+fw-16,fy+8,disc);
+  const st = Number(p.stock);
+  if(st>0 && st<=3) badgeUltimas(ctx,fx+18,fy+fh-70,st);
+  if(qrOn()) dibujarQR(ctx, linkProducto(p), fx+fw-120-18, fy+fh-120-40, 120);
+  /* nombre */
+  ctx.fillStyle="#fff";ctx.font=`800 46px ${SANS}`;ctx.textAlign="left";ctx.textBaseline="alphabetic";
+  lines.forEach((l,i)=>ctx.fillText(l,56,firstBase+i*56));
+  /* chips de specs */
+  if(hasSpecs){
+    ctx.font=`700 24px ${SANS}`;
+    let sx=56;
+    for(const s of p.specs.slice(0,3)){
+      const swd = ctx.measureText(s).width+44;
+      if(sx+swd > W-56) break;
+      rr(ctx,sx,specsTop,swd,46,23);
+      ctx.fillStyle="rgba(255,255,255,.07)";ctx.fill();
+      ctx.strokeStyle=hex2rgba(ac,.45);ctx.lineWidth=1.5;ctx.stroke();
+      ctx.fillStyle=ac;ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText(s,sx+swd/2,specsTop+24);
+      sx += swd+12;
+    }
+    ctx.textBaseline="alphabetic";ctx.textAlign="left";
+  }
+  /* precio */
+  let px=56;
+  if(p.precioOriginal>p.precioActual){
+    ctx.font=`700 52px ${SANS}`;ctx.fillStyle="#9a9aa2";ctx.textAlign="left";
+    const ot=`$${p.precioOriginal}`;
+    const ow = ctx.measureText(ot).width;
+    ctx.fillText(ot,px,priceBase);
+    ctx.strokeStyle="#ff3d00";ctx.lineWidth=6;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(px-6,priceBase-16);ctx.lineTo(px+ow+6,priceBase-16);ctx.stroke();
+    ctx.lineCap="butt";
+    px += ow+34;
+  }
+  const pw = precioGrad(ctx,px,priceBase,84,`$${p.precioActual}`);
+  ctx.font=`800 34px ${SANS}`;ctx.fillStyle="#FF6B35";ctx.textAlign="left";ctx.fillText("USD",px+pw+14,priceBase-2);
+  /* sellos + botón + footer */
+  chipsConfianza(ctx,56,trustY,W-112,[["💵","Pago al recibir"],["🚚","Entrega a domicilio"],["✅","Garantía real"]]);
+  ctaVerde(ctx,56,ctaY,W-112,ctaH,`📲 Escribe "${keyword(p)}" al WhatsApp`,"Respuesta en menos de 5 min");
+  footerUrl(ctx,W,H-24);
+}
+
+function dOferta(ctx,p,img){
+  const W=1080,H=1080;
+  let g = ctx.createLinearGradient(0,0,W*.5,H);
+  g.addColorStop(0,"#ff3d00");g.addColorStop(.48,"#E8501E");g.addColorStop(1,"#7a2202");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  let r = ctx.createRadialGradient(W*.12,0,0,W*.12,0,W*.55);
+  r.addColorStop(0,"rgba(255,220,150,.35)");r.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=r;ctx.fillRect(0,0,W,H);
+  ctx.beginPath();ctx.arc(W+40,-40,340,0,7);ctx.fillStyle="rgba(255,255,255,.08)";ctx.fill();
+  dither(ctx,0,0,W,H);
+  // flash
+  ctx.font=`900 34px ${SANS}`;
+  const ft="🔥 OFERTA DEL DÍA 🔥", fw=ctx.measureText(ft).width+80;
+  rr(ctx,(W-fw)/2,54,fw,72,36);ctx.fillStyle="#0B0B0D";ctx.fill();
+  ctx.strokeStyle="rgba(255,200,120,.4)";ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle="#f5a623";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(ft,W/2,92);
+  // nombre
+  ctx.fillStyle="#fff";ctx.font=`900 56px ${SANS}`;ctx.textBaseline="alphabetic";
+  ctx.save();ctx.shadowColor="rgba(0,0,0,.35)";ctx.shadowBlur=16;
+  wrap(ctx,p.nombre,W/2,210,W-160,66,2,"center");
+  ctx.restore();
+  // foto
+  vitrina(ctx,W/2-210,300,420,360,img,"#ffffff",22);
+  const stOf = Number(p.stock);
+  if(stOf>0 && stOf<=3) badgeUltimas(ctx,W/2-210+14,300+360-66,stOf);
+  // precio
+  const disc = p.precioOriginal>p.precioActual?Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100):0;
+  let y=770;
+  ctx.textAlign="center";
+  if(p.precioOriginal>p.precioActual){
+    ctx.font=`600 40px ${SANS}`;ctx.fillStyle="rgba(255,255,255,.75)";
+    const t=`$${p.precioOriginal}`;
+    ctx.fillText(t,W/2-170,y);
+    const tw=ctx.measureText(t).width;
+    ctx.strokeStyle="rgba(255,255,255,.75)";ctx.lineWidth=4;
+    ctx.beginPath();ctx.moveTo(W/2-170-tw/2,y-14);ctx.lineTo(W/2-170+tw/2,y-14);ctx.stroke();
+  }
+  const pcx = W/2+(p.precioOriginal>p.precioActual?40:0);
+  ctx.font=`900 120px ${SANS}`;
+  const pTxt = `$${p.precioActual}`;
+  const pW = ctx.measureText(pTxt).width;
+  ctx.save();ctx.shadowColor="rgba(0,0,0,.4)";ctx.shadowBlur=24;
+  ctx.fillStyle="#fff";ctx.textAlign="center";
+  ctx.fillText(pTxt,pcx,y+30);
+  ctx.restore();
+  ctx.font=`800 36px ${SANS}`;ctx.fillStyle="#fff";ctx.textAlign="left";
+  ctx.fillText("USD", pcx+pW/2+22, y+24);
+  ctx.textAlign="center";
+  // ahorro
+  if(disc){
+    const ah=`🎉 Ahorras $${p.precioOriginal-p.precioActual} USD · −${disc}%`;
+    ctx.font=`800 30px ${SANS}`;
+    const aw=ctx.measureText(ah).width+70;
+    rr(ctx,(W-aw)/2,y+70,aw,64,32);
+    ctx.fillStyle="rgba(0,0,0,.28)";ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.3)";ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle="#fff";ctx.textBaseline="middle";ctx.fillText(ah,W/2,y+102);
+  }
+  ctx.textBaseline="alphabetic";
+  if(qrOn()) dibujarQR(ctx, linkProducto(p), W-70-124, 316, 124);
+  // footer
+  ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillRect(0,H-92,W,92);
+  ctx.strokeStyle="rgba(255,255,255,.18)";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,H-92);ctx.lineTo(W,H-92);ctx.stroke();
+  ctx.textAlign="left";ctx.font=`bold 30px ${SERIF}`;ctx.fillStyle="#fff";
+  ctx.fillText("Tienda",56,H-36);
+  ctx.fillStyle="#ffd9a8";ctx.fillText("Max",56+ctx.measureText("Tienda").width+8,H-36);
+  ctx.textAlign="right";ctx.font=`700 26px ${SANS}`;ctx.fillStyle="#fff";
+  ctx.fillText(`📲 Escribe "${keyword(p)}" al WhatsApp`,W-56,H-36);
+}
+
+function dStory(ctx,p,img){
+  const W=1080,H=1920, ac=acento(p.categoria);
+  fondoOscuro(ctx,W,H,ac);
+  // barras
+  const bw=(W-100-20)/3;
+  for(let i=0;i<3;i++){
+    rr(ctx,50+i*(bw+10),40,bw,8,4);
+    ctx.fillStyle = i===0 ? "#FF6B35" : "rgba(255,255,255,.28)";ctx.fill();
+  }
+  // header cuenta
+  if(logoImg){
+    ctx.save();ctx.beginPath();ctx.arc(96,140,42,0,7);ctx.clip();ctx.drawImage(logoImg,54,98,84,84);ctx.restore();
+    ctx.beginPath();ctx.arc(96,140,46,0,7);ctx.strokeStyle="#FF6B35";ctx.lineWidth=5;ctx.stroke();
+  }
+  ctx.textAlign="left";ctx.textBaseline="middle";
+  ctx.font=`800 34px ${SANS}`;ctx.fillStyle="#fff";ctx.fillText("tiendamax.org",166,126);
+  ctx.font=`600 24px ${SANS}`;ctx.fillStyle="#8e8e95";ctx.fillText("Catálogo online · Pedido por WhatsApp",166,164);
+  // badge dinámico según el producto (atemporal, se puede republicar)
+  const bt=badgeTexto(p);
+  ctx.font=`800 30px ${SANS}`;
+  const btw=ctx.measureText(bt).width+80;
+  const g2=ctx.createLinearGradient((W-btw)/2,0,(W+btw)/2,0);
+  g2.addColorStop(0,"#FF6B35");g2.addColorStop(1,"#E8501E");
+  rr(ctx,(W-btw)/2,230,btw,68,34);ctx.fillStyle=g2;
+  ctx.save();ctx.shadowColor="rgba(232,80,30,.55)";ctx.shadowBlur=30;ctx.fill();ctx.restore();
+  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText(bt,W/2,266);
+  // foto
+  vitrina(ctx,90,370,W-180,760,img,ac);
+  // nombre
+  ctx.fillStyle="#fff";ctx.font=`800 54px ${SANS}`;ctx.textBaseline="alphabetic";
+  const nl=wrap(ctx,p.nombre,W/2,1240,W-160,66,2,"center");
+  // precio centrado
+  let py=1240+nl*66+50;
+  ctx.font=`900 100px ${SANS}`;
+  const pt=`$${p.precioActual} USD`;
+  const ptw=ctx.measureText(pt).width;
+  const g3=ctx.createLinearGradient((W-ptw)/2,0,(W+ptw)/2,0);
+  g3.addColorStop(0,"#FF6B35");g3.addColorStop(1,"#f5a623");
+  ctx.save();ctx.shadowColor="rgba(255,107,53,.45)";ctx.shadowBlur=34;
+  ctx.fillStyle=g3;ctx.textAlign="center";ctx.fillText(pt,W/2,py);
+  ctx.restore();
+  ctx.font=`700 30px ${SANS}`;ctx.fillStyle="#9a9aa2";
+  ctx.fillText(`PAGO AL RECIBIR  ·  ENTREGA A DOMICILIO  ·  GARANTÍA`,W/2,py+58);
+  // cta
+  ctx.font=`600 28px ${SANS}`;ctx.fillStyle="#b9b9c0";
+  ctx.fillText("⬆ Desliza hacia arriba",W/2,py+150);
+  ctaVerde(ctx,120,py+190,W-240,110,`💬 Escribe "${keyword(p)}"`,"y te respondemos en menos de 5 min");
+  if(qrOn()) dibujarQR(ctx, linkProducto(p), W-90-150, 390, 150);
+  footerUrl(ctx,W,H-40,1.1);
+}
+
+function dFlotante(ctx,p,img){
+  const W=1080,H=1350, ac=acento(p.categoria);
+  fondoOscuro(ctx,W,H,ac);
+  chipMarca(ctx,56,50);
+  pillCat(ctx,W-56,58,p.categoria);
+  /* ---- escenario: halo grande + producto protagonista ---- */
+  const cx=W/2, cy=470, floorY=800;
+  let halo=ctx.createRadialGradient(cx,cy,0,cx,cy,520);
+  halo.addColorStop(0,hex2rgba(ac,.26));
+  halo.addColorStop(.25,hex2rgba(ac,.15));
+  halo.addColorStop(.5,hex2rgba(ac,.07));
+  halo.addColorStop(.75,hex2rgba(ac,.025));
+  halo.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=halo;ctx.fillRect(cx-560,cy-560,1120,1120);
+  dither(ctx,cx-560,cy-560,1120,1120);
+  /* sombra del piso (escala con el producto) */
+  ctx.save();
+  const swp=340*escalaProducto;
+  const gs=ctx.createRadialGradient(cx,floorY,0,cx,floorY,swp);
+  gs.addColorStop(0,"rgba(0,0,0,.62)");gs.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=gs;
+  ctx.beginPath();ctx.ellipse(cx,floorY,swp,44*escalaProducto,0,0,7);ctx.fill();
+  ctx.restore();
+  /* producto GRANDE, asentado en el piso */
+  if(img){
+    const maxW=920,maxH=620;
+    const r=Math.min(maxW/img.width,maxH/img.height)*escalaProducto;
+    const dw=img.width*r, dh=img.height*r;
+    ctx.save();
+    ctx.shadowColor="rgba(0,0,0,.55)";ctx.shadowBlur=46;ctx.shadowOffsetY=30;
+    ctx.drawImage(img, cx-dw/2, floorY-14-dh, dw, dh);
+    ctx.restore();
+  }
+  if(!fotoSinFondo){
+    ctx.font=`600 24px ${SANS}`;ctx.fillStyle="rgba(255,255,255,.45)";ctx.textAlign="center";
+    ctx.fillText("⚠️ Sube la foto PNG sin fondo para el efecto flotante perfecto",cx,148);
+  }
+  /* ---- bloque inferior primero (define el espacio libre) ---- */
+  const ctaH=116, ctaY=H-84-ctaH;
+  const priceBase=ctaY-42;
+  ctx.font=`800 58px ${SANS}`;
+  const nameMaxW = qrOn()? W-112-190 : W-112;
+  const lines=calcLines(ctx,p.nombre,nameMaxW,2);
+  const lastBase=priceBase-104-26;
+  const firstBase=lastBase-(lines.length-1)*72;
+  const nameTop=firstBase-58;              /* borde superior del nombre */
+  /* ---- chips de specs SOLO si caben entre el piso y el nombre ---- */
+  if(p.specs && p.specs.length){
+    const chipH=62;
+    const yv=Math.round((floorY+34+nameTop-chipH)/2);   /* centrados en el hueco */
+    if(yv>=floorY+26 && yv+chipH<=nameTop-16){
+      const sp=p.specs.slice(0,3);
+      ctx.font=`700 30px ${SANS}`;
+      const pad=52, gap=18;
+      let ws=sp.map(s=>ctx.measureText(s).width+pad);
+      let tot=ws.reduce((a,b)=>a+b,0)+(sp.length-1)*gap;
+      /* si no caben en una fila, quitar el último hasta que quepan (una sola fila SIEMPRE) */
+      let usar=sp.slice();
+      while(usar.length>1 && tot>W-100){
+        usar.pop(); ws.pop();
+        tot=ws.reduce((a,b)=>a+b,0)+(usar.length-1)*gap;
+      }
+      let x=(W-tot)/2;
+      usar.forEach((s,i)=>{
+        rr(ctx,x,yv,ws[i],chipH,31);
+        ctx.fillStyle="rgba(255,255,255,.07)";ctx.fill();
+        ctx.strokeStyle="rgba(255,255,255,.14)";ctx.lineWidth=1.5;ctx.stroke();
+        ctx.fillStyle=ac;ctx.textAlign="center";ctx.textBaseline="middle";
+        ctx.fillText(s,x+ws[i]/2,yv+32);
+        x+=ws[i]+gap;
+      });
+      ctx.textBaseline="alphabetic";
+    }
+  }
+  /* ---- nombre ---- */
+  ctx.font=`800 58px ${SANS}`;
+  ctx.fillStyle="#fff";ctx.textAlign="left";
+  lines.forEach((l,i)=>ctx.fillText(l,56,firstBase+i*72));
+  /* precio */
+  const pw=precioGrad(ctx,56,priceBase,96,`$${p.precioActual}`);
+  ctx.font=`800 40px ${SANS}`;ctx.fillStyle="#FF6B35";ctx.textAlign="left";
+  ctx.fillText("USD",56+pw+18,priceBase-4);
+  /* tachado si hay rebaja */
+  if(p.precioOriginal>p.precioActual){
+    ctx.font=`700 44px ${SANS}`;ctx.fillStyle="#9a9aa2";
+    const ot=`$${p.precioOriginal}`;
+    const ox=56+pw+18+ctx.measureText("USD").width+70;
+    const ow=ctx.measureText(ot).width;
+    ctx.fillText(ot,ox,priceBase-14);
+    ctx.strokeStyle="#ff3d00";ctx.lineWidth=5;ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(ox-6,priceBase-28);ctx.lineTo(ox+ow+6,priceBase-28);ctx.stroke();
+    ctx.lineCap="butt";
+  }
+  /* QR a la derecha, centrado en el bloque nombre+precio */
+  if(qrOn()){
+    const qs=150, blockTop=nameTop, blockBot=priceBase;
+    const qy=Math.round((blockTop+blockBot)/2 - qs/2 - 14);
+    dibujarQR(ctx, linkProducto(p), W-56-qs, qy, qs);
+  }
+  /* CTA verde grande */
+  ctaVerde(ctx,56,ctaY,W-112,ctaH,`📲 Escribe "${keyword(p)}" al WhatsApp`,"Respuesta en menos de 5 min");
+  /* footer espaciado como la plantilla */
+  ctx.textAlign="center";
+  ctx.font=`600 24px ${SANS}`;ctx.fillStyle="#6b6b72";
+  const ft1="p í d e l o   e n   ", ft2="t i e n d a m a x . o r g";
+  const fw1=ctx.measureText(ft1).width, fw2=ctx.measureText(ft2).width;
+  ctx.textAlign="left";
+  const fsx=(W-fw1-fw2)/2;
+  ctx.fillText(ft1,fsx,H-28);
+  ctx.fillStyle="#FF6B35";ctx.font=`800 24px ${SANS}`;
+  ctx.fillText(ft2,fsx+fw1,H-28);
+}
+
+function dClaro(ctx,p,img){
+  const W=1080,H=1920, ac=acento(p.categoria);
+  /* fondo crema con degradado suave */
+  const g = ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,"#FDFCFA");
+  g.addColorStop(.45,"#FAF8F5");
+  g.addColorStop(1,"#f2e6d6");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  let r = ctx.createRadialGradient(W*.9,0,0,W*.9,0,W*.6);
+  r.addColorStop(0,hex2rgba(ac,.10));
+  r.addColorStop(.5,hex2rgba(ac,.04));
+  r.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle=r;ctx.fillRect(0,0,W,H);
+  dither(ctx,0,0,W,H);
+  /* header negro con logo */
+  ctx.fillStyle="#141416";ctx.fillRect(0,0,W,150);
+  ctx.fillStyle="#FF6B35";ctx.fillRect(0,146,W,4);
+  chipMarca(ctx,56,42,0.95);
+  ctx.font=`800 24px ${SANS}`;ctx.fillStyle="#25D366";ctx.textAlign="right";ctx.textBaseline="middle";
+  ctx.beginPath();ctx.arc(W-260,75,8,0,7);ctx.fillStyle="#25D366";ctx.fill();
+  ctx.fillStyle="#25D366";ctx.fillText("disponible",W-56,75);
+  ctx.textBaseline="alphabetic";
+  /* badge llegó */
+  const bt = badgeTexto(p);
+  ctx.font=`900 32px ${SANS}`;
+  const btw = ctx.measureText(bt).width+90;
+  const gb = ctx.createLinearGradient((W-btw)/2,0,(W+btw)/2,0);
+  gb.addColorStop(0,"#FF6B35");gb.addColorStop(1,"#E8501E");
+  rr(ctx,(W-btw)/2,210,btw,74,37);ctx.fillStyle=gb;
+  ctx.save();ctx.shadowColor="rgba(232,80,30,.4)";ctx.shadowBlur=28;ctx.fill();ctx.restore();
+  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(bt,W/2,249);
+  ctx.textBaseline="alphabetic";
+  /* foto en tarjeta blanca */
+  const fx=90, fy=340, fw=W-180, fh=760;
+  ctx.save();
+  const halo=ctx.createRadialGradient(W/2,fy+fh/2,0,W/2,fy+fh/2,fw*.7);
+  halo.addColorStop(0,hex2rgba(ac,.20));
+  halo.addColorStop(.5,hex2rgba(ac,.08));
+  halo.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle=halo;ctx.fillRect(fx-70,fy-70,fw+140,fh+140);
+  dither(ctx,fx-70,fy-70,fw+140,fh+140);
+  ctx.shadowColor="rgba(90,50,20,.22)";ctx.shadowBlur=44;ctx.shadowOffsetY=18;
+  rr(ctx,fx,fy,fw,fh,30);ctx.fillStyle="#fff";ctx.fill();
+  ctx.restore();
+  if(img){
+    ctx.save();rr(ctx,fx,fy,fw,fh,30);ctx.clip();
+    const pad=40, iw=fw-pad*2, ih=fh-pad*2;
+    const rr2=Math.min(iw/img.width, ih/img.height);
+    const dw=img.width*rr2, dh=img.height*rr2;
+    ctx.drawImage(img, fx+(fw-dw)/2, fy+(fh-dh)/2, dw, dh);
+    ctx.restore();
+  }
+  const disc = p.precioOriginal>p.precioActual?Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100):0;
+  if(disc) badgeDesc(ctx,fx+fw-16,fy+8,disc);
+  if(qrOn()) dibujarQR(ctx, linkProducto(p), fx+fw-140-24, fy+fh-140-50, 140);
+  /* nombre centrado */
+  ctx.font=`800 52px ${SANS}`;ctx.fillStyle="#141416";
+  const lines=calcLines(ctx,p.nombre,W-160,2);
+  let ny=1210;
+  ctx.textAlign="center";
+  lines.forEach((l,i)=>ctx.fillText(l,W/2,ny+i*64));
+  /* precio centrado naranja */
+  const py=ny+lines.length*64+66;
+  ctx.font=`900 96px ${SANS}`;
+  const pt=`$${p.precioActual} USD`;
+  const ptw=ctx.measureText(pt).width;
+  const gp2=ctx.createLinearGradient((W-ptw)/2,0,(W+ptw)/2,0);
+  gp2.addColorStop(0,"#E8501E");gp2.addColorStop(1,"#FF6B35");
+  ctx.save();ctx.shadowColor="rgba(232,80,30,.25)";ctx.shadowBlur=24;
+  ctx.fillStyle=gp2;ctx.fillText(pt,W/2,py);
+  ctx.restore();
+  /* chips confianza claros */
+  const chips=[["💵","Pago al recibir"],["🚚","Domicilio"],["✅","Garantía"]];
+  ctx.font=`700 26px ${SANS}`;
+  const cws=chips.map(c=>ctx.measureText(c[0]+" "+c[1]).width+56);
+  const ctot=cws.reduce((a,b)=>a+b,0)+2*16;
+  let cx2=(W-ctot)/2, cy2=py+60;
+  chips.forEach((c,i)=>{
+    rr(ctx,cx2,cy2,cws[i],58,29);
+    ctx.fillStyle="#fff";ctx.fill();
+    ctx.strokeStyle="#eadfce";ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle="#5a544b";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(c[0]+" "+c[1],cx2+cws[i]/2,cy2+30);
+    cx2+=cws[i]+16;
+  });
+  ctx.textBaseline="alphabetic";
+  /* CTA verde */
+  ctaVerde(ctx,110,cy2+110,W-220,112,"Responde este estado para pedirlo 👇","o escribe \""+keyword(p)+"\" al WhatsApp");
+  /* footer */
+  ctx.textAlign="center";
+  ctx.font=`600 26px ${SANS}`;ctx.fillStyle="#a39a8d";
+  const f1="catálogo completo en  ", f2="tiendamax.org";
+  const w1=ctx.measureText(f1).width, w2=ctx.measureText(f2).width;
+  ctx.textAlign="left";
+  const sx2=(W-w1-w2)/2;
+  ctx.fillText(f1,sx2,H-46);
+  ctx.fillStyle="#E8501E";ctx.font=`800 26px ${SANS}`;
+  ctx.fillText(f2,sx2+w1,H-46);
+}
+
+function dResena(ctx,p,img){
+  const W=1080,H=1080;
+  const rv = resenas[String(p.id)];
+  /* fondo crema */
+  const g = ctx.createLinearGradient(0,0,W*.4,H);
+  g.addColorStop(0,"#FDFCFA");g.addColorStop(.5,"#FAF8F5");g.addColorStop(1,"#f3e7d7");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  let r = ctx.createRadialGradient(W*.9,0,0,W*.9,0,W*.55);
+  r.addColorStop(0,"rgba(255,107,53,.12)");r.addColorStop(.5,"rgba(255,107,53,.05)");r.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle=r;ctx.fillRect(0,0,W,H);
+  dither(ctx,0,0,W,H);
+  /* comillas decorativas gigantes */
+  ctx.font=`400 300px Georgia`;
+  ctx.fillStyle="rgba(232,80,30,.12)";ctx.textAlign="right";
+  ctx.fillText('\u201C',W-40,260);
+  /* chip marca (oscuro sobre claro) */
+  if(logoImg){
+    ctx.save();rr(ctx,56,50,64,64,16);ctx.clip();ctx.drawImage(logoImg,56,50,64,64);ctx.restore();
+  }
+  ctx.textBaseline="middle";ctx.textAlign="left";
+  ctx.font=`bold 40px ${SERIF}`;
+  ctx.fillStyle="#141416";ctx.fillText("Tienda",138,84);
+  const w1=ctx.measureText("Tienda").width;
+  ctx.fillStyle="#F98127";ctx.fillText("Max",138+w1+10,84);
+  ctx.textBaseline="alphabetic";
+  /* sello verificado */
+  const vt="✔ COMPRA VERIFICADA";
+  ctx.font=`800 22px ${SANS}`;
+  const vw=ctx.measureText(vt).width+50;
+  const gv=ctx.createLinearGradient(W-56-vw,0,W-56,0);
+  gv.addColorStop(0,"#2ee578");gv.addColorStop(1,"#1eb257");
+  rr(ctx,W-56-vw,62,vw,48,24);ctx.fillStyle=gv;
+  ctx.save();ctx.shadowColor="rgba(37,211,102,.35)";ctx.shadowBlur=18;ctx.fill();ctx.restore();
+  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(vt,W-56-vw/2,87);
+  ctx.textBaseline="alphabetic";
+  if(!rv){
+    ctx.fillStyle="#8b8378";ctx.font=`600 36px ${SANS}`;ctx.textAlign="center";
+    ctx.fillText("Este producto aún no tiene reseñas",W/2,H/2-20);
+    ctx.font=`600 26px ${SANS}`;
+    ctx.fillText("Busca los productos marcados con ⭐ en el catálogo",W/2,H/2+40);
+    return;
+  }
+  /* estrellas doradas */
+  const stars = "★".repeat(rv.estrellas)+"☆".repeat(5-rv.estrellas);
+  ctx.font=`64px ${SANS}`;
+  const gst=ctx.createLinearGradient(W/2-200,0,W/2+200,0);
+  gst.addColorStop(0,"#ffd27a");gst.addColorStop(1,"#f5a623");
+  ctx.save();ctx.shadowColor="rgba(245,166,35,.4)";ctx.shadowBlur=20;
+  ctx.fillStyle=gst;ctx.textAlign="center";
+  ctx.fillText(stars,W/2,270);
+  ctx.restore();
+  /* texto de la reseña (hasta 5 líneas, cursiva) */
+  let txt = String(rv.texto||"").replace(/\s+/g," ").trim();
+  if(txt.length>240) txt = txt.slice(0,238).replace(/\s\S*$/,"")+"…";
+  ctx.font=`italic 600 38px ${SERIF}`;
+  ctx.fillStyle="#3a362f";
+  const lineas = calcLines(ctx,'\u201C'+txt+'\u201D',W-220,5);
+  let ty=360;
+  lineas.forEach((l,i)=>ctx.fillText(l,W/2,ty+i*56));
+  ty += lineas.length*56+40;
+  /* autor con avatar */
+  const inicial=(rv.autor||"C")[0].toUpperCase();
+  const ga=ctx.createLinearGradient(W/2-160,0,W/2-90,0);
+  ga.addColorStop(0,"#FF6B35");ga.addColorStop(1,"#E8501E");
+  ctx.save();ctx.shadowColor="rgba(232,80,30,.35)";ctx.shadowBlur=16;
+  ctx.beginPath();ctx.arc(W/2-120,ty,38,0,7);ctx.fillStyle=ga;ctx.fill();ctx.restore();
+  ctx.fillStyle="#fff";ctx.font=`900 36px ${SANS}`;ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(inicial,W/2-120,ty+2);
+  ctx.textAlign="left";
+  ctx.font=`800 32px ${SANS}`;ctx.fillStyle="#141416";
+  ctx.fillText(rv.autor||"Cliente",W/2-66,ty-8);
+  ctx.font=`600 22px ${SANS}`;ctx.fillStyle="#8b8378";
+  ctx.fillText((rv.fecha||"")+" · Cliente de TiendaMax",W/2-66,ty+24);
+  ctx.textBaseline="alphabetic";
+  /* tarjeta del producto comprado: foto mini + nombre + precio */
+  const cw2=W-240, chh=150, cx3=120, cy3=H-320;
+  ctx.save();
+  ctx.shadowColor="rgba(90,50,20,.15)";ctx.shadowBlur=26;ctx.shadowOffsetY=8;
+  rr(ctx,cx3,cy3,cw2,chh,24);ctx.fillStyle="#fff";ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle="#eadfce";ctx.lineWidth=2;rr(ctx,cx3,cy3,cw2,chh,24);ctx.stroke();
+  if(img){
+    ctx.save();rr(ctx,cx3+16,cy3+16,chh-32,chh-32,16);ctx.clip();
+    ctx.fillStyle="#fff";ctx.fillRect(cx3+16,cy3+16,chh-32,chh-32);
+    const rr3=Math.min((chh-48)/img.width,(chh-48)/img.height);
+    ctx.drawImage(img,cx3+16+(chh-32-img.width*rr3)/2,cy3+16+(chh-32-img.height*rr3)/2,img.width*rr3,img.height*rr3);
+    ctx.restore();
+  }
+  ctx.font=`700 20px ${SANS}`;ctx.fillStyle="#8b8378";ctx.textAlign="left";
+  ctx.fillText("🛒 COMPRÓ:",cx3+chh+10,cy3+46);
+  ctx.font=`800 30px ${SANS}`;ctx.fillStyle="#141416";
+  const nm=calcLines(ctx,p.nombre,cw2-chh-220,1)[0];
+  ctx.fillText(nm,cx3+chh+10,cy3+88);
+  ctx.font=`900 34px ${SANS}`;
+  const gpr=ctx.createLinearGradient(cw2+cx3-160,0,cw2+cx3-20,0);
+  gpr.addColorStop(0,"#E8501E");gpr.addColorStop(1,"#FF6B35");
+  ctx.fillStyle=gpr;ctx.textAlign="right";
+  ctx.fillText(`$${p.precioActual} USD`,cx3+cw2-24,cy3+92);
+  /* CTA */
+  ctaVerde(ctx,120,H-140,W-240,86,`📲 Escribe "${keyword(p)}" y estrena el tuyo`,"");
+  /* footer */
+  ctx.textAlign="center";ctx.font=`600 22px ${SANS}`;ctx.fillStyle="#a39a8d";
+  ctx.fillText("⭐ 4.7 de calificación · opiniones reales en tiendamax.org",W/2,H-24);
+}
+
+/* ================= COMBO ================= */
+function dCombo(ctx, items, precioCombo){
+  const W=1080,H=1080;
+  const ac = "#f5a623";
+  fondoOscuro(ctx,W,H,"#FF6B35");
+  chipMarca(ctx,56,50);
+  // pill COMBO dorada
+  const ct="🎁 COMBO";
+  ctx.font=`900 30px ${SANS}`;
+  const cw2=ctx.measureText(ct).width+64;
+  const gp=ctx.createLinearGradient(W-56-cw2,0,W-56,0);
+  gp.addColorStop(0,"#f5a623");gp.addColorStop(1,"#FF6B35");
+  rr(ctx,W-56-cw2,58,cw2,58,29);ctx.fillStyle=gp;
+  ctx.save();ctx.shadowColor="rgba(245,166,35,.5)";ctx.shadowBlur=24;ctx.fill();ctx.restore();
+  ctx.fillStyle="#141416";ctx.textAlign="center";ctx.textBaseline="middle";
+  ctx.fillText(ct,W-56-cw2/2,88);
+  ctx.textBaseline="alphabetic";
+  // título
+  ctx.fillStyle="#fff";ctx.font=`900 52px ${SANS}`;ctx.textAlign="center";
+  ctx.fillText("Llévate más por menos",W/2,205);
+  // vitrinas
+  const n = items.length;
+  const vw = n===2 ? 330 : 262, vh = vw, gap = 56;
+  const totW = n*vw+(n-1)*gap;
+  let x = (W-totW)/2;
+  const vy = 262;
+  for(let i=0;i<n;i++){
+    const it = items[i];
+    const png = comboPngs[it.id];
+    if(png){
+      // producto flotante: halo + sombra piso, sin vitrina blanca
+      const ac2 = acento(it.categoria);
+      const ccx = x+vw/2, ccy = vy+vh/2;
+      const halo = ctx.createRadialGradient(ccx,ccy,0,ccx,ccy,vw*0.72);
+      halo.addColorStop(0,hex2rgba(ac2,.5));halo.addColorStop(.65,hex2rgba(ac2,.12));halo.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=halo;ctx.fillRect(ccx-vw*0.85,ccy-vw*0.85,vw*1.7,vw*1.7);
+      dither(ctx,ccx-vw*0.85,ccy-vw*0.85,vw*1.7,vw*1.7);
+      // sombra en el piso
+      ctx.save();
+      const gs = ctx.createRadialGradient(ccx,vy+vh-6,0,ccx,vy+vh-6,vw*0.42*escalaCombo);
+      gs.addColorStop(0,"rgba(0,0,0,.55)");gs.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=gs;
+      ctx.beginPath();ctx.ellipse(ccx,vy+vh-6,vw*0.42*escalaCombo,vw*0.07*escalaCombo,0,0,7);ctx.fill();
+      ctx.restore();
+      // producto
+      const r = Math.min((vw*0.96)/png.width,(vh*0.92)/png.height)*escalaCombo;
+      const dw = png.width*r, dh = png.height*r;
+      ctx.save();
+      ctx.shadowColor="rgba(0,0,0,.5)";ctx.shadowBlur=30;ctx.shadowOffsetY=18;
+      ctx.drawImage(png, ccx-dw/2, vy+vh-12-dh, dw, dh);
+      ctx.restore();
+    }else{
+      vitrina(ctx,x,vy,vw,vh,imgCache[it.imagen]||null,acento(it.categoria),18);
+    }
+    // etiqueta nombre debajo
+    ctx.font=`700 22px ${SANS}`;
+    let nm = it.nombre.length>22 ? it.nombre.slice(0,21)+"…" : it.nombre;
+    const lw = ctx.measureText(nm).width+40;
+    rr(ctx,x+vw/2-lw/2,vy+vh-2,lw,44,22);
+    ctx.fillStyle="#141416";ctx.fill();
+    ctx.strokeStyle=hex2rgba(acento(it.categoria),.6);ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle=acento(it.categoria);ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(nm,x+vw/2,vy+vh+20);
+    ctx.textBaseline="alphabetic";
+    // signo +
+    if(i<n-1){
+      const px2 = x+vw+gap/2;
+      const gpl=ctx.createLinearGradient(px2-26,vy+vh/2-26,px2+26,vy+vh/2+26);
+      gpl.addColorStop(0,"#FF6B35");gpl.addColorStop(1,"#E8501E");
+      ctx.save();ctx.shadowColor="rgba(232,80,30,.5)";ctx.shadowBlur=18;
+      ctx.beginPath();ctx.arc(px2,vy+vh/2,30,0,7);ctx.fillStyle=gpl;ctx.fill();ctx.restore();
+      ctx.fillStyle="#fff";ctx.font=`900 38px ${SANS}`;ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText("+",px2,vy+vh/2+2);
+      ctx.textBaseline="alphabetic";
+    }
+    x += vw+gap;
+  }
+  // precios
+  const suma = items.reduce((s,it)=>s+Number(it.precioActual),0);
+  const pc = precioCombo && precioCombo>0 && precioCombo<suma ? precioCombo : suma;
+  const ahorro = suma-pc;
+  let py2 = 760;
+  ctx.textAlign="center";
+  if(ahorro>0){
+    ctx.font=`700 26px ${SANS}`;ctx.fillStyle="#8e8e95";
+    ctx.fillText("POR SEPARADO",W/2-260,py2);
+    ctx.font=`700 48px ${SANS}`;ctx.fillStyle="#77777e";
+    const sTxt=`$${suma}`;
+    ctx.fillText(sTxt,W/2-260,py2+62);
+    const sw2=ctx.measureText(sTxt).width;
+    ctx.strokeStyle="#77777e";ctx.lineWidth=5;
+    ctx.beginPath();ctx.moveTo(W/2-260-sw2/2,py2+45);ctx.lineTo(W/2-260+sw2/2,py2+45);ctx.stroke();
+    ctx.font=`700 26px ${SANS}`;ctx.fillStyle="#8e8e95";
+    ctx.fillText("PRECIO COMBO",W/2+40,py2);
+    precioGradCentered(ctx,W/2+40,py2+70,92,`$${pc}`);
+    // pill ahorro
+    const at=`Ahorras $${ahorro}`;
+    ctx.font=`900 30px ${SANS}`;
+    const aw2=ctx.measureText(at).width+64;
+    const ga=ctx.createLinearGradient(W/2+250,0,W/2+250+aw2,0);
+    ga.addColorStop(0,"#2ee578");ga.addColorStop(1,"#1eb257");
+    rr(ctx,W/2+250,py2+16,aw2,62,31);ctx.fillStyle=ga;
+    ctx.save();ctx.shadowColor="rgba(37,211,102,.45)";ctx.shadowBlur=22;ctx.fill();ctx.restore();
+    ctx.fillStyle="#fff";ctx.textBaseline="middle";ctx.fillText(at,W/2+250+aw2/2,py2+48);
+    ctx.textBaseline="alphabetic";
+  }else{
+    ctx.font=`700 30px ${SANS}`;ctx.fillStyle="#8e8e95";
+    ctx.fillText("PRECIO DEL COMBO",W/2,py2);
+    precioGradCentered(ctx,W/2,py2+84,100,`$${pc} USD`);
+  }
+  ctaVerde(ctx,120,880,W-240,100,`📲 Escribe "COMBO" al WhatsApp`,"Respuesta en menos de 5 min");
+  footerUrl(ctx,W,H-26);
+}
+function precioGradCentered(ctx,cx,y,size,txt){
+  ctx.font=`900 ${size}px ${SANS}`;
+  const w = ctx.measureText(txt).width;
+  const g = ctx.createLinearGradient(cx-w/2,0,cx+w/2,0);
+  g.addColorStop(0,"#FF6B35");g.addColorStop(1,"#f5a623");
+  ctx.save();ctx.shadowColor="rgba(255,107,53,.4)";ctx.shadowBlur=26;
+  ctx.fillStyle=g;ctx.textAlign="center";ctx.fillText(txt,cx,y);
+  ctx.restore();
+}
+
+/* ================= VIDEO (#5) ================= */
+function easeOut(t){ return 1-Math.pow(1-t,3); }
+function easeInOut(t){ return t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+async function grabarVideo(){
+  if(!sel){ toast("Elige un producto primero"); return; }
+  if(comboMode){ toast("El video funciona con un producto individual"); return; }
+  const cv = $("#cv");
+  if(!cv.captureStream || !window.MediaRecorder){ toast("Tu navegador no soporta grabar video — usa Chrome/Opera actualizados"); return; }
+  const story = estilo==="story" || estilo==="claro";
+  const W=1080, H=story?1920:(estilo==="flotante"?1350:1080);
+  cv.width=W; cv.height=H;
+  const ctx=cv.getContext("2d");
+  let img=null;
+  try{ img=(estilo==="flotante"&&fotoSinFondo)?fotoSinFondo:await loadImage(sel.imagen); }catch(e){}
+  /* preparar recorder */
+  const stream = cv.captureStream(30);
+  /* VP8 reproduce en más players que VP9; mp4 si el navegador lo ofrece */
+  let mime = "";
+  for(const m of ["video/mp4","video/webm;codecs=vp8","video/webm;codecs=vp9","video/webm"]){
+    if(MediaRecorder.isTypeSupported(m)){ mime=m; break; }
+  }
+  const rec = new MediaRecorder(stream, mime?{mimeType:mime, videoBitsPerSecond:8000000}:{videoBitsPerSecond:8000000});
+  const chunks=[];
+  rec.ondataavailable = e=>{ if(e.data.size) chunks.push(e.data); };
+  const fin = new Promise(res=>{ rec.onstop = res; });
+  $("#progVid").style.display="block";
+  $("#btnVideo").disabled=true;
+  rec.start(200);
+  const DUR=6000, t0=performance.now();
+  /* pre-render del frame completo en canvas oculto (para efectos por capas) */
+  const base = document.createElement("canvas");
+  base.width=W; base.height=H;
+  const bctx = base.getContext("2d");
+  const dibujaBase = ()=>{
+    if(estilo==="vitrina") dVitrina(bctx,sel,img);
+    else if(estilo==="oferta") dOferta(bctx,sel,img);
+    else if(estilo==="story") dStory(bctx,sel,img);
+    else if(estilo==="claro") dClaro(bctx,sel,img);
+    else dFlotante(bctx,sel,img);
+  };
+  dibujaBase();
+  await new Promise(done=>{
+    function frame(now){
+      const t=Math.min(1,(now-t0)/DUR);
+      const ms=(now-t0);
+      ctx.clearRect(0,0,W,H);
+      /* FASE 1 (0-1.2s): fondo aparece con fade + zoom sutil */
+      const f1=Math.min(1,ms/1200);
+      /* FASE 2 (0.5-1.8s): todo el diseño entra con zoom-out */
+      const f2=Math.max(0,Math.min(1,(ms-400)/1400));
+      const scale=1.06-0.06*easeOut(f2);
+      const alpha=easeOut(f1);
+      ctx.save();
+      ctx.globalAlpha=alpha;
+      ctx.translate(W/2,H/2);
+      ctx.scale(scale,scale);
+      ctx.translate(-W/2,-H/2);
+      ctx.drawImage(base,0,0);
+      ctx.restore();
+      /* FASE 3: brillo que barre el diseño (2 pasadas) */
+      const sweep=(ms%2600)/2600;
+      if(ms>1500){
+        const sx=(-W*0.4)+sweep*(W*1.8);
+        const gr=ctx.createLinearGradient(sx-140,0,sx+140,0);
+        gr.addColorStop(0,"rgba(255,255,255,0)");
+        gr.addColorStop(.5,"rgba(255,255,255,.08)");
+        gr.addColorStop(1,"rgba(255,255,255,0)");
+        ctx.save();
+        ctx.translate(W/2,H/2);ctx.rotate(-.35);ctx.translate(-W/2,-H/2);
+        ctx.fillStyle=gr;ctx.fillRect(sx-300,-300,600,H+600);
+        ctx.restore();
+      }
+      /* FASE 4 (últimos 2s): pulso del CTA — pequeño zoom rítmico global sutil */
+      if(ms>3800){
+        const pulso=1+Math.sin((ms-3800)/240)*0.006;
+        ctx.save();
+        ctx.translate(W/2,H*0.86);
+        ctx.scale(pulso,pulso);
+        ctx.translate(-W/2,-H*0.86);
+        ctx.drawImage(base,0,Math.floor(H*0.74),W,Math.ceil(H*0.26),0,Math.floor(H*0.74),W,Math.ceil(H*0.26));
+        ctx.restore();
+      }
+      $("#progVidTxt").textContent=Math.round(t*100)+"%";
+      $("#progVidBar").style.width=(t*100)+"%";
+      if(t<1) requestAnimationFrame(frame);
+      else done();
+    }
+    requestAnimationFrame(frame);
+  });
+  rec.stop();
+  await fin;
+  const esMp4 = (rec.mimeType||"").includes("mp4");
+  const ext = esMp4?"mp4":"webm";
+  const tipo = esMp4?"video/mp4":"video/webm";
+  const blob=new Blob(chunks,{type:tipo});
+  $("#progVid").style.display="none";
+  $("#btnVideo").disabled=false;
+  registrarPub(sel);
+  dibujar();
+  mostrarVideo(blob, `tiendamax-${sel.slug||sel.id}.${ext}`, tipo);
+}
+function mostrarVideo(blob, nombre, tipo){
+  const url = URL.createObjectURL(blob);
+  const old = document.getElementById("vidModal");
+  if(old) old.remove();
+  const m = document.createElement("div");
+  m.id = "vidModal";
+  m.style.cssText = "position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:14px;";
+  m.innerHTML = `
+    <video src="${url}" controls autoplay loop playsinline style="max-width:92vw;max-height:64vh;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.6);background:#000;"></video>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+      <button class="btn green" id="vidShare">📲 Compartir</button>
+      <button class="btn orange" id="vidDown">⬇️ Descargar</button>
+      <button class="btn dark" id="vidClose">✕ Cerrar</button>
+    </div>
+    <div style="font-size:11px;color:#9a9aa2;">🎬 ${nombre} · 6 s · listo para Reels y Stories</div>`;
+  document.body.appendChild(m);
+  m.querySelector("#vidClose").onclick = ()=>{ URL.revokeObjectURL(url); m.remove(); };
+  m.querySelector("#vidDown").onclick = ()=>descargarBlob(blob, nombre);
+  m.querySelector("#vidShare").onclick = async ()=>{
+    const f = new File([blob], nombre, {type:tipo});
+    if(navigator.canShare && navigator.canShare({files:[f]})){
+      try{ await navigator.share({files:[f], text:caption(sel)}); }catch(e){}
+    } else { toast("Tu navegador no comparte archivos — usa Descargar"); }
+  };
+}
+function descargarBlob(b,nombre){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(b); a.download=nombre;
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* ================= ACCIONES ================= */
+function canvasBlob(){return new Promise(r=>$("#cv").toBlob(r,"image/png"));}
+function nombreArchivo(p,suf=""){return `tiendamax-${p.slug||p.id}${suf}.png`;}
+
+$("#btnPng").onclick = async ()=>{
+  if(!sel && !(comboMode&&comboSel.length>=2)) return;
+  const b = await canvasBlob();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(b); a.download = comboMode?"tiendamax-combo.png":nombreArchivo(sel);
+  a.click(); URL.revokeObjectURL(a.href);
+  if(!comboMode) registrarPub(sel);
+  toast("✅ Imagen descargada");
+};
+$("#btnShare").onclick = async ()=>{
+  if(!sel && !(comboMode&&comboSel.length>=2)) return;
+  const b = await canvasBlob();
+  const f = new File([b], comboMode?"tiendamax-combo.png":nombreArchivo(sel), {type:"image/png"});
+  if(navigator.canShare && navigator.canShare({files:[f]})){
+    try{ await navigator.share({files:[f], text:caption(sel)}); if(!comboMode) registrarPub(sel); }catch(e){}
+  }else{
+    toast("Tu navegador no soporta compartir archivos — usa ⬇️ PNG");
+  }
+};
+$("#btnVideo").onclick = grabarVideo;
+$("#btnWa").onclick = ()=>{ if(sel){ window.open(`https://wa.me/?text=${encodeURIComponent(caption(sel))}`,"_blank"); registrarPub(sel); } };
+$("#btnTg").onclick = ()=>{ if(sel) window.open(`https://t.me/share/url?url=${encodeURIComponent(linkProducto(sel))}&text=${encodeURIComponent(caption(sel))}`,"_blank"); };
+$("#btnFb").onclick = ()=>{ if(sel) window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(linkProducto(sel))}&quote=${encodeURIComponent(caption(sel))}`,"_blank"); };
+$("#btnCap").onclick = async ()=>{
+  if(!sel && !(comboMode&&comboSel.length>=2)) return;
+  try{ await navigator.clipboard.writeText(caption(sel)); toast("📋 Caption copiado — pégalo en tu publicación"); }
+  catch(e){ toast("No se pudo copiar"); }
+};
+
+/* estilos */
+document.querySelectorAll(".stybtn").forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll(".stybtn").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    estilo = b.dataset.sty;
+    guardarPref("estilo", estilo);
+    $("#uploadbox").style.display = estilo==="flotante" ? "block" : "none";
+    dibujar();
+  };
+});
+/* restaurar preferencias guardadas */
+(function(){
+  const e = leerPref("estilo", null);
+  if(e){
+    const b = document.querySelector(`[data-sty=${e}]`);
+    if(b){
+      document.querySelectorAll(".stybtn").forEach(x=>x.classList.remove("on"));
+      b.classList.add("on"); estilo = e;
+      $("#uploadbox").style.display = e==="flotante" ? "block" : "none";
+    }
+  }
+  const q = leerPref("qr", null);
+  if(q!=null) $("#chkQR").checked = q;
+  const pl = leerPref("plantilla", null);
+  if(pl) $("#selPlantilla").value = pl;
+})();
+
+/* quitar fondo automático (#6) */
+async function quitarFondo(){
+  if(!sel){ toast("Elige un producto primero"); return; }
+  let key = ($("#inpRmKey").value||"").trim() || leerPref("rmbg_key","");
+  if(!key){
+    toast("🔑 Pega tu API key de remove.bg en el campo de arriba");
+    $("#inpRmKey").focus();
+    return;
+  }
+  guardarPref("rmbg_key", key);
+  const btn=$("#btnRmBg");
+  btn.disabled=true; btn.textContent="🪄 Quitando fondo…";
+  try{
+    const fd = new FormData();
+    fd.append("image_url", sel.imagen);
+    fd.append("size", "auto");
+    const r = await fetch("https://api.remove.bg/v1.0/removebg",{
+      method:"POST",
+      headers:{"X-Api-Key": key},
+      body: fd
+    });
+    if(!r.ok){
+      if(r.status===403||r.status===402){ guardarPref("rmbg_key",""); $("#inpRmKey").value=""; throw new Error("API key inválida o sin créditos — revisa la clave"); }
+      throw new Error("remove.bg respondió "+r.status);
+    }
+    const blob = await r.blob();
+    const im = new Image();
+    im.onload = ()=>{
+      fotoSinFondo = im;
+      $("#uzone").classList.add("ok");
+      $("#uzone").innerHTML = `✅ <b>Fondo eliminado automáticamente</b><br>Toca para subir otra foto`;
+      $("#sizeRow").style.display = "flex";
+      dibujar();
+      toast("🪄 ¡Fondo eliminado! Producto flotante listo");
+    };
+    im.src = URL.createObjectURL(blob);
+  }catch(err){
+    toast("⚠️ "+err.message);
+  }
+  btn.disabled=false; btn.textContent="🪄 Quitar fondo automáticamente";
+}
+$("#btnRmBg").onclick = quitarFondo;
+$("#btnRmKeySave").onclick = ()=>{
+  const k = ($("#inpRmKey").value||"").trim();
+  if(!k){ toast("El campo está vacío"); return; }
+  guardarPref("rmbg_key", k);
+  toast("🔑 Clave guardada — ya puedes quitar fondos");
+};
+/* restaurar clave guardada al abrir */
+(function(){ const k = leerPref("rmbg_key",""); if(k) $("#inpRmKey").value = k; })();
+
+/* subida PNG sin fondo */
+$("#uzone").onclick = ()=>$("#fileUp").click();
+$("#fileUp").onchange = e=>{
+  const f = e.target.files[0];
+  if(!f) return;
+  const im = new Image();
+  im.onload = ()=>{
+    fotoSinFondo = im;
+    $("#uzone").classList.add("ok");
+    $("#uzone").innerHTML = `✅ <b>${f.name}</b> cargada<br>Toca para cambiarla`;
+    $("#sizeRow").style.display = "flex";
+    dibujar();
+  };
+  im.src = URL.createObjectURL(f);
+};
+
+$("#selPlantilla").onchange = ()=>{ guardarPref("plantilla", $("#selPlantilla").value); updCapPrev(); };
+$("#chkQR").onchange = ()=>{ guardarPref("qr", $("#chkQR").checked); dibujar(); };
+$("#rngEscala").oninput = e=>{
+  escalaProducto = Number(e.target.value)/100;
+  $("#escalaVal").textContent = e.target.value+"%";
+  dibujar();
+};
+$("#rngEscalaCombo").oninput = e=>{
+  escalaCombo = Number(e.target.value)/100;
+  $("#escalaComboVal").textContent = e.target.value+"%";
+  if(comboMode) dibujar();
+};
+$("#btnComboMode").onclick = ()=>{
+  comboMode = !comboMode;
+  $("#comboBox").style.display = comboMode?"block":"none";
+  $("#btnComboMode").textContent = comboMode ? "✕ Salir del modo combo" : "🎁 Activar modo combo";
+  $("#btnComboMode").classList.toggle("orange", comboMode);
+  $("#btnComboMode").classList.toggle("dark", !comboMode);
+  if(!comboMode){
+    comboSel=[]; comboPngs={}; renderComboList();
+    escalaCombo = 1;
+    $("#rngEscalaCombo").value = 100; $("#escalaComboVal").textContent = "100%";
+  }
+  else toast("🎁 Modo combo: toca 2 o 3 productos del catálogo");
+  render();
+  dibujar();
+  actualizarComboBar();
+};
+$("#inpComboPrecio").oninput = ()=>{ if(comboMode) dibujar(); };
+function actualizarComboBar(){
+  const bar = $("#comboBar");
+  if(comboMode && comboSel.length>0){
+    bar.style.display = "flex";
+    $("#comboBarTxt").textContent = `🎁 ${comboSel.length}/3 producto${comboSel.length>1?"s":""}${comboSel.length>=2?" · listo ✓":""}`;
+  } else bar.style.display = "none";
+}
+function selBarUpd(){
+  const b = $("#selBar");
+  if(multiSel.size>0 && !comboMode){
+    b.style.display="flex";
+    $("#selBarTxt").textContent = `☑️ ${multiSel.size} seleccionado${multiSel.size>1?"s":""}`;
+  } else b.style.display="none";
+}
+$("#btnSelClear").onclick = ()=>{ multiSel.clear(); render(); selBarUpd(); };
+$("#btnZipSel").onclick = async ()=>{
+  const lista = productos.filter(p=>multiSel.has(p.id));
+  if(!lista.length) return;
+  if(estilo==="flotante"){ toast("El estilo flotante requiere subir cada PNG — usa Vitrina, Oferta o Story"); return; }
+  await generarZip(lista, "seleccion");
+  multiSel.clear(); render(); selBarUpd();
+};
+$("#btnVerCombo").onclick = ()=>{
+  document.querySelector(".canvaswrap").scrollIntoView({behavior:"smooth",block:"center"});
+};
+$("#uzoneCombo").onclick = ()=>{
+  if(!comboSel.length){ toast("Primero elige los productos del combo"); return; }
+  $("#fileCombo").click();
+};
+$("#fileComboUno").onchange = e=>{
+  const f = e.target.files && e.target.files[0];
+  const targetId = e.target.dataset.target;
+  if(!f || !targetId) return;
+  const it = comboSel.find(x=>String(x.id)===String(targetId));
+  if(!it) return;
+  const im = new Image();
+  im.onload = ()=>{
+    comboPngs[it.id] = im;
+    renderComboList();
+    dibujar();
+    toast(`✨ Foto sin fondo puesta a: ${it.nombre.slice(0,26)}`);
+  };
+  im.onerror = ()=>toast("⚠️ No se pudo leer esa imagen");
+  im.src = URL.createObjectURL(f);
+  e.target.value = "";
+};
+$("#fileCombo").onchange = e=>{
+  const fs2 = Array.from(e.target.files||[]);
+  if(!fs2.length) return;
+  /* asignar en orden: primer archivo → primer producto sin PNG, etc. */
+  let idx = 0, asignadas = 0;
+  for(const f of fs2){
+    while(idx<comboSel.length && comboPngs[comboSel[idx].id]) idx++;
+    if(idx>=comboSel.length) break;
+    const it = comboSel[idx];
+    const im = new Image();
+    im.onload = ()=>{ comboPngs[it.id] = im; renderComboList(); dibujar(); };
+    im.src = URL.createObjectURL(f);
+    idx++; asignadas++;
+  }
+  toast(asignadas ? `✅ ${asignadas} foto${asignadas>1?"s":""} asignada${asignadas>1?"s":""} al combo` : "Todos los productos ya tienen foto — quítalos y vuelve a añadir para cambiar");
+  e.target.value = "";
+};
+
+/* filtros */
+$("#selCat").onchange = render;
+$("#txtBuscar").oninput = render;
+$("#selOrden").onchange = render;
+
+/* ================= LOTE (ZIP sin dependencias) ================= */
+const CRC_T = (()=>{let t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC_T[(c^u8[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){
+  let parts=[], central=[], offset=0;
+  const enc = new TextEncoder();
+  for(const f of files){
+    const name = enc.encode(f.name), data = f.data, crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0,true);lh.setUint16(8,0,true);
+    lh.setUint16(10,0,true);lh.setUint16(12,0,true);lh.setUint32(14,crc,true);
+    lh.setUint32(18,data.length,true);lh.setUint32(22,data.length,true);
+    lh.setUint16(26,name.length,true);lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer),name,data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);
+    ch.setUint32(16,crc,true);ch.setUint32(20,data.length,true);ch.setUint32(24,data.length,true);
+    ch.setUint16(28,name.length,true);ch.setUint32(42,offset,true);
+    central.push(new Uint8Array(ch.buffer),name);
+    offset += 30+name.length+data.length;
+  }
+  const cdSize = central.reduce((s,p)=>s+p.length,0);
+  const eo = new DataView(new ArrayBuffer(22));
+  eo.setUint32(0,0x06054b50,true);eo.setUint16(8,files.length,true);eo.setUint16(10,files.length,true);
+  eo.setUint32(12,cdSize,true);eo.setUint32(16,offset,true);
+  return new Blob([...parts,...central,new Uint8Array(eo.buffer)],{type:"application/zip"});
+}
+async function generarZip(lista, etiqueta){
+  $("#btnLote").disabled = true;
+  $("#prog").style.display = "block";
+  const files = []; let done = 0;
+  const guardaSel = sel;
+  for(const p of lista){
+    try{
+      sel = p;
+      await dibujar();
+      const blob = await canvasBlob();
+      files.push({name:nombreArchivo(p), data:new Uint8Array(await blob.arrayBuffer())});
+      registrarPub(p);
+    }catch(e){}
+    done++;
+    $("#progTxt").textContent = `${done}/${lista.length}`;
+    $("#progBar").style.width = (done/lista.length*100)+"%";
+  }
+  sel = guardaSel; dibujar();
+  const zip = zipStore(files);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(zip);
+  a.download = `tiendamax-${etiqueta}-${estilo}.zip`;
+  a.click(); URL.revokeObjectURL(a.href);
+  $("#prog").style.display = "none"; $("#btnLote").disabled = false;
+  toast(`✅ ${files.length} imágenes generadas en ZIP`);
+}
+$("#btnLote").onclick = async ()=>{
+  const cat = $("#selCat").value;
+  const lista = filtrados().filter(p=>p.imagen);
+  if(!lista.length){toast("No hay productos en la selección");return;}
+  if(estilo==="flotante"){toast("El estilo flotante requiere subir cada PNG — usa Vitrina, Oferta o Story para el lote");return;}
+  await generarZip(lista, (cat||"todas").toLowerCase().replace(/\s/g,"-"));
+};
+
+/* ================= PLAN SEMANAL ================= */
+const DIAS = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
+function elegirSemana(){
+  // puntuar: destacado > rebaja > poco stock > más nuevo
+  const scored = productos.map(p=>{
+    let s = 0;
+    if(p.masVendido) s += 40;
+    if(p.precioOriginal>p.precioActual) s += 30;
+    const st = Number(p.stock);
+    if(st>0 && st<=3) s += 20;
+    s += Math.min(10, (Number(p.id)||0)/1e11); // más nuevo = id mayor
+    return {p, s};
+  }).sort((a,b)=>b.s-a.s);
+  // máxima variedad: no repetir categoría hasta agotar opciones
+  const semana = [], usadas = new Set();
+  for(const {p} of scored){
+    if(semana.length>=7) break;
+    if(!usadas.has(p.categoria)){ semana.push(p); usadas.add(p.categoria); }
+  }
+  for(const {p} of scored){
+    if(semana.length>=7) break;
+    if(!semana.includes(p)) semana.push(p);
+  }
+  return semana;
+}
+$("#btnSemana").onclick = async ()=>{
+  if(!productos.length) return;
+  if(comboMode){ toast("Sal del modo combo primero"); return; }
+  const semana = elegirSemana();
+  const btn = $("#btnSemana"); btn.disabled = true; $("#btnLote").disabled = true;
+  $("#prog").style.display = "block";
+  const files = []; let done = 0;
+  const guardaSel = sel, guardaEstilo = estilo;
+  let planTxt = "📅 PLAN SEMANAL DE PUBLICACIONES — TiendaMax\n" + "=".repeat(46) + "\n\n";
+  for(let i=0;i<semana.length;i++){
+    const p = semana[i];
+    // estilo según el día: rebajas → oferta, resto alterna vitrina/story
+    estilo = (p.precioOriginal>p.precioActual) ? "oferta" : (i%2===0 ? "vitrina" : "story");
+    try{
+      sel = p;
+      await dibujar();
+      const blob = await canvasBlob();
+      files.push({name:`${String(i+1).padStart(2,"0")}-${DIAS[i]}-${(p.slug||p.id)}.png`, data:new Uint8Array(await blob.arrayBuffer())});
+    }catch(e){}
+    planTxt += `${["🌙","🔥","💪","⚡","🎉","🛍️","☀️"][i]} ${DIAS[i].toUpperCase()} — ${p.nombre}\n`;
+    planTxt += `   Estilo: ${estilo} · $${p.precioActual} USD${p.precioOriginal>p.precioActual?` (antes $${p.precioOriginal})`:""}\n`;
+    planTxt += `   Caption:\n${caption(p).split("\n").map(l=>"   "+l).join("\n")}\n\n${"-".repeat(46)}\n\n`;
+    done++;
+    $("#progTxt").textContent = `${done}/${semana.length}`;
+    $("#progBar").style.width = (done/semana.length*100)+"%";
+  }
+  files.push({name:"00-PLAN-SEMANAL.txt", data:new TextEncoder().encode(planTxt)});
+  sel = guardaSel; estilo = guardaEstilo; dibujar();
+  const zip = zipStore(files);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(zip);
+  a.download = "tiendamax-plan-semanal.zip";
+  a.click(); URL.revokeObjectURL(a.href);
+  $("#prog").style.display = "none"; btn.disabled = false; $("#btnLote").disabled = false;
+  toast("📅 Plan semanal listo: 7 imágenes + guía de publicación");
+};
+
+/* ================= HISTORIAL VISUAL ================= */
+$("#btnHist").onclick = ()=>{
+  const old = document.getElementById("histModal");
+  if(old){ old.remove(); return; }
+  const log = pubLog().slice().sort((a,b)=>b.ts-a.ts);
+  const m = document.createElement("div");
+  m.id = "histModal";
+  m.style.cssText = "position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.88);overflow-y:auto;padding:20px;";
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const grupos = {};
+  for(const e of log){
+    const d = new Date(e.ts); d.setHours(0,0,0,0);
+    const dif = Math.round((hoy-d)/864e5);
+    const et = dif===0?"📅 Hoy":dif===1?"Ayer":dif<7?`Hace ${dif} días`:new Date(e.ts).toLocaleDateString("es",{day:"numeric",month:"short"});
+    (grupos[et] = grupos[et]||[]).push(e);
+  }
+  let inner = `
+    <div style="max-width:760px;margin:0 auto;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+        <h2 style="font-size:20px;flex:1;">🗓️ Historial de publicaciones</h2>
+        <button class="btn dark" id="histClear" style="padding:8px 14px;font-size:12px;">🗑️ Vaciar</button>
+        <button class="btn orange" id="histClose" style="padding:8px 14px;font-size:12px;">✕ Cerrar</button>
+      </div>
+      <div style="font-size:12px;color:#9a9aa2;margin-bottom:16px;">${log.length} publicaciones registradas · Los productos publicados hace más tiempo aparecen primero con el orden "📤 Sin publicar primero"</div>`;
+  if(!log.length){
+    inner += `<div style="text-align:center;padding:60px 20px;color:#9a9aa2;">Aún no has publicado nada.<br>Cada vez que descargues, compartas o generes un ZIP, quedará registrado aquí.</div>`;
+  }
+  for(const et in grupos){
+    inner += `<div style="font-size:13px;font-weight:800;color:#ffb28f;margin:18px 0 10px;letter-spacing:1px;">${et} · ${grupos[et].length}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;">`;
+    for(const e of grupos[et]){
+      const p = productos.find(x=>x.id===e.id);
+      if(!p) continue;
+      const hora = new Date(e.ts).toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"});
+      inner += `
+        <div class="histcard" data-id="${p.id}" style="background:#141417;border:1px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;cursor:pointer;">
+          <img src="${p.imagen}" style="width:100%;aspect-ratio:1/1;object-fit:contain;background:#fff;display:block;">
+          <div style="padding:7px 9px;">
+            <div style="font-size:10px;font-weight:700;line-height:1.3;height:26px;overflow:hidden;">${p.nombre}</div>
+            <div style="font-size:9px;color:#9a9aa2;margin-top:3px;">🕐 ${hora} · $${p.precioActual}</div>
+          </div>
+        </div>`;
+    }
+    inner += `</div>`;
+  }
+  inner += `</div>`;
+  m.innerHTML = inner;
+  document.body.appendChild(m);
+  m.querySelector("#histClose").onclick = ()=>m.remove();
+  m.querySelector("#histClear").onclick = ()=>{
+    if(confirm("¿Borrar todo el historial de publicaciones?")){
+      guardarPref("publog",[]); m.remove(); render();
+      toast("🗑️ Historial vaciado");
+    }
+  };
+  m.querySelectorAll(".histcard").forEach(c=>{
+    c.onclick = ()=>{
+      const p = productos.find(x=>String(x.id)===c.dataset.id);
+      if(p){ m.remove(); seleccionar(p); toast("Producto cargado para republicar"); }
+    };
+  });
+};
+
+/* ================= PWA ================= */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
+  /* avisar cuando llega una versión nueva */
+  let _yaControlado = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", ()=>{
+    if(_yaControlado) toast("🆕 App actualizada a la última versión");
+    _yaControlado = true;
+  });
+}
+/* aviso de sin conexión */
+window.addEventListener("offline", ()=>toast("📴 Sin conexión — usando datos guardados"));
+window.addEventListener("online", ()=>toast("📶 Conexión recuperada"));
+/* botón de instalación cuando el navegador lo ofrece */
+let _deferredInstall = null;
+window.addEventListener("beforeinstallprompt", e=>{
+  e.preventDefault();
+  _deferredInstall = e;
+  const b = document.getElementById("btnInstall");
+  if(b) b.style.display = "inline-flex";
+});
+document.addEventListener("click", e=>{
+  if(e.target && e.target.id==="btnInstall" && _deferredInstall){
+    _deferredInstall.prompt();
+    _deferredInstall.userChoice.then(()=>{ _deferredInstall=null; e.target.style.display="none"; });
+  }
+});
+
+init();
+</script>
+</body>
+</html>
