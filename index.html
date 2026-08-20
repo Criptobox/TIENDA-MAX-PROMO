@@ -265,6 +265,194 @@ input[type=number]:focus{border-color:var(--naranja);}
   padding:8px 10px calc(8px + env(safe-area-inset-bottom));gap:8px;
 }
 #quickBar .btn{flex:1;justify-content:center;font-size:12px;padding:12px 6px;}
+#quickBar .qb{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  border:none;cursor:pointer;border-radius:12px;padding:8px 2px;color:#fff;font-weight:800;
+  background:var(--panel2);border:1px solid rgba(255,255,255,.14);
+}
+#quickBar .qb i{font-style:normal;font-size:17px;line-height:1;}
+#quickBar .qb u{text-decoration:none;font-size:9px;letter-spacing:.2px;opacity:.9;}
+#quickBar .qb.naranja{background:linear-gradient(135deg,var(--naranja),var(--naranja-osc));border-color:transparent;}
+#quickBar .qb.verde{background:linear-gradient(135deg,#2ee578,#1eb257);border-color:transparent;}
+#quickBar .qb.wa{background:linear-gradient(135deg,#25D366,#1a9e4b);border-color:transparent;}
+
+/* ============================================================
+   HOJA DE AJUSTES — editar sin perder de vista el diseño (móvil)
+   ============================================================ */
+#hoja{display:none;}
+@media(max-width:1020px){
+  #hoja{
+    display:flex;flex-direction:column;
+    position:fixed;left:0;right:0;bottom:0;z-index:99;
+    height:var(--hoja-h,50vh);
+    background:rgba(15,15,18,.985);backdrop-filter:blur(14px);
+    border-top:1px solid rgba(255,255,255,.16);border-radius:20px 20px 0 0;
+    box-shadow:0 -16px 44px rgba(0,0,0,.65);
+    transform:translateY(105%);transition:transform .26s cubic-bezier(.2,.85,.3,1), height .2s;
+    will-change:transform;
+  }
+  body.hoja-open #hoja{transform:translateY(0);}
+  body.hoja-max{--hoja-h:86vh;}
+  /* mientras la hoja está abierta el lienzo queda fijo arriba y se ve completo */
+  body.hoja-open .canvaswrap{
+    position:fixed;top:calc(var(--hdr,58px) + 6px);left:8px;right:8px;
+    height:max(0px, calc(100vh - var(--hoja-h,50vh) - var(--hdr,58px) - 18px));
+    z-index:96;display:flex;align-items:center;justify-content:center;background:#08080a;overflow:hidden;
+  }
+  body.hoja-open .canvaswrap canvas{width:auto;height:auto;max-width:100%;max-height:100%;}
+  body.hoja-open{overflow:hidden;}   /* el fondo no se mueve mientras editas */
+  body.hoja-open #quickBar,body.hoja-open #selBar,body.hoja-open #comboBar{display:none !important;}
+  body.hoja-open .toast{bottom:calc(var(--hoja-h,50vh) + 14px);}
+}
+#hojaGrip{flex:none;padding:9px 0 3px;display:flex;flex-direction:column;align-items:center;gap:6px;touch-action:none;cursor:grab;}
+#hojaGrip .bar{width:46px;height:5px;border-radius:5px;background:rgba(255,255,255,.32);}
+#hojaGrip .tit{font-size:10px;letter-spacing:1.4px;color:var(--tx2);font-weight:800;text-transform:uppercase;}
+#hojaFast{flex:none;padding:4px 12px 10px;border-bottom:1px solid rgba(255,255,255,.09);display:flex;flex-direction:column;gap:7px;}
+#hojaFast .sizerow{margin-top:0;padding:7px 11px;}
+#hojaFast .sizerow input[type=range]{height:30px;}
+#hojaBody{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:10px 12px calc(74px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain;
+}
+#hojaAcc{
+  position:absolute;left:0;right:0;bottom:0;display:flex;gap:7px;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  background:rgba(11,11,13,.97);border-top:1px solid rgba(255,255,255,.12);
+}
+#hojaAcc .btn{flex:1;justify-content:center;font-size:12px;padding:11px 6px;}
+/* dedos gordos: sliders más cómodos en móvil */
+@media(max-width:700px){
+  .sizerow input[type=range]{height:32px;}
+  .sizerow input[type=range]::-webkit-slider-thumb{width:26px;height:26px;}
+  .sizelbl{font-size:11px;}
+}
+
+/* ============================================================
+   ESTUDIO DE RECORTE — quitar fondo sin API ni límites
+   ============================================================ */
+#rbWrap{position:fixed;inset:0;z-index:130;background:#0a0a0c;display:none;flex-direction:column;}
+#rbWrap.on{display:flex;}
+#rbHead{
+  flex:none;display:flex;align-items:center;gap:10px;padding:12px 14px;
+  border-bottom:1px solid rgba(255,255,255,.1);background:rgba(11,11,13,.95);
+}
+#rbHead .t{font-weight:900;font-size:14px;flex:1;min-width:0;}
+#rbHead .t small{display:block;font-size:10px;color:var(--tx2);font-weight:600;}
+#rbStage{
+  flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:10px;
+  background-color:#26262b;
+  background-image:linear-gradient(45deg,#33333a 25%,transparent 25%),linear-gradient(-45deg,#33333a 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#33333a 75%),linear-gradient(-45deg,transparent 75%,#33333a 75%);
+  background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0;
+}
+#rbCv{max-width:100%;max-height:100%;touch-action:none;cursor:crosshair;}
+#rbCap{
+  position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  background:rgba(8,8,10,.82);font-size:13px;font-weight:700;text-align:center;padding:24px;z-index:5;
+}
+#rbCap.on{display:flex;}
+#rbTools{
+  flex:none;background:var(--panel);border-top:1px solid rgba(255,255,255,.1);
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;
+  max-height:52vh;overflow-y:auto;
+}
+.rbSeg{display:flex;gap:6px;background:var(--panel2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:4px;}
+.rbSeg button{
+  flex:1;border:none;background:transparent;color:var(--tx2);font-weight:800;font-size:11.5px;
+  padding:9px 4px;border-radius:9px;cursor:pointer;line-height:1.3;
+}
+.rbSeg button small{display:block;font-size:8.5px;font-weight:600;opacity:.8;}
+.rbSeg button.on{background:linear-gradient(135deg,var(--naranja),var(--naranja-osc));color:#fff;}
+#rbAvz{border-top:1px dashed rgba(255,255,255,.14);padding-top:8px;}
+#rbAvz summary{font-size:11px;color:var(--tx2);font-weight:700;cursor:pointer;list-style:none;}
+#rbAvz summary::-webkit-details-marker{display:none;}
+.rbInfo{font-size:10.5px;color:var(--tx2);line-height:1.55;}
+.rbInfo b{color:#ffb28f;}
+
+/* ============================================================
+   TEMA CLARO (para usar la app con sol directo en la calle)
+   ============================================================ */
+body.tema-claro{
+  --panel:#ffffff; --panel2:#f1f1f5; --tx:#17171c; --tx2:#66666f;
+  background:
+    radial-gradient(900px 400px at 85% -100px, rgba(255,107,53,.10), transparent 60%),
+    linear-gradient(180deg,#f6f6f9,#ececf2);
+  color:#17171c;
+}
+body.tema-claro header{background:rgba(255,255,255,.92);border-bottom-color:rgba(0,0,0,.1);}
+body.tema-claro .panel,body.tema-claro .card,body.tema-claro select,body.tema-claro input[type=text],
+body.tema-claro input[type=number],body.tema-claro .fchip,body.tema-claro .stybtn,
+body.tema-claro .btn.dark,body.tema-claro .sizerow,body.tema-claro .comboitem,body.tema-claro .pick,
+body.tema-claro .tasa,body.tema-claro #quickBar .qb{border-color:rgba(0,0,0,.13);}
+body.tema-claro .btn.dark{color:#17171c;}
+body.tema-claro .uploadzone{border-color:rgba(0,0,0,.2);}
+body.tema-claro #hoja,body.tema-claro #quickBar,body.tema-claro #hojaAcc{background:rgba(255,255,255,.98);border-color:rgba(0,0,0,.12);}
+body.tema-claro #hojaGrip .bar{background:rgba(0,0,0,.25);}
+body.tema-claro .toast,body.tema-claro #selBar,body.tema-claro #comboBar{background:#fff;color:#17171c;border-color:rgba(0,0,0,.15);}
+body.tema-claro #capPrev{background:#f7f7fa;color:#3a3a44;border-color:rgba(0,0,0,.1);}
+body.tema-claro .prevthumb canvas{border-color:rgba(0,0,0,.15);}
+body.tema-claro .modalcaja{background:#fff;color:#17171c;}
+
+/* ============================================================
+   EDICIONES GUARDADAS, ESTADÍSTICAS Y AJUSTES
+   ============================================================ */
+.edbadge{
+  font-size:8.5px;font-weight:900;padding:3px 7px;border-radius:10px;
+  background:rgba(168,85,247,.18);border:1px solid rgba(168,85,247,.55);color:#d8b4fe;
+}
+#edBar{
+  display:none;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:10px 14px;
+  background:linear-gradient(135deg,rgba(168,85,247,.14),rgba(255,107,53,.10));
+  border:1px solid rgba(168,85,247,.4);border-radius:14px;font-size:12px;font-weight:700;
+}
+.modalfondo{
+  position:fixed;inset:0;background:rgba(5,5,7,.82);z-index:140;display:flex;
+  align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(6px);
+}
+.modalcaja{
+  background:var(--panel);border:1px solid rgba(255,255,255,.14);border-radius:20px;
+  width:100%;max-width:620px;max-height:88vh;overflow-y:auto;padding:18px;
+  box-shadow:0 24px 60px rgba(0,0,0,.6);
+}
+.modalcaja h3{font-size:14px;font-weight:900;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.modalcaja h4{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--tx2);margin:14px 0 8px;font-weight:800;}
+.edgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
+.edcard{
+  background:var(--panel2);border:1px solid rgba(255,255,255,.12);border-radius:13px;
+  overflow:hidden;cursor:pointer;position:relative;transition:transform .12s,border-color .12s;
+}
+.edcard:hover{transform:translateY(-2px);border-color:var(--naranja);}
+.edcard img{width:100%;aspect-ratio:1/1;object-fit:contain;background:#0b0b0d;display:block;}
+.edcard .edn{font-size:10px;font-weight:700;padding:6px 8px;line-height:1.35;max-height:40px;overflow:hidden;}
+.edcard .edx{
+  position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:8px;border:none;
+  background:rgba(11,11,13,.8);color:#ff9a9a;font-weight:900;cursor:pointer;font-size:12px;
+}
+.edcard .edt{position:absolute;top:5px;left:5px;font-size:8px;font-weight:800;padding:2px 6px;border-radius:8px;background:rgba(168,85,247,.85);color:#fff;}
+.stat{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--panel2);border-radius:11px;margin-bottom:6px;font-size:12px;}
+.stat b{margin-left:auto;color:var(--naranja);font-size:15px;font-weight:900;}
+.barra{height:7px;border-radius:7px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:4px;}
+.barra i{display:block;height:100%;background:linear-gradient(90deg,var(--naranja),var(--dorado));}
+.filaop{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel2);border-radius:12px;margin-bottom:7px;font-size:12px;font-weight:600;}
+.filaop .d{flex:1;min-width:0;}
+.filaop .d small{display:block;font-size:10px;color:var(--tx2);font-weight:500;margin-top:2px;line-height:1.4;}
+.sw{position:relative;width:46px;height:26px;flex:none;cursor:pointer;}
+.sw input{opacity:0;width:0;height:0;position:absolute;}
+.sw i{position:absolute;inset:0;background:rgba(255,255,255,.15);border-radius:26px;transition:.2s;}
+.sw i:before{content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
+.sw input:checked + i{background:linear-gradient(135deg,var(--naranja),var(--naranja-osc));}
+.sw input:checked + i:before{transform:translateX(20px);}
+.campchip{
+  border:2px solid transparent;width:34px;height:34px;border-radius:11px;cursor:pointer;flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+}
+.campchip.on{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25);}
+.txitem{display:flex;align-items:center;gap:7px;background:var(--panel2);border-radius:10px;padding:6px 9px;font-size:11.5px;margin-bottom:5px;}
+.txitem .tn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700;}
+.txitem button{border:none;background:transparent;cursor:pointer;font-size:13px;padding:2px 3px;color:var(--tx2);}
+.txitem.on{outline:1.5px solid var(--naranja);}
+#rbCmp{position:absolute;inset:0;pointer-events:none;display:none;}
+#rbCmp.on{display:block;}
 </style>
 </head>
 <body>
@@ -275,7 +463,8 @@ input[type=number]:focus{border-color:var(--naranja);}
     <div>Tienda<em>Max</em><small>GENERADOR DE DISEÑOS</small></div>
   </div>
   <span class="status" id="status">Conectando con tiendamax.org…</span>
-  <button class="btn dark" id="btnBackup" style="padding:8px 12px;font-size:12px;" title="Respaldo de datos">💾</button>
+  <button class="btn dark" id="btnAjustes" style="padding:8px 12px;font-size:12px;" title="Ajustes y herramientas">⚙️</button>
+  <button class="btn dark" id="btnBackup" style="padding:8px 12px;font-size:12px;display:none;" title="Respaldo de datos">💾</button>
   <button class="btn dark" id="btnPlan" style="padding:8px 16px;font-size:12px;">📆 Mi semana</button>
   <button class="btn dark" id="btnHist" style="padding:8px 16px;font-size:12px;">🗓️ Historial</button>
   <button class="btn orange" id="btnInstall" style="display:none;padding:8px 16px;font-size:12px;">📲 Instalar app</button>
@@ -297,6 +486,7 @@ input[type=number]:focus{border-color:var(--naranja);}
       <button class="btn orange" id="btnLote">⚡ Generar toda la categoría (ZIP)</button>
       <button class="btn blue" id="btnSemana">📅 Plan semanal (ZIP)</button>
       <button class="btn green" id="btnCampana">🎯 Campaña (ZIP)</button>
+      <button class="btn dark" id="btnLoteFondo">🪄 Quitar fondos en lote</button>
     </div>
     <div class="chiprow" id="chipRow">
       <button class="fchip" data-f="oferta">🔥 Ofertas</button>
@@ -305,6 +495,11 @@ input[type=number]:focus{border-color:var(--naranja);}
       <button class="fchip" data-f="resena">⭐ Con reseña</button>
       <button class="fchip" data-f="sinpub">📤 Sin publicar</button>
       <button class="fchip" data-f="pocostock">⚠️ Últimas unidades</button>
+      <button class="fchip" data-f="editado">✏️ Ya editados</button>
+    </div>
+    <div id="edBar">
+      <span>🎨 <b id="edBarTxt">0 diseños guardados</b> — se abren tal como los dejaste</span>
+      <button class="btn orange" id="btnVerEdiciones" style="padding:7px 14px;font-size:11.5px;">Ver mis ediciones</button>
     </div>
     <div class="progress" id="prog">Generando <b id="progTxt">0/0</b>…<div class="pbar"><i id="progBar"></i></div></div>
     <div id="pickedBar">
@@ -323,12 +518,12 @@ input[type=number]:focus{border-color:var(--naranja);}
   </div>
 
   <div class="right">
-    <div class="panel">
+    <div class="panel" id="panelPrev">
       <h3>👀 Vista previa — toca el estilo que más te guste</h3>
       <div class="prevrow" id="prevRow"></div>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="panelEstilo">
       <h3>🎨 Estilo del diseño</h3>
       <div class="stylesrow">
         <button class="stybtn on" data-sty="vitrina">🖼️ Vitrina<small>Feed 1080×1080</small></button>
@@ -338,6 +533,8 @@ input[type=number]:focus{border-color:var(--naranja);}
         <button class="stybtn" data-sty="claro">🌅 Claro WA<small>1080×1920</small></button>
         <button class="stybtn" data-sty="resena">⭐ Reseña<small>1080×1080</small></button>
         <button class="stybtn" data-sty="escena">🏠 Escena<small>1080×1920 · foto real</small></button>
+        <button class="stybtn" data-sty="urgencia">⏰ Urgencia<small>1080×1080 · cuenta atrás</small></button>
+        <button class="stybtn" data-sty="galeria">🖼️ Galería<small>1080×1080 · varias fotos</small></button>
       </div>
       <div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.08);padding-top:12px;">
         <button class="btn dark" id="btnComboMode" style="width:100%;justify-content:center;">🎁 Activar modo combo</button>
@@ -368,6 +565,9 @@ input[type=number]:focus{border-color:var(--naranja);}
           <button class="scnbtn stybtn" data-scn="escritorio">💻 Escritorio</button>
           <button class="scnbtn stybtn" data-scn="cocina">🍳 Cocina</button>
           <button class="scnbtn stybtn" data-scn="calle">🌆 Calle</button>
+          <button class="scnbtn stybtn" data-scn="estudio">🎬 Estudio<small>generado</small></button>
+          <button class="scnbtn stybtn" data-scn="podio">⬜ Podio<small>generado</small></button>
+          <button class="scnbtn stybtn" data-scn="degradado">🌈 Degradado<small>generado</small></button>
         </div>
         <div class="uploadzone" id="uzoneEscena" style="margin-top:8px;">📤 <b>Sube el PNG sin fondo del producto</b><br>para integrarlo en la escena real</div>
         <input type="file" id="fileEscena" accept="image/png,image/webp" style="display:none;">
@@ -377,8 +577,8 @@ input[type=number]:focus{border-color:var(--naranja);}
           <span class="sizeval" id="escEscalaVal">100%</span>
         </div>
         <div style="font-size:11px;color:#7ee8a5;font-weight:700;margin-top:8px;">👆 Arrastra el producto sobre la imagen para moverlo · doble toque para centrarlo</div>
-        <button class="btn dark" id="btnRmBgEscena" style="width:100%;justify-content:center;margin-top:8px;">🪄 Quitar fondo automáticamente</button>
-        <div style="font-size:10px;color:var(--tx2);margin-top:6px;">Usa la foto del catálogo del producto y le borra el fondo con remove.bg (misma clave API que en Flotante)</div>
+        <button class="btn orange" id="btnRmBgEscena" style="width:100%;justify-content:center;margin-top:8px;">🪄 Quitar fondo (gratis e ilimitado)</button>
+        <div style="font-size:10px;color:var(--tx2);margin-top:6px;line-height:1.5;">Toma la foto del catálogo y recorta el producto <b style="color:#7ee8a5;">en tu propio teléfono</b>, sin clave ni límites.</div>
       </div>
       <div style="display:flex;gap:8px;margin-top:10px;">
         <input type="text" id="inpNombre" placeholder="✏️ Nombre en el diseño" maxlength="70" style="flex:2;min-width:0;">
@@ -386,6 +586,11 @@ input[type=number]:focus{border-color:var(--naranja);}
       </div>
       <div class="hint" style="margin-top:4px;">Edita cómo saldrán en la imagen — no cambia nada en la tienda. Vacío = como en el catálogo.</div>
       <input type="text" id="inpNota" placeholder="✏️ Nota destacada (ej: ENVÍO GRATIS HOY · 2×1 · SOLO ESTA SEMANA)" maxlength="32" style="width:100%;margin-top:10px;">
+      <div class="sizerow" id="sizeRow" style="margin-top:10px;">
+        <span class="sizelbl">🔍 Tamaño de la foto</span>
+        <input type="range" id="rngEscala" min="50" max="160" value="100" step="5">
+        <span class="sizeval" id="escalaVal">100%</span>
+      </div>
       <div class="sizerow" style="margin-top:10px;">
         <span class="sizelbl">☀️ Brillo de la foto</span>
         <input type="range" id="rngBrillo" min="80" max="140" value="100" step="5">
@@ -394,19 +599,72 @@ input[type=number]:focus{border-color:var(--naranja);}
       <div id="uploadbox" style="display:none;margin-top:10px;">
         <div class="uploadzone" id="uzone">📤 <b>Sube aquí la foto PNG sin fondo</b><br>Los datos (nombre, precio, specs) se toman solos de la tienda</div>
         <input type="file" id="fileUp" accept="image/png,image/webp" style="display:none;">
-        <div style="margin-top:8px;background:var(--panel2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;">
-          <div style="font-size:11px;color:var(--tx2);font-weight:700;margin-bottom:6px;">🔑 API key de remove.bg <a href="https://www.remove.bg/api" target="_blank" style="color:var(--naranja);font-weight:800;text-decoration:none;">(conseguir gratis →)</a></div>
-          <div style="display:flex;gap:6px;">
-            <input type="text" id="inpRmKey" placeholder="Pega aquí tu clave…" style="flex:1;min-width:0;">
-            <button class="btn dark" id="btnRmKeySave" style="padding:9px 14px;font-size:12px;flex:none;">💾</button>
-          </div>
+        <button class="btn orange" id="btnRmBg" style="width:100%;justify-content:center;margin-top:8px;">🪄 Quitar fondo (gratis e ilimitado)</button>
+        <div style="font-size:10px;color:var(--tx2);margin-top:6px;line-height:1.5;">Se procesa <b style="color:#7ee8a5;">dentro de tu teléfono</b> — sin clave, sin límite mensual y funciona sin conexión.</div>
+      </div>
+    </div>
+
+    <div class="panel" id="panelExtras">
+      <h3>✨ Extras del diseño</h3>
+
+      <div class="filaop">
+        <div class="d">🌑 Sombra bajo el producto<small>Le da peso real cuando la foto no tiene fondo</small></div>
+        <label class="sw"><input type="checkbox" id="chkSombra" checked><i></i></label>
+      </div>
+      <div class="sizerow" id="filaSombra">
+        <span class="sizelbl">🌑 Intensidad</span>
+        <input type="range" id="rngSombra" min="0" max="100" value="45" step="5">
+        <span class="sizeval" id="sombraVal">45%</span>
+      </div>
+
+      <h4>🎨 Color de campaña</h4>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;" id="campRow">
+        <button class="campchip on" data-c="auto" style="background:linear-gradient(135deg,#3B82F6,#22C55E,#EAB308,#EF4444);" title="Según la categoría">🤖</button>
+        <button class="campchip" data-c="#111111" style="background:#111;" title="Black Friday">🖤</button>
+        <button class="campchip" data-c="#DC2626" style="background:#DC2626;" title="Navidad / rebajas">🎄</button>
+        <button class="campchip" data-c="#16A34A" style="background:#16A34A;" title="Verde">🌿</button>
+        <button class="campchip" data-c="#F5A623" style="background:#F5A623;" title="Dorado / premium">👑</button>
+        <button class="campchip" data-c="#2563EB" style="background:#2563EB;" title="Azul">💙</button>
+        <button class="campchip" data-c="#A855F7" style="background:#A855F7;" title="Morado">💜</button>
+      </div>
+
+      <h4>✍️ Textos libres <span style="text-transform:none;letter-spacing:0;font-weight:600;">(arrástralos sobre el diseño)</span></h4>
+      <div id="txLista"></div>
+      <div style="display:flex;gap:7px;">
+        <input type="text" id="inpTxNuevo" placeholder="Escribe una frase…" maxlength="46" style="flex:1;min-width:0;">
+        <button class="btn dark" id="btnTxAdd" style="padding:9px 14px;font-size:12px;flex:none;">➕</button>
+      </div>
+      <div id="txEdit" style="display:none;margin-top:8px;">
+        <div class="sizerow">
+          <span class="sizelbl">🔠 Tamaño</span>
+          <input type="range" id="rngTxSize" min="20" max="130" value="52" step="2">
+          <span class="sizeval" id="txSizeVal">52</span>
         </div>
-        <button class="btn dark" id="btnRmBg" style="width:100%;justify-content:center;margin-top:8px;">🪄 Quitar fondo automáticamente</button>
-        <div class="sizerow" id="sizeRow" style="display:none;">
-          <span class="sizelbl">🔍 Tamaño del producto</span>
-          <input type="range" id="rngEscala" min="50" max="150" value="100" step="5">
-          <span class="sizeval" id="escalaVal">100%</span>
+        <div style="display:flex;gap:7px;margin-top:7px;align-items:center;flex-wrap:wrap;">
+          <span style="font-size:11px;color:var(--tx2);font-weight:700;">🎨 Color</span>
+          <button class="campchip on" data-tc="#FFFFFF" style="background:#fff;"></button>
+          <button class="campchip" data-tc="#FF6B35" style="background:#FF6B35;"></button>
+          <button class="campchip" data-tc="#F5A623" style="background:#F5A623;"></button>
+          <button class="campchip" data-tc="#25D366" style="background:#25D366;"></button>
+          <button class="campchip" data-tc="#EF4444" style="background:#EF4444;"></button>
+          <button class="campchip" data-tc="#111111" style="background:#111;"></button>
         </div>
+      </div>
+
+      <div id="cajaUrgencia" style="display:none;">
+        <h4>⏰ Fin de la oferta</h4>
+        <div style="display:flex;gap:7px;">
+          <input type="date" id="inpFechaFin" style="flex:1;min-width:0;background:var(--panel2);border:1px solid rgba(255,255,255,.12);color:var(--tx);padding:9px 12px;border-radius:10px;font-size:13px;">
+          <button class="btn dark" id="btnFinDomingo" style="padding:9px 12px;font-size:11.5px;flex:none;">Domingo</button>
+        </div>
+        <div class="hint">Se dibuja la cuenta atrás real (“QUEDAN 3 DÍAS”) y el precio anterior tachado.</div>
+      </div>
+
+      <div id="cajaGaleria" style="display:none;">
+        <h4>🖼️ Fotos de la galería</h4>
+        <div class="uploadzone" id="uzoneGal">📤 <b>Añade 1 a 3 fotos más</b><br>La del catálogo va siempre de primera</div>
+        <input type="file" id="fileGal" accept="image/*" multiple style="display:none;">
+        <div id="galLista" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;"></div>
       </div>
     </div>
 
@@ -431,6 +689,7 @@ input[type=number]:focus{border-color:var(--naranja);}
       </div>
       <div class="sharerow" style="margin-top:8px;">
         <button class="btn blue" id="btnVideo" style="flex:2;">🎬 Video para Reels/Story (6 s)</button>
+        <button class="btn blue" id="btnVideoMulti" style="flex:1;background:linear-gradient(135deg,#a855f7,#7c3aed);">🎞️ Carrusel</button>
       </div>
       <div class="progress" id="progVid">Grabando video <b id="progVidTxt">0%</b>…<div class="pbar"><i id="progVidBar"></i></div></div>
       <div class="sharerow" style="margin-top:8px;">
@@ -454,10 +713,100 @@ input[type=number]:focus{border-color:var(--naranja);}
 </div>
 
 <div id="quickBar">
-  <button class="btn dark" id="qbBack">🔍</button>
-  <button class="btn orange" id="qbPng">⬇️ PNG</button>
-  <button class="btn green" id="qbShare">📲 Compartir</button>
-  <button class="btn green" id="qbWa" style="background:linear-gradient(135deg,#25D366,#1a9e4b);">🟢 Estado</button>
+  <button class="qb" id="qbBack"><i>🔍</i><u>Catálogo</u></button>
+  <button class="qb naranja" id="qbAjustes"><i>🎛️</i><u>Ajustar</u></button>
+  <button class="qb" id="qbPng"><i>⬇️</i><u>PNG</u></button>
+  <button class="qb verde" id="qbShare"><i>📲</i><u>Compartir</u></button>
+  <button class="qb wa" id="qbWa"><i>🟢</i><u>Estado</u></button>
+</div>
+
+<!-- ===== HOJA DE AJUSTES: editar viendo el diseño en todo momento ===== -->
+<div id="hoja" aria-hidden="true">
+  <div id="hojaGrip">
+    <div class="bar"></div>
+    <div class="tit">Ajustes · desliza para agrandar</div>
+  </div>
+  <div id="hojaFast">
+    <div class="sizerow">
+      <span class="sizelbl">🔍 Tamaño</span>
+      <input type="range" id="hjTam" min="40" max="200" value="100" step="5">
+      <span class="sizeval" id="hjTamVal">100%</span>
+    </div>
+    <div class="sizerow">
+      <span class="sizelbl">☀️ Brillo</span>
+      <input type="range" id="hjBrillo" min="80" max="140" value="100" step="5">
+      <span class="sizeval" id="hjBrilloVal">100%</span>
+    </div>
+    <div style="display:flex;gap:7px;">
+      <button class="btn orange" id="hjFondo" style="flex:2;justify-content:center;font-size:12px;padding:10px 8px;">🪄 Quitar fondo</button>
+      <button class="btn dark" id="hjReset" style="flex:1;justify-content:center;font-size:12px;padding:10px 8px;">↺ Reiniciar</button>
+    </div>
+  </div>
+  <div id="hojaBody"></div>
+  <div id="hojaAcc">
+    <button class="btn dark" id="hjCerrar" style="flex:.8;">✕</button>
+    <button class="btn orange" id="hjPng">⬇️ PNG</button>
+    <button class="btn green" id="hjShare">📲 Compartir</button>
+  </div>
+</div>
+
+<!-- ===== ESTUDIO DE RECORTE: quitar fondo local, gratis e ilimitado ===== -->
+<div id="rbWrap">
+  <div id="rbHead">
+    <div class="t">🪄 Quitar fondo<small id="rbSub">100% en tu teléfono · sin límites</small></div>
+    <button class="btn dark" id="rbCancelar" style="padding:8px 12px;font-size:12px;">✕</button>
+    <button class="btn green" id="rbUsar" style="padding:8px 14px;font-size:12px;">✅ Usar</button>
+  </div>
+  <div id="rbStage">
+    <canvas id="rbCv"></canvas>
+    <canvas id="rbCmp"></canvas>
+    <div id="rbCap"><div class="spin"></div><div id="rbCapTxt">Procesando…</div></div>
+  </div>
+  <div id="rbTools">
+    <div class="rbSeg" id="rbModo">
+      <button data-m="rapido" class="on">⚡ Rápido<small>0 datos · instantáneo</small></button>
+      <button data-m="ia">🤖 IA<small>fondos difíciles</small></button>
+    </div>
+    <div class="sizerow" id="rbFilaTol">
+      <span class="sizelbl">🎚️ Sensibilidad</span>
+      <input type="range" id="rbTol" min="2" max="60" value="14" step="1">
+      <span class="sizeval" id="rbTolVal">14</span>
+    </div>
+    <label class="qrtoggle" id="rbHuecosFila" style="margin-top:0;font-size:11.5px;">
+      <input type="checkbox" id="rbHuecos" checked> 🕳️ Vaciar huecos internos (asas, aros, espacios)
+    </label>
+    <div class="rbSeg" id="rbPincel">
+      <button data-p="off" class="on">✋ Ver<small>sin pintar</small></button>
+      <button data-p="borrar">🧽 Borrar<small>quita de más</small></button>
+      <button data-p="restaurar">🖌️ Traer<small>devuelve</small></button>
+    </div>
+    <div class="sizerow" id="rbFilaPincel" style="display:none;">
+      <span class="sizelbl">⭕ Pincel</span>
+      <input type="range" id="rbBrocha" min="10" max="180" value="55" step="5">
+      <span class="sizeval" id="rbBrochaVal">55</span>
+    </div>
+    <div class="sizerow" id="rbFilaCmp" style="display:none;">
+      <span class="sizelbl">👁️ Antes / después</span>
+      <input type="range" id="rbCmpPos" min="0" max="100" value="50" step="1">
+      <span class="sizeval" id="rbCmpVal">50%</span>
+    </div>
+    <div style="display:flex;gap:7px;">
+      <button class="btn dark" id="rbComparar" style="flex:1;justify-content:center;font-size:12px;padding:10px 6px;">👁️ Comparar</button>
+      <button class="btn dark" id="rbUndo" style="flex:1;justify-content:center;font-size:12px;padding:10px 6px;">↩️ Deshacer</button>
+      <button class="btn dark" id="rbRehacerTodo" style="flex:1;justify-content:center;font-size:12px;padding:10px 6px;">🔄 Rehacer</button>
+      <button class="btn dark" id="rbRecortar" style="flex:1;justify-content:center;font-size:12px;padding:10px 6px;">✂️ Ajustar</button>
+    </div>
+    <div class="rbInfo" id="rbDiag"></div>
+    <details id="rbAvz">
+      <summary>⚙️ Avanzado — usar remove.bg (opcional)</summary>
+      <div style="margin-top:8px;display:flex;gap:6px;">
+        <input type="text" id="inpRmKey" placeholder="API key de remove.bg…" style="flex:1;min-width:0;">
+        <button class="btn dark" id="btnRmKeySave" style="padding:9px 12px;font-size:12px;flex:none;">💾</button>
+      </div>
+      <button class="btn dark" id="rbRemoveBg" style="width:100%;justify-content:center;margin-top:7px;font-size:12px;">☁️ Probar con remove.bg</button>
+      <div class="rbInfo" style="margin-top:6px;">Solo si tienes clave propia. El plan gratis da <b>50 imágenes al mes</b>; los modos ⚡ y 🤖 de arriba no tienen límite.</div>
+    </details>
+  </div>
 </div>
 
 <div id="comboBar" style="display:none;position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:98;background:linear-gradient(135deg,#1c1c20,#141417);border:1px solid rgba(245,166,35,.5);border-radius:30px;padding:10px 18px;box-shadow:0 12px 32px rgba(0,0,0,.55);display:none;align-items:center;gap:12px;font-size:13px;font-weight:700;">
@@ -2804,6 +3153,7 @@ let SANS  = "'Segoe UI', system-ui, Arial, sans-serif";
       await f.load();
       document.fonts.add(f);
     }));
+    if(JSON.parse(localStorage.getItem("tmgen_ahorro")||"false")) throw new Error("ahorro");
     SANS = "Poppins, 'Segoe UI', system-ui, Arial, sans-serif";
     if(typeof dibujar==="function") dibujar();
   }catch(e){ /* sin red: se queda la fuente del sistema */ }
@@ -2874,6 +3224,7 @@ function escenaDe(p){
 const ESCENAS = {mesa:"escenas/mesa.jpg", sala:"escenas/sala.jpg", taller:"escenas/taller.jpg", gym:"escenas/gym.jpg", escritorio:"escenas/escritorio.jpg", cocina:"escenas/cocina.jpg", calle:"escenas/calle.jpg"};
 /* precarga perezosa: baja las escenas en segundo plano tras abrir la app */
 function precargarEscenas(){
+  try{ if(JSON.parse(localStorage.getItem("tmgen_ahorro")||"false")) return; }catch(e){}
   const orden = ["mesa","sala","taller","gym","escritorio","cocina","calle"];
   let i = 0;
   (function next(){
@@ -2906,7 +3257,7 @@ const imgCache = {};
 const $ = s => document.querySelector(s);
 function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2600);}
 function fmtMN(usd){return Math.round(usd*tasaMN).toLocaleString("es-CU").replace(/,/g," ");}
-function acento(cat){return ACENTOS[cat]||"#FF6B35";}
+function acento(cat){ if(typeof campana!=="undefined" && campana && campana!=="auto") return campana; return ACENTOS[cat]||"#FF6B35"; }
 function hex2rgba(h,a){const n=parseInt(h.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`;}
 function keyword(p){
   const w = p.nombre.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9 ]/g," ").trim().split(/\s+/);
@@ -3116,6 +3467,7 @@ function filtrados(){
   else if(filtroChip==="resena") l = l.filter(p=>tieneResena(p));
   else if(filtroChip==="sinpub") l = l.filter(p=>diasSinPub(p.id)==null);
   else if(filtroChip==="pocostock") l = l.filter(p=>Number(p.stock)>0 && Number(p.stock)<=3);
+  else if(filtroChip==="editado") l = l.filter(p=>edIds.has(String(p.id)));
   if(ord==="pub") l.sort((a,b)=>{
     const A=diasSinPub(a.id), B=diasSinPub(b.id);
     const sA=A==null?1e9:A, sB=B==null?1e9:B;
@@ -3151,6 +3503,7 @@ function render(){
           ${tieneResena(p)?`<span class="revbadge" title="Tiene reseña">⭐</span>`:""}
           ${vendidos[String(p.id)]>0?`<span class="revbadge" style="background:rgba(255,107,53,.14);border-color:rgba(255,107,53,.5);" title="${vendidos[String(p.id)]} venta(s)">🏆${vendidos[String(p.id)]}</span>`:""}
           ${dsp!=null?`<span class="pubbadge" title="Publicado hace ${dsp} día(s)">✅ ${dsp===0?"hoy":dsp+"d"}</span>`:""}
+          ${edIds.has(String(p.id))?`<span class="edbadge" title="Tienes un diseño guardado">✏️ editado</span>`:""}
         </div>
       </div>`;
     d.onclick = ()=>{
@@ -3208,7 +3561,15 @@ function renderComboList(){
 function modoPreview(on){
   document.body.classList.toggle("preview", !!on);
   renderPicked();
-  if(on) window.scrollTo({top:0, behavior:"smooth"});
+  if(typeof sincronizarHoja==="function") sincronizarHoja();
+  if(on){
+    window.scrollTo({top:0, behavior:"smooth"});
+    /* la primera vez en el móvil enseñamos dónde están ahora los ajustes */
+    if(window.matchMedia("(max-width:1020px)").matches && !leerPref("vio_hoja",false)){
+      guardarPref("vio_hoja", true);
+      setTimeout(()=>{ abrirHoja(); toast("🎛️ Aquí están tamaño, brillo y quitar fondo — el diseño se ve arriba mientras editas"); }, 500);
+    }
+  }
 }
 function renderPicked(){
   const el = document.getElementById("pickedList");
@@ -3229,9 +3590,16 @@ function renderPicked(){
     el.appendChild(d);
   }
 }
-function seleccionar(p, abrirPreview){
+async function seleccionar(p, abrirPreview){
   if(comboMode){ toggleCombo(p); return; }
   sel = p; fotoSinFondo = null;
+  textos = []; txSel = null; fotosExtra = []; campana = "auto";
+  sombraCfg = {on:true, fuerza:0.45};
+  const _cs=document.getElementById("chkSombra"); if(_cs) _cs.checked=true;
+  const _rs=document.getElementById("rngSombra");
+  if(_rs){ _rs.value=45; document.getElementById("sombraVal").textContent="45%"; }
+  document.querySelectorAll("#campRow .campchip").forEach(x=>x.classList.toggle("on", x.dataset.c==="auto"));
+  const _gl=document.getElementById("galLista"); if(_gl) _gl.innerHTML="";
   escalaProducto = 1;
   escOffX = 0; escOffY = 0; escEscala = 1;
   ovNombre = ""; ovPrecio = null;
@@ -3241,8 +3609,6 @@ function seleccionar(p, abrirPreview){
   if(inP){ inP.value = ""; inP.placeholder = "$"+p.precioActual; }
   const re = document.getElementById("rngEscEscala");
   if(re){ re.value = 100; document.getElementById("escEscalaVal").textContent = "100%"; }
-  const sr = document.getElementById("sizeRow");
-  if(sr){ sr.style.display = "none"; }
   const rg = document.getElementById("rngEscala");
   if(rg){ rg.value = 100; document.getElementById("escalaVal").textContent = "100%"; }
   $("#uzone").classList.remove("ok");
@@ -3253,6 +3619,10 @@ function seleccionar(p, abrirPreview){
   updCapPrev();
   renderPreviews();
   actualizarEscenaInfo();
+  const _tenia = await restaurarEdicion(p);
+  if(_tenia){ dibujar(); renderPreviews(); updCapPrev(); toast("🎨 Diseño guardado restaurado tal como lo dejaste"); }
+  if(typeof actualizarCajasEstilo==="function") actualizarCajasEstilo();
+  if(typeof actualizarHojaRapida==="function") actualizarHojaRapida();
   if(abrirPreview) modoPreview(true);
   else renderPicked();
 }
@@ -3369,7 +3739,7 @@ function conBrillo(ctx,fn){
   fn();
   try{ ctx.filter = prev; }catch(e){}
 }
-function vitrina(ctx,x,y,w,h,img,ac,pad=26){
+function vitrina(ctx,x,y,w,h,img,ac,pad=26,esc){
   ctx.save();
   const halo = ctx.createRadialGradient(x+w/2,y+h/2,0,x+w/2,y+h/2,Math.max(w,h)*.7);
   halo.addColorStop(0,hex2rgba(ac,.5));
@@ -3383,7 +3753,8 @@ function vitrina(ctx,x,y,w,h,img,ac,pad=26){
   ctx.restore();
   if(img){
     ctx.save();rr(ctx,x,y,w,h,26);ctx.clip();
-    const iw=w-pad*2, ih=h-pad*2, r=Math.min(iw/img.width, ih/img.height);
+    const iw=w-pad*2, ih=h-pad*2;
+    const r=Math.min(iw/img.width, ih/img.height)*(esc==null?escalaProducto:esc);
     const dw=img.width*r, dh=img.height*r;
     conBrillo(ctx, ()=>ctx.drawImage(img, x+(w-dw)/2, y+(h-dh)/2, dw, dh));
     const gl = ctx.createLinearGradient(x,y,x+w*.55,y+h*.55);
@@ -3529,9 +3900,9 @@ async function dibujar(){
   const ctx = cv.getContext("2d");
   let img = null;
   try{
-    img = ((estilo==="flotante"||estilo==="escena") && fotoSinFondo) ? fotoSinFondo : await loadImage(sel.imagen);
+    img = ((estilo==="flotante"||estilo==="escena"||estilo==="urgencia") && fotoSinFondo) ? fotoSinFondo : await loadImage(sel.imagen);
   }catch(e){}
-  if(estilo==="escena"){ try{ await loadImage(ESCENAS[escenaDe(sel)]); }catch(e){} }
+  if(estilo==="escena" && ESCENAS[escenaDe(sel)]){ try{ await loadImage(ESCENAS[escenaDe(sel)]); }catch(e){} }
   const pe = prodEfectivo(sel);
   if(estilo==="vitrina") dVitrina(ctx,pe,img);
   else if(estilo==="oferta") dOferta(ctx,pe,img);
@@ -3539,7 +3910,12 @@ async function dibujar(){
   else if(estilo==="claro") dClaro(ctx,pe,img);
   else if(estilo==="resena") dResena(ctx,pe,img);
   else if(estilo==="escena") dEscena(ctx,pe,img);
+  else if(estilo==="urgencia") dUrgencia(ctx,pe,img);
+  else if(estilo==="galeria") dGaleria(ctx,pe,img);
   else dFlotante(ctx,pe,img);
+  marcaAgua(ctx, cv.width, cv.height);
+  dibujarTextos(ctx, cv.width, cv.height);
+  programarGuardado();
   }catch(err){ toast("⚠️ Error al dibujar: "+err.message); }
 }
 
@@ -3754,6 +4130,7 @@ function dFlotante(ctx,p,img){
     const maxW=920,maxH=620;
     const r=Math.min(maxW/img.width,maxH/img.height)*escalaProducto;
     const dw=img.width*r, dh=img.height*r;
+    if(fotoSinFondo) sombraPiso(ctx, cx, cy+dh/2+26, dw);
     ctx.save();
     ctx.shadowColor="rgba(0,0,0,.45)";ctx.shadowBlur=40;ctx.shadowOffsetY=18;
     conBrillo(ctx, ()=>ctx.drawImage(img, cx-dw/2, cy-dh/2+20, dw, dh));
@@ -3889,7 +4266,7 @@ function dClaro(ctx,p,img){
   if(img){
     ctx.save();rr(ctx,fx,fy,fw,fh,30);ctx.clip();
     const pad=40, iw=fw-pad*2, ih=fh-pad*2;
-    const rr2=Math.min(iw/img.width, ih/img.height);
+    const rr2=Math.min(iw/img.width, ih/img.height)*escalaProducto;
     const dw=img.width*rr2, dh=img.height*rr2;
     conBrillo(ctx, ()=>ctx.drawImage(img, fx+(fw-dw)/2, fy+(fh-dh)/2, dw, dh));
     ctx.restore();
@@ -4049,8 +4426,58 @@ function dResena(ctx,p,img){
   ctx.fillText("⭐ 4.7 de calificación · opiniones reales en tiendamax.org",W/2,H-24);
 }
 
+const ESCENAS_GEN = ["estudio","podio","degradado"];
+function fondoGenerado(ctx,W,H,tipo,ac){
+  if(tipo==="estudio"){
+    /* ciclorama de estudio fotográfico: pared clara que curva al suelo */
+    const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,"#f2f2f4"); g.addColorStop(.52,"#e2e2e6");
+    g.addColorStop(.62,"#c9c9d0"); g.addColorStop(1,"#9d9da6");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    const foco=ctx.createRadialGradient(W/2,H*0.42,0,W/2,H*0.42,W*0.9);
+    foco.addColorStop(0,"rgba(255,255,255,.85)"); foco.addColorStop(1,"rgba(255,255,255,0)");
+    ctx.fillStyle=foco; ctx.fillRect(0,0,W,H);
+    const vin=ctx.createRadialGradient(W/2,H/2,W*0.35,W/2,H/2,W*1.05);
+    vin.addColorStop(0,"rgba(0,0,0,0)"); vin.addColorStop(1,"rgba(0,0,0,.28)");
+    ctx.fillStyle=vin; ctx.fillRect(0,0,W,H);
+  }else if(tipo==="podio"){
+    const g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,"#16161b"); g.addColorStop(.55,"#1e1e26"); g.addColorStop(1,"#0c0c10");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    const halo=ctx.createRadialGradient(W/2,H*0.46,0,W/2,H*0.46,W*0.78);
+    halo.addColorStop(0,hex2rgba(ac,.34)); halo.addColorStop(.55,hex2rgba(ac,.10)); halo.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=halo; ctx.fillRect(0,0,W,H);
+    /* cilindro de podio */
+    const cx=W/2, top=H*0.62, rx=W*0.34, ry=W*0.075, alto=H*0.10;
+    ctx.save();
+    ctx.fillStyle="rgba(255,255,255,.10)";
+    ctx.beginPath(); ctx.ellipse(cx,top,rx,ry,0,0,7); ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.055)";
+    ctx.fillRect(cx-rx,top,rx*2,alto);
+    ctx.beginPath(); ctx.ellipse(cx,top+alto,rx,ry,0,0,7); ctx.fill();
+    ctx.strokeStyle=hex2rgba(ac,.5); ctx.lineWidth=3;
+    ctx.beginPath(); ctx.ellipse(cx,top,rx,ry,0,0,7); ctx.stroke();
+    ctx.restore();
+  }else{
+    const g=ctx.createLinearGradient(0,0,W,H);
+    g.addColorStop(0,ac); g.addColorStop(.5,"#1b1b22"); g.addColorStop(1,"#0b0b0d");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    for(let i=0;i<3;i++){
+      const bx=W*(0.2+i*0.32), by=H*(0.22+i*0.24), r=W*(0.36-i*0.06);
+      const b=ctx.createRadialGradient(bx,by,0,bx,by,r);
+      b.addColorStop(0,`rgba(255,255,255,${0.10-i*0.025})`); b.addColorStop(1,"rgba(255,255,255,0)");
+      ctx.fillStyle=b; ctx.fillRect(0,0,W,H);
+    }
+    dither(ctx,0,0,W,H,4);
+  }
+}
 function dEscena(ctx,p,img){
   const W=1080,H=1920;
+  const clave = escenaDe(p);
+  if(ESCENAS_GEN.includes(clave)){
+    fondoGenerado(ctx,W,H,clave,acento(p.categoria));
+    return dEscenaResto(ctx,p,img,W,H);
+  }
   const scn = imgCache[ESCENAS[escenaDe(p)]];
   /* fondo: la foto real (cover) */
   if(scn){
@@ -4064,6 +4491,9 @@ function dEscena(ctx,p,img){
     ctx.fillText("⏳ Cargando escena…",W/2,H/2-380);
     loadImage(ESCENAS[escenaDe(p)]).then(()=>{ if(estilo==="escena") dibujar(); }).catch(()=>{});
   }
+  return dEscenaResto(ctx,p,img,W,H);
+}
+function dEscenaResto(ctx,p,img,W,H){
   /* velo superior sutil para el logo */
   let gt = ctx.createLinearGradient(0,0,0,300);
   gt.addColorStop(0,"rgba(0,0,0,.55)");gt.addColorStop(1,"rgba(0,0,0,0)");
@@ -4079,12 +4509,7 @@ function dEscena(ctx,p,img){
       const r=Math.min(maxW/img.width,maxH/img.height)*escEscala;
       const dw=img.width*r, dh=img.height*r;
       /* sombra de contacto elíptica suave (integra el producto a la superficie) */
-      ctx.save();
-      const gs=ctx.createRadialGradient(cx,baseY+10,0,cx,baseY+10,dw*.46);
-      gs.addColorStop(0,"rgba(0,0,0,.5)");gs.addColorStop(1,"rgba(0,0,0,0)");
-      ctx.fillStyle=gs;
-      ctx.beginPath();ctx.ellipse(cx,baseY+10,dw*.46,dw*.075,0,0,7);ctx.fill();
-      ctx.restore();
+      sombraPiso(ctx, cx, baseY+10, dw);
       ctx.save();
       ctx.shadowColor="rgba(0,0,0,.35)";ctx.shadowBlur=30;ctx.shadowOffsetY=14;
       conBrillo(ctx, ()=>ctx.drawImage(img, cx-dw/2, baseY-dh, dw, dh));
@@ -4174,7 +4599,7 @@ function dCombo(ctx, items, precioCombo){
       conBrillo(ctx, ()=>ctx.drawImage(png, ccx-dw/2, ccy-dh/2, dw, dh));
       ctx.restore();
     }else{
-      vitrina(ctx,x,vy,vw,vh,imgCache[it.imagen]||null,acento(it.categoria),18);
+      vitrina(ctx,x,vy,vw,vh,imgCache[it.imagen]||null,acento(it.categoria),18,1);
     }
     // etiqueta nombre debajo
     ctx.font=`700 22px ${SANS}`;
@@ -4474,13 +4899,31 @@ function descargarBlob(b,nombre){
       y: (t.clientY - r.top) * (cv.height / r.height)
     };
   }
+  let dragTx = null;
   function down(ev){
-    if(estilo!=="escena" || comboMode) return;
+    if(comboMode) return;
+    const p0 = pos(ev);
+    const t = (typeof textoEnPunto==="function") ? textoEnPunto(p0.x, p0.y) : null;
+    if(t){
+      dragTx = { t, p:p0, ox:t.x, oy:t.y };
+      txSel = t.id; renderTextos();
+      ev.preventDefault();
+      return;
+    }
+    if(estilo!=="escena") return;
     drag = { p: pos(ev), ox: escOffX, oy: escOffY };
     ev.preventDefault();
   }
   let _rafPend = false;
   function move(ev){
+    if(dragTx){
+      const q = pos(ev);
+      dragTx.t.x = Math.max(0.04, Math.min(0.96, dragTx.ox + (q.x-dragTx.p.x)/cv.width));
+      dragTx.t.y = Math.max(0.04, Math.min(0.96, dragTx.oy + (q.y-dragTx.p.y)/cv.height));
+      if(!_rafPend){ _rafPend=true; requestAnimationFrame(()=>{ _rafPend=false; dibujar(); }); }
+      ev.preventDefault();
+      return;
+    }
     if(!drag) return;
     const p = pos(ev);
     escOffX = Math.max(-420, Math.min(420, drag.ox + (p.x - drag.p.x)));
@@ -4491,7 +4934,10 @@ function descargarBlob(b,nombre){
     }
     ev.preventDefault();
   }
-  function up(){ drag = null; }
+  function up(){
+    if(dragTx){ dragTx=null; if(typeof programarGuardado==="function") programarGuardado(); }
+    drag = null;
+  }
   cv.addEventListener("mousedown", down);
   cv.addEventListener("mousemove", move);
   window.addEventListener("mouseup", up);
@@ -4513,9 +4959,11 @@ function descargarBlob(b,nombre){
     }
     lastTap = now;
   });
-  /* cursor de agarre en escena */
-  cv.addEventListener("mousemove", ()=>{
-    cv.style.cursor = (estilo==="escena" && !comboMode) ? (drag?"grabbing":"grab") : "default";
+  /* cursor de agarre */
+  cv.addEventListener("mousemove", ev=>{
+    let sobreTx=false;
+    try{ sobreTx = !!(typeof textoEnPunto==="function" && textoEnPunto(pos(ev).x, pos(ev).y)); }catch(e){}
+    cv.style.cursor = (sobreTx || (estilo==="escena" && !comboMode)) ? ((drag||dragTx)?"grabbing":"grab") : "default";
   });
 })();
 
@@ -4527,14 +4975,19 @@ const ESTILOS_PREV = [
   {id:"flotante", nombre:"✨ Flotante", w:1080, h:1350},
   {id:"claro", nombre:"🌅 Claro WA", w:1080, h:1920},
   {id:"resena", nombre:"⭐ Reseña", w:1080, h:1080},
-  {id:"escena", nombre:"🏠 Escena", w:1080, h:1920}
+  {id:"escena", nombre:"🏠 Escena", w:1080, h:1920},
+  {id:"urgencia", nombre:"⏰ Urgencia", w:1080, h:1080},
+  {id:"galeria", nombre:"🖼️ Galería", w:1080, h:1080}
 ];
 let _prevToken = 0;
 async function renderPreviews(){
   const row = document.getElementById("prevRow");
   if(!row || !sel || comboMode) return;
   const token = ++_prevToken;
-  row.innerHTML = ESTILOS_PREV.map(e=>`
+  const LISTA = ahorroDatos()
+    ? ESTILOS_PREV.filter(e=>[estilo,"vitrina","oferta","story","flotante"].includes(e.id))
+    : ESTILOS_PREV;
+  row.innerHTML = LISTA.map(e=>`
     <div class="prevthumb ${estilo===e.id?"on":""}" data-sty="${e.id}">
       <div class="cargando">⏳</div>
       <div class="pl">${e.nombre}</div>
@@ -4550,19 +5003,21 @@ async function renderPreviews(){
   try{ img = await loadImage(sel.imagen); }catch(e){}
   if(token!==_prevToken) return;
   const off = document.createElement("canvas");
-  for(const e of ESTILOS_PREV){
+  for(const e of LISTA){
     if(token!==_prevToken) return;
     try{
       off.width = e.w; off.height = e.h;
       const octx = off.getContext("2d");
-      const imgUsar = ((e.id==="flotante"||e.id==="escena") && fotoSinFondo) ? fotoSinFondo : img;
-      if(e.id==="escena"){ try{ await loadImage(ESCENAS[escenaDe(sel)]); }catch(err2){} }
+      const imgUsar = ((e.id==="flotante"||e.id==="escena"||e.id==="urgencia") && fotoSinFondo) ? fotoSinFondo : img;
+      if(e.id==="escena" && ESCENAS[escenaDe(sel)]){ try{ await loadImage(ESCENAS[escenaDe(sel)]); }catch(err2){} }
       if(e.id==="vitrina") dVitrina(octx,sel,imgUsar);
       else if(e.id==="oferta") dOferta(octx,sel,imgUsar);
       else if(e.id==="story") dStory(octx,sel,imgUsar);
       else if(e.id==="claro") dClaro(octx,sel,imgUsar);
       else if(e.id==="resena") dResena(octx,sel,imgUsar);
       else if(e.id==="escena") dEscena(octx,sel,imgUsar);
+      else if(e.id==="urgencia") dUrgencia(octx,sel,imgUsar);
+      else if(e.id==="galeria") dGaleria(octx,sel,imgUsar);
       else dFlotante(octx,sel,imgUsar);
       const t = row.querySelector(`[data-sty=${e.id}]`);
       if(!t) continue;
@@ -4582,14 +5037,14 @@ function marcarPrevActiva(){
 }
 
 /* ================= ACCIONES ================= */
-function canvasBlob(){return new Promise(r=>$("#cv").toBlob(r,"image/png"));}
-function nombreArchivo(p,suf=""){return `tiendamax-${p.slug||p.id}${suf}.png`;}
+function canvasBlob(){const f=formatoSalida();return new Promise(r=>$("#cv").toBlob(r,f, f==="image/png"?undefined:0.92));}
+function nombreArchivo(p,suf=""){return `tiendamax-${p.slug||p.id}${suf}.${extSalida()}`;}
 
 $("#btnPng").onclick = async ()=>{
   if(!sel && !(comboMode&&comboSel.length>=2)) return;
   const b = await canvasBlob();
   const a = document.createElement("a");
-  a.href = URL.createObjectURL(b); a.download = comboMode?"tiendamax-combo.png":nombreArchivo(sel);
+  a.href = URL.createObjectURL(b); a.download = comboMode?("tiendamax-combo."+extSalida()):nombreArchivo(sel);
   a.click(); URL.revokeObjectURL(a.href);
   if(!comboMode) registrarPub(sel);
   toast("✅ Imagen descargada");
@@ -4597,7 +5052,7 @@ $("#btnPng").onclick = async ()=>{
 $("#btnShare").onclick = async ()=>{
   if(!sel && !(comboMode&&comboSel.length>=2)) return;
   const b = await canvasBlob();
-  const f = new File([b], comboMode?"tiendamax-combo.png":nombreArchivo(sel), {type:"image/png"});
+  const f = new File([b], comboMode?("tiendamax-combo."+extSalida()):nombreArchivo(sel), {type:formatoSalida()});
   if(navigator.canShare && navigator.canShare({files:[f]})){
     try{ await navigator.share({files:[f], text:caption(sel)}); if(!comboMode) registrarPub(sel); }catch(e){}
   }else if(!esMovil()){
@@ -4682,6 +5137,8 @@ document.querySelectorAll(".stybtn").forEach(b=>{
     $("#uploadbox").style.display = estilo==="flotante" ? "block" : "none";
     $("#escenaBox").style.display = estilo==="escena" ? "block" : "none";
     if(estilo==="escena") actualizarEscenaInfo();
+    if(typeof actualizarCajasEstilo==="function") actualizarCajasEstilo();
+    if(typeof actualizarHojaRapida==="function") actualizarHojaRapida();
     dibujar();
     marcarPrevActiva();
   };
@@ -4710,21 +5167,16 @@ document.querySelectorAll(".scnbtn").forEach(b=>{
   };
 });
 function nombreEscena(k){
-  return {mesa:"🪵 Mesa madera",sala:"🛋️ Sala",taller:"🔧 Taller",gym:"🏋️ Gym",escritorio:"💻 Escritorio",cocina:"🍳 Cocina",calle:"🌆 Calle"}[k]||k;
+  return {mesa:"🪵 Mesa madera",sala:"🛋️ Sala",taller:"🔧 Taller",gym:"🏋️ Gym",escritorio:"💻 Escritorio",
+    cocina:"🍳 Cocina",calle:"🌆 Calle",estudio:"🎬 Estudio",podio:"⬜ Podio",degradado:"🌈 Degradado"}[k]||k;
 }
 $("#uzoneEscena").onclick = ()=>$("#fileEscena").click();
 $("#fileEscena").onchange = e=>{
   const f = e.target.files[0];
   if(!f) return;
-  const im = new Image();
-  im.onload = ()=>{
-    fotoSinFondo = im;
-    $("#uzoneEscena").classList.add("ok");
-    $("#uzoneEscena").innerHTML = `✅ <b>${f.name}</b><br>Toca para cambiarla`;
-    dibujar();
-    renderPreviews();
-  };
-  im.src = URL.createObjectURL(f);
+  const lector = new FileReader();
+  lector.onload = ()=>{ _cargarPng(lector.result, f.name, "uzoneEscena"); };
+  lector.readAsDataURL(f);
 };
 /* restaurar preferencias guardadas */
 (function(){
@@ -4743,55 +5195,13 @@ $("#fileEscena").onchange = e=>{
   if(pl) $("#selPlantilla").value = pl;
 })();
 
-/* quitar fondo automático (#6) */
-async function quitarFondoComun(btn){
+/* quitar fondo — ahora con el estudio local (sin API, sin límites) */
+function quitarFondoComun(){
   if(!sel){ toast("Elige un producto primero"); return; }
-  let key = ($("#inpRmKey").value||"").trim() || leerPref("rmbg_key","");
-  if(!key){
-    key = prompt("Pega tu API key de remove.bg (gratis en remove.bg/api — 50 imágenes/mes)");
-    if(!key){ toast("🔑 Necesitas la clave de remove.bg — también puedes ponerla en el estilo Flotante"); return; }
-    key = key.trim();
-    const inp = document.getElementById("inpRmKey");
-    if(inp) inp.value = key;
-  }
-  guardarPref("rmbg_key", key);
-  const txtOrig = btn.textContent;
-  btn.disabled=true; btn.textContent="🪄 Quitando fondo…";
-  try{
-    const fd = new FormData();
-    fd.append("image_url", sel.imagen);
-    fd.append("size", "auto");
-    const r = await fetch("https://api.remove.bg/v1.0/removebg",{
-      method:"POST",
-      headers:{"X-Api-Key": key},
-      body: fd
-    });
-    if(!r.ok){
-      if(r.status===403||r.status===402){ guardarPref("rmbg_key",""); const inp=document.getElementById("inpRmKey"); if(inp) inp.value=""; throw new Error("API key inválida o sin créditos — revisa la clave"); }
-      throw new Error("remove.bg respondió "+r.status);
-    }
-    const blob = await r.blob();
-    const im = new Image();
-    im.onload = ()=>{
-      fotoSinFondo = im;
-      const uz1 = document.getElementById("uzone");
-      if(uz1){ uz1.classList.add("ok"); uz1.innerHTML = `✅ <b>Fondo eliminado automáticamente</b><br>Toca para subir otra foto`; }
-      const uz2 = document.getElementById("uzoneEscena");
-      if(uz2){ uz2.classList.add("ok"); uz2.innerHTML = `✅ <b>Fondo eliminado automáticamente</b><br>Toca para subir otra foto`; }
-      const sr = document.getElementById("sizeRow");
-      if(sr) sr.style.display = "flex";
-      dibujar();
-      renderPreviews();
-      toast("🪄 ¡Fondo eliminado! Producto integrado");
-    };
-    im.src = URL.createObjectURL(blob);
-  }catch(err){
-    toast("⚠️ "+err.message);
-  }
-  btn.disabled=false; btn.textContent=txtOrig;
+  abrirEstudio(sel.imagen);
 }
-$("#btnRmBg").onclick = ()=>quitarFondoComun($("#btnRmBg"));
-$("#btnRmBgEscena").onclick = ()=>quitarFondoComun($("#btnRmBgEscena"));
+$("#btnRmBg").onclick = ()=>quitarFondoComun();
+$("#btnRmBgEscena").onclick = ()=>quitarFondoComun();
 $("#btnRmKeySave").onclick = ()=>{
   const k = ($("#inpRmKey").value||"").trim();
   if(!k){ toast("El campo está vacío"); return; }
@@ -4806,24 +5216,28 @@ $("#uzone").onclick = ()=>$("#fileUp").click();
 $("#fileUp").onchange = e=>{
   const f = e.target.files[0];
   if(!f) return;
+  const lector = new FileReader();
+  lector.onload = ()=>{ _cargarPng(lector.result, f.name, "uzone"); };
+  lector.readAsDataURL(f);
+};
+function _cargarPng(src, nombre, zona){
   const im = new Image();
   im.onload = ()=>{
     fotoSinFondo = im;
-    $("#uzone").classList.add("ok");
-    $("#uzone").innerHTML = `✅ <b>${f.name}</b> cargada<br>Toca para cambiarla`;
-    $("#sizeRow").style.display = "flex";
-    dibujar();
-    renderPreviews();
+    const z = document.getElementById(zona);
+    if(z){ z.classList.add("ok"); z.innerHTML = `✅ <b>${nombre}</b><br>Toca para cambiarla`; }
+    const sr = document.getElementById("sizeRow"); if(sr) sr.style.display = "flex";
+    dibujar(); renderPreviews();
+    if(typeof programarGuardado==="function") programarGuardado();
   };
-  im.src = URL.createObjectURL(f);
-};
-
+  im.src = src;
+}
 $("#selPlantilla").onchange = ()=>{ guardarPref("plantilla", $("#selPlantilla").value); updCapPrev(); };
 $("#chkQR").onchange = ()=>{ guardarPref("qr", $("#chkQR").checked); dibujar(); renderPreviews(); };
 let _notaT = null;
 $("#inpNota").oninput = ()=>{
   clearTimeout(_notaT);
-  _notaT = setTimeout(dibujar, 300);
+  _notaT = setTimeout(()=>{ dibujar(); programarGuardado(); }, 300);
 };
 let _ovT = null;
 $("#inpNombre").oninput = ()=>{
@@ -5076,6 +5490,8 @@ function zipStore(files){
   return new Blob([...parts,...central,new Uint8Array(eo.buffer)],{type:"application/zip"});
 }
 async function generarZip(lista, etiqueta){
+  _loteEnCurso = true;
+  try{
   /* preguntar el modo: rápido o con revisión producto por producto */
   const revisar = lista.length>1 && await preguntarModoLote(lista.length);
   if(revisar===null) return; /* canceló */
@@ -5099,7 +5515,9 @@ async function generarZip(lista, etiqueta){
   sel = guardaSel; dibujar();
   $("#prog").style.display = "none"; $("#btnLote").disabled = false;
   mostrarPreviewLote(files, etiqueta, "zip");
+  }finally{ _loteEnCurso = false; }
 }
+
 function mostrarPreviewLote(files, etiqueta, modo){
   const old = document.getElementById("loteModal");
   if(old) old.remove();
@@ -5742,6 +6160,7 @@ $("#btnCampana").onclick = async ()=>{
     {sty:"resena", nombre:"06-dia3-resena"}
   ];
   const guardaEstilo = estilo;
+  _loteEnCurso = true;
   let done = 0;
   /* captions distintos por día */
   const caps = [
@@ -5766,7 +6185,7 @@ $("#btnCampana").onclick = async ()=>{
     `DÍA 3 (cierre): publica 05 en el feed + 06 (reseña) como refuerzo\nCaption:\n${caps[2]}\n\n${"-".repeat(50)}\n\n`+
     `💡 Consejo: graba también el video (🎬) del estilo Flotante el día 1.\n💡 La palabra clave "${keyword(p)}" te dirá cuántos pedidos trajo la campaña.`;
   files.push({name:"00-GUIA-CAMPANA.txt", data:new TextEncoder().encode(guia)});
-  estilo = guardaEstilo; dibujar();
+  estilo = guardaEstilo; _loteEnCurso = false; dibujar();
   registrarPub(p);
   const zip = zipStore(files);
   const a = document.createElement("a");
@@ -5777,6 +6196,1560 @@ $("#btnCampana").onclick = async ()=>{
   toast("🎯 Campaña de 3 días lista: 6 imágenes + guía");
 };
 
+
+/* =====================================================================
+   MOTOR DE RECORTE DE FONDO — 100% en el dispositivo
+   · Modo ⚡ Rápido: análisis de color + relleno por inundación (0 datos)
+   · Modo 🤖 IA: red neuronal U²-Netp (4,5 MB, se descarga UNA vez)
+   Sin API key, sin cuota mensual, sin subir la foto a ningún servidor.
+   ===================================================================== */
+const RB = {
+  MODELO: [
+    "https://huggingface.co/BritishWerewolf/U-2-Netp/resolve/main/onnx/model.onnx",
+    "https://hf-mirror.com/BritishWerewolf/U-2-Netp/resolve/main/onnx/model.onnx"
+  ],
+  ORT_JS: [
+    "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js",
+    "https://unpkg.com/onnxruntime-web@1.20.1/dist/ort.min.js"
+  ],
+  ORT_WASM: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/",
+  CACHE: "tm-modelos-v1",
+  LADO: 320,
+  sesion: null
+};
+
+/* ---------- análisis del fondo (grupo de color dominante del borde) ---------- */
+function rbAnalizarFondo(d, w, h){
+  const band = Math.max(2, Math.round(Math.min(w,h)*0.03));
+  const esq  = Math.max(3, Math.round(Math.min(w,h)*0.08));
+  const cuenta = new Map();
+  const muestras = [];
+  const add=(x,y,peso)=>{
+    const i=(y*w+x)*4;
+    const k=((d[i]>>4)<<8)|((d[i+1]>>4)<<4)|(d[i+2]>>4);
+    cuenta.set(k,(cuenta.get(k)||0)+peso);
+    muestras.push(i);
+  };
+  for(let y=0;y<h;y++){
+    if(y<band || y>=h-band){ for(let x=0;x<w;x++) add(x,y,1); }
+    else { for(let x=0;x<band;x++) add(x,y,1); for(let x=w-band;x<w;x++) add(x,y,1); }
+  }
+  /* las esquinas casi siempre son fondo: pesan el triple */
+  for(const [bx,by] of [[0,0],[w-esq,0],[0,h-esq],[w-esq,h-esq]])
+    for(let y=by;y<by+esq;y++) for(let x=bx;x<bx+esq;x++) add(x,y,3);
+
+  let mejor=0, mejorK=-1;
+  for(const [k,v] of cuenta) if(v>mejor){ mejor=v; mejorK=k; }
+  const ref=[((mejorK>>8)&15)*16+8, ((mejorK>>4)&15)*16+8, (mejorK&15)*16+8];
+
+  let n=0,sr=0,sg=0,sb=0;
+  for(const i of muestras){
+    if(Math.abs(d[i]-ref[0])<=26 && Math.abs(d[i+1]-ref[1])<=26 && Math.abs(d[i+2]-ref[2])<=26){
+      sr+=d[i]; sg+=d[i+1]; sb+=d[i+2]; n++;
+    }
+  }
+  const color = n ? [sr/n,sg/n,sb/n] : ref;
+  let v=0;
+  for(const i of muestras){
+    if(Math.abs(d[i]-color[0])<=30 && Math.abs(d[i+1]-color[1])<=30 && Math.abs(d[i+2]-color[2])<=30)
+      v += (Math.abs(d[i]-color[0])+Math.abs(d[i+1]-color[1])+Math.abs(d[i+2]-color[2]))/3;
+  }
+  return {color, varianza:n?v/n:0, cobertura:n/muestras.length};
+}
+function rbDist(r,g,b,c){
+  const dr=Math.abs(r-c[0]), dg=Math.abs(g-c[1]), db=Math.abs(b-c[2]);
+  return Math.sqrt((dr*dr+dg*dg+db*db)/3)*0.45 + Math.max(dr,dg,db)*0.55;
+}
+/* ---------- máscara por inundación desde los bordes ---------- */
+function rbMascaraRapida(d, w, h, tol){
+  const fondo = rbAnalizarFondo(d,w,h);
+  const t1 = 8 + tol*1.35 + Math.min(22, fondo.varianza*1.1);
+  const t2 = t1 + 20 + tol*0.25;
+  const N=w*h;
+  const alpha=new Uint8Array(N).fill(255), vis=new Uint8Array(N), pila=new Int32Array(N);
+  let sp=0;
+  const dentro=(q)=>{ const j=q*4; return rbDist(d[j],d[j+1],d[j+2],fondo.color)<t2; };
+  const semilla=(x,y)=>{ const p=y*w+x; if(!vis[p] && dentro(p)){ vis[p]=1; pila[sp++]=p; } };
+  for(let x=0;x<w;x++){ semilla(x,0); semilla(x,h-1); }
+  for(let y=0;y<h;y++){ semilla(0,y); semilla(w-1,y); }
+  while(sp>0){
+    const p=pila[--sp], i=p*4;
+    const dist=rbDist(d[i],d[i+1],d[i+2],fondo.color);
+    alpha[p] = dist<=t1 ? 0 : Math.round(255*Math.min(1,(dist-t1)/(t2-t1)));
+    if(alpha[p]>=250) continue;
+    const x=p%w, y=(p-x)/w;
+    if(x>0   && !vis[p-1] && dentro(p-1)){ vis[p-1]=1; pila[sp++]=p-1; }
+    if(x<w-1 && !vis[p+1] && dentro(p+1)){ vis[p+1]=1; pila[sp++]=p+1; }
+    if(y>0   && !vis[p-w] && dentro(p-w)){ vis[p-w]=1; pila[sp++]=p-w; }
+    if(y<h-1 && !vis[p+w] && dentro(p+w)){ vis[p+w]=1; pila[sp++]=p+w; }
+  }
+  return {alpha, fondo};
+}
+/* ---------- huecos internos: zonas del color del fondo encerradas por el producto
+   (el interior de un asa, un mosquetón, el espacio entre las patas...) ---------- */
+function rbRellenarHuecos(d, alpha, w, h, fondo, tol){
+  const t1 = 8 + tol*1.1 + Math.min(18, fondo.varianza);
+  const t2 = t1 + 18;
+  const N=w*h, lab=new Int32Array(N).fill(-1), cola=new Int32Array(N);
+  const cand=new Uint8Array(N);
+  for(let p=0;p<N;p++){
+    if(alpha[p]<250) continue;
+    const i=p*4;
+    if(rbDist(d[i],d[i+1],d[i+2],fondo.color) < t2) cand[p]=1;
+  }
+  const maxArea = N*0.06;      /* un hueco interno nunca es una parte enorme de la foto */
+  let comp=0; const areas=[], borde=[];
+  for(let p=0;p<N;p++){
+    if(!cand[p] || lab[p]>=0) continue;
+    let qi=0,qe=0; cola[qe++]=p; lab[p]=comp;
+    let area=0, tocaBorde=false;
+    while(qi<qe){
+      const c=cola[qi++]; area++;
+      const x=c%w, y=(c-x)/w;
+      if(x===0||y===0||x===w-1||y===h-1) tocaBorde=true;
+      if(x>0   && cand[c-1] && lab[c-1]<0){ lab[c-1]=comp; cola[qe++]=c-1; }
+      if(x<w-1 && cand[c+1] && lab[c+1]<0){ lab[c+1]=comp; cola[qe++]=c+1; }
+      if(y>0   && cand[c-w] && lab[c-w]<0){ lab[c-w]=comp; cola[qe++]=c-w; }
+      if(y<h-1 && cand[c+w] && lab[c+w]<0){ lab[c+w]=comp; cola[qe++]=c+w; }
+    }
+    areas.push(area); borde.push(tocaBorde); comp++;
+  }
+  for(let p=0;p<N;p++){
+    const l=lab[p];
+    if(l<0 || borde[l] || areas[l]>maxArea) continue;
+    const i=p*4;
+    const dist=rbDist(d[i],d[i+1],d[i+2],fondo.color);
+    alpha[p] = dist<=t1 ? 0 : Math.round(255*Math.min(1,(dist-t1)/(t2-t1)));
+  }
+}
+/* ---------- limpieza: motas sueltas ---------- */
+function rbQuitarMotas(alpha, w, h, minFrac){
+  const N=w*h, lab=new Int32Array(N).fill(-1), cola=new Int32Array(N);
+  const minPix=Math.max(12, Math.round(N*minFrac));
+  const areas=[]; let comp=0;
+  for(let p=0;p<N;p++){
+    if(alpha[p]<40 || lab[p]>=0) continue;
+    let qi=0,qe=0; cola[qe++]=p; lab[p]=comp; let area=0;
+    while(qi<qe){
+      const c=cola[qi++]; area++;
+      const x=c%w, y=(c-x)/w;
+      if(x>0   && alpha[c-1]>=40 && lab[c-1]<0){ lab[c-1]=comp; cola[qe++]=c-1; }
+      if(x<w-1 && alpha[c+1]>=40 && lab[c+1]<0){ lab[c+1]=comp; cola[qe++]=c+1; }
+      if(y>0   && alpha[c-w]>=40 && lab[c-w]<0){ lab[c-w]=comp; cola[qe++]=c-w; }
+      if(y<h-1 && alpha[c+w]>=40 && lab[c+w]<0){ lab[c+w]=comp; cola[qe++]=c+w; }
+    }
+    areas.push(area); comp++;
+  }
+  if(!comp) return;
+  const maxA=Math.max.apply(null,areas);
+  for(let p=0;p<N;p++){
+    const l=lab[p];
+    if(l>=0 && areas[l]<minPix && areas[l]<maxA*0.12) alpha[p]=0;
+  }
+}
+/* ---------- contraste del alfa: corta las franjas semitransparentes anchas
+   que dejan las sombras suaves, conservando el borde antialias real ---------- */
+function rbContrasteAlfa(alpha, bajo, alto){
+  const b=bajo*255, r=(alto-bajo)*255;
+  for(let p=0;p<alpha.length;p++){
+    const a=alpha[p];
+    if(a===0||a===255) continue;
+    const v=(a-b)/r;
+    alpha[p]= v<=0?0:(v>=1?255:Math.round(v*255));
+  }
+}
+/* ---------- suavizado del borde ---------- */
+function rbSuavizar(alpha, w, h, pasadas){
+  for(let k=0;k<pasadas;k++){
+    const s=alpha.slice();
+    for(let y=1;y<h-1;y++) for(let x=1;x<w-1;x++){
+      const p=y*w+x, a=s[p], n0=s[p-1],n1=s[p+1],n2=s[p-w],n3=s[p+w];
+      if(a===255&&n0===255&&n1===255&&n2===255&&n3===255) continue;
+      if(a===0&&n0===0&&n1===0&&n2===0&&n3===0) continue;
+      alpha[p]=(s[p-w-1]+n2+s[p-w+1]+n0+a*2+n1+s[p+w-1]+n3+s[p+w+1])/10|0;
+    }
+  }
+}
+/* ---------- aplicar alfa quitando el halo del fondo ---------- */
+function rbAplicar(d, alpha, w, h, bg){
+  for(let p=0;p<w*h;p++){
+    const a=alpha[p], i=p*4;
+    if(a===0){ d[i+3]=0; continue; }
+    if(a<250 && a>=110 && bg){
+      const f=a/255;
+      for(let k=0;k<3;k++){
+        const v=(d[i+k]-bg[k]*(1-f))/f;
+        d[i+k]= v<0?0:(v>255?255:v);
+      }
+    }
+    d[i+3]=a;
+  }
+}
+/* ---------- utilidades de lienzo ---------- */
+function rbLienzoDe(img, maxLado){
+  let w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+  const r=Math.min(1, maxLado/Math.max(w,h));
+  w=Math.max(1,Math.round(w*r)); h=Math.max(1,Math.round(h*r));
+  const c=document.createElement("canvas"); c.width=w; c.height=h;
+  c.getContext("2d",{willReadFrequently:true}).drawImage(img,0,0,w,h);
+  return c;
+}
+function rbCajaOpaca(cv, margenPct){
+  const ctx=cv.getContext("2d",{willReadFrequently:true});
+  const {data:d,width:w,height:h}=ctx.getImageData(0,0,cv.width,cv.height);
+  let x0=w,y0=h,x1=-1,y1=-1;
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++)
+    if(d[(y*w+x)*4+3]>12){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  if(x1<0) return null;
+  const m=Math.round(Math.max(x1-x0,y1-y0)*(margenPct||0));
+  x0=Math.max(0,x0-m); y0=Math.max(0,y0-m);
+  x1=Math.min(w-1,x1+m); y1=Math.min(h-1,y1+m);
+  return {x:x0,y:y0,w:x1-x0+1,h:y1-y0+1};
+}
+function rbCortar(cv, caja){
+  const out=document.createElement("canvas");
+  out.width=caja.w; out.height=caja.h;
+  out.getContext("2d",{willReadFrequently:true}).drawImage(cv,caja.x,caja.y,caja.w,caja.h,0,0,caja.w,caja.h);
+  return out;
+}
+function rbRecortarTransparente(cv, margenPct){
+  const caja=rbCajaOpaca(cv,margenPct);
+  return caja ? rbCortar(cv,caja) : cv;
+}
+function rbCanvasAImagen(cv){
+  return new Promise((res,rej)=>{
+    const im=new Image();
+    im.onload=()=>res(im); im.onerror=rej;
+    im.src=cv.toDataURL("image/png");
+  });
+}
+
+/* ---------- IA: U²-Netp vía ONNX Runtime Web ---------- */
+function rbCargarScript(url){
+  return new Promise((res,rej)=>{
+    const s=document.createElement("script");
+    s.src=url; s.onload=res; s.onerror=()=>rej(new Error("no se pudo cargar "+url));
+    document.head.appendChild(s);
+  });
+}
+async function rbIntentar(lista, fn){
+  let ultimo=null;
+  for(const u of lista){ try{ return await fn(u); }catch(e){ ultimo=e; } }
+  throw ultimo || new Error("sin fuentes disponibles");
+}
+async function rbBajarModelo(prog){
+  /* caché propia: se descarga una sola vez y queda para siempre */
+  let cache=null;
+  try{ cache = await caches.open(RB.CACHE); }catch(e){}
+  if(cache){
+    for(const u of RB.MODELO){
+      const hit = await cache.match(u);
+      if(hit) return new Uint8Array(await hit.arrayBuffer());
+    }
+  }
+  return await rbIntentar(RB.MODELO, async (url)=>{
+    const r = await fetch(url);
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const total = Number(r.headers.get("content-length")) || 4574861;
+    const partes=[]; let leido=0;
+    const rd = r.body && r.body.getReader ? r.body.getReader() : null;
+    if(rd){
+      for(;;){
+        const {done,value}=await rd.read();
+        if(done) break;
+        partes.push(value); leido+=value.length;
+        if(prog) prog(Math.min(99, Math.round(leido/total*100)));
+      }
+      const buf=new Uint8Array(leido); let off=0;
+      for(const p of partes){ buf.set(p,off); off+=p.length; }
+      if(cache) try{ await cache.put(url, new Response(buf)); }catch(e){}
+      return buf;
+    }
+    const ab = await r.arrayBuffer();
+    if(cache) try{ await cache.put(url, new Response(ab)); }catch(e){}
+    return new Uint8Array(ab);
+  });
+}
+async function rbSesionIA(prog){
+  if(RB.sesion) return RB.sesion;
+  if(!window.ort){
+    if(prog) prog(-1,"Preparando el motor de IA…");
+    await rbIntentar(RB.ORT_JS, rbCargarScript);
+  }
+  if(!window.ort) throw new Error("ONNX Runtime no disponible");
+  try{
+    ort.env.wasm.wasmPaths = RB.ORT_WASM;
+    ort.env.wasm.numThreads = 1;   /* GitHub Pages no permite SharedArrayBuffer */
+    ort.env.wasm.proxy = false;
+    ort.env.logLevel = "error";
+  }catch(e){}
+  if(prog) prog(0,"Descargando la IA (4,5 MB, solo esta vez)…");
+  const bytes = await rbBajarModelo(p=>prog&&prog(p,"Descargando la IA (4,5 MB, solo esta vez)…"));
+  if(prog) prog(-1,"Encendiendo la IA…");
+  RB.sesion = await ort.InferenceSession.create(bytes, {
+    executionProviders:["wasm"], graphOptimizationLevel:"all"
+  });
+  return RB.sesion;
+}
+async function rbMascaraIA(cv, prog){
+  const ses = await rbSesionIA(prog);
+  if(prog) prog(-1,"Analizando la foto…");
+  const L=RB.LADO;
+  const tmp=document.createElement("canvas"); tmp.width=L; tmp.height=L;
+  tmp.getContext("2d").drawImage(cv,0,0,L,L);
+  const px=tmp.getContext("2d").getImageData(0,0,L,L).data;
+  const t=new Float32Array(3*L*L);
+  const M=[0.485,0.456,0.406], S=[0.229,0.224,0.225];
+  /* U²-Net normaliza dividiendo por el máximo del canal */
+  let mx=0; for(let i=0;i<px.length;i+=4) mx=Math.max(mx,px[i],px[i+1],px[i+2]);
+  mx = mx||255;
+  for(let p=0;p<L*L;p++){
+    for(let k=0;k<3;k++) t[k*L*L+p] = ((px[p*4+k]/mx) - M[k]) / S[k];
+  }
+  const nombreIn = ses.inputNames[0];
+  const feeds={}; feeds[nombreIn]=new ort.Tensor("float32", t, [1,3,L,L]);
+  const salida = await ses.run(feeds);
+  const clave = ses.outputNames[0];
+  const o = salida[clave].data;
+  let mn=Infinity, mxv=-Infinity;
+  for(let i=0;i<L*L;i++){ if(o[i]<mn)mn=o[i]; if(o[i]>mxv)mxv=o[i]; }
+  const rango=(mxv-mn)||1;
+  /* máscara a lienzo para reescalarla suavemente al tamaño real */
+  const mc=document.createElement("canvas"); mc.width=L; mc.height=L;
+  const mctx=mc.getContext("2d");
+  const mim=mctx.createImageData(L,L);
+  for(let i=0;i<L*L;i++){
+    let v=(o[i]-mn)/rango;
+    v = v<0.5 ? Math.pow(v*2,1.6)/2 : 1-Math.pow((1-v)*2,1.6)/2;  /* más contraste en el borde */
+    const g=Math.round(v*255);
+    mim.data[i*4]=g; mim.data[i*4+1]=g; mim.data[i*4+2]=g; mim.data[i*4+3]=255;
+  }
+  mctx.putImageData(mim,0,0);
+  const gc=document.createElement("canvas"); gc.width=cv.width; gc.height=cv.height;
+  const gctx=gc.getContext("2d",{willReadFrequently:true});
+  gctx.imageSmoothingEnabled=true; gctx.imageSmoothingQuality="high";
+  gctx.drawImage(mc,0,0,cv.width,cv.height);
+  const gd=gctx.getImageData(0,0,cv.width,cv.height).data;
+  const alpha=new Uint8Array(cv.width*cv.height);
+  for(let p=0;p<alpha.length;p++) alpha[p]=gd[p*4];
+  return alpha;
+}
+
+/* =====================================================================
+   ESTUDIO DE RECORTE (interfaz)
+   ===================================================================== */
+const EST = {
+  origen:null,      /* lienzo con la foto original ya escalada */
+  trabajo:null,     /* lienzo con el resultado actual */
+  historia:[],
+  modo:"rapido",
+  pincel:"off",
+  destino:"flotante",
+  abierto:false
+};
+function rbCap(txt, pct){
+  const c=$("#rbCap"), t=$("#rbCapTxt");
+  if(txt===null){ c.classList.remove("on"); return; }
+  c.classList.add("on");
+  t.innerHTML = txt + (pct>=0 ? `<div style="margin-top:8px;font-size:20px;font-weight:900;color:var(--naranja);">${pct}%</div>` : "");
+}
+function rbPintarVista(){
+  const cv=$("#rbCv"), t=EST.trabajo;
+  if(!t) return;
+  cv.width=t.width; cv.height=t.height;
+  cv.getContext("2d").clearRect(0,0,cv.width,cv.height);
+  cv.getContext("2d").drawImage(t,0,0);
+}
+function rbGuardarHistoria(){
+  if(!EST.trabajo) return;
+  const c=document.createElement("canvas");
+  c.width=EST.trabajo.width; c.height=EST.trabajo.height;
+  c.getContext("2d").drawImage(EST.trabajo,0,0);
+  EST.historia.push(c);
+  if(EST.historia.length>8) EST.historia.shift();
+}
+function rbDiag(msg){ const e=$("#rbDiag"); if(e) e.innerHTML=msg||""; }
+
+async function abrirEstudio(fuente, destino){
+  EST.destino = destino || (estilo==="escena" ? "escena" : "flotante");
+  let img;
+  try{
+    if(fuente instanceof HTMLImageElement) img=fuente;
+    else img = await loadImage(fuente);
+  }catch(e){ toast("⚠️ No se pudo cargar la foto del producto"); return; }
+  EST.origen = rbLienzoDe(img, 1400);
+  EST.trabajo = rbLienzoDe(img, 1400);
+  EST.historia = [];
+  EST.abierto = true;
+  $("#rbWrap").classList.add("on");
+  document.body.style.overflow="hidden";
+  rbPintarVista();
+  rbDiag("");
+  await procesarEstudio();
+}
+function cerrarEstudio(){
+  EST.abierto=false;
+  $("#rbWrap").classList.remove("on");
+  document.body.style.overflow="";
+  rbCap(null);
+}
+async function procesarEstudio(){
+  if(!EST.origen) return;
+  if(EST.trabajo) rbGuardarHistoria();
+  const w=EST.origen.width, h=EST.origen.height;
+  const octx=EST.origen.getContext("2d",{willReadFrequently:true});
+  const base=octx.getImageData(0,0,w,h);
+  const datos=new Uint8ClampedArray(base.data);   /* copia de trabajo */
+  let alpha, bg=null;
+  try{
+    if(EST.modo==="ia"){
+      rbCap("Preparando la IA…",-1);
+      alpha = await rbMascaraIA(EST.origen, (p,txt)=>rbCap(txt||"Descargando la IA…", p));
+      rbSuavizar(alpha,w,h,1);
+    }else{
+      rbCap("Recortando…",-1);
+      await new Promise(r=>setTimeout(r,16));
+      const tol=Number($("#rbTol").value);
+      const r=rbMascaraRapida(datos,w,h,tol);
+      alpha=r.alpha; bg=r.fondo.color;
+      if($("#rbHuecos").checked) rbRellenarHuecos(datos,alpha,w,h,r.fondo,tol);
+      rbContrasteAlfa(alpha,0.32,0.78);
+      rbQuitarMotas(alpha,w,h,0.0004);
+      rbSuavizar(alpha,w,h,1);
+      const cob=r.fondo.cobertura;
+      rbDiag(cob<0.62
+        ? "⚠️ El fondo de esta foto es <b>complejo</b>. Si el recorte sale mal prueba el modo <b>🤖 IA</b> o retoca con el pincel."
+        : "✅ Fondo uniforme detectado. Sube o baja la <b>sensibilidad</b> si quedó fondo o se comió parte del producto.");
+    }
+  }catch(err){
+    rbCap(null);
+    toast("⚠️ IA no disponible: "+(err.message||err));
+    rbDiag("⚠️ No se pudo usar la IA (¿sin conexión?). Usa el modo <b>⚡ Rápido</b>, funciona siempre.");
+    document.querySelectorAll("#rbModo button").forEach(b=>b.classList.toggle("on", b.dataset.m==="rapido"));
+    EST.modo="rapido"; $("#rbFilaTol").style.display="flex";
+    return;
+  }
+  rbAplicar(datos, alpha, w, h, bg);
+  let vacio=0; for(let p=0;p<w*h;p++) if(alpha[p]<10) vacio++;
+  const frac=vacio/(w*h);
+  const out=document.createElement("canvas");
+  out.width=w; out.height=h;
+  out.getContext("2d").putImageData(new ImageData(datos,w,h),0,0);
+  EST.trabajo=out;
+  rbPintarVista();
+  rbCap(null);
+  if(frac>0.985) rbDiag("⚠️ Se borró <b>casi todo</b>. Baja la sensibilidad o usa 🤖 IA.");
+  else if(frac<0.03) rbDiag("⚠️ <b>Casi no se quitó nada</b>. Sube la sensibilidad o usa 🤖 IA.");
+}
+/* ---- pincel de retoque ---- */
+(function(){
+  const cv=$("#rbCv");
+  let pintando=false;
+  function punto(ev){
+    const r=cv.getBoundingClientRect();
+    const t=ev.touches?ev.touches[0]:ev;
+    return {x:(t.clientX-r.left)*(cv.width/r.width), y:(t.clientY-r.top)*(cv.height/r.height)};
+  }
+  function trazo(p){
+    const rad=Number($("#rbBrocha").value)/100*Math.max(EST.trabajo.width,EST.trabajo.height)*0.14;
+    const ctx=EST.trabajo.getContext("2d");
+    ctx.save();
+    if(EST.pincel==="borrar"){
+      ctx.globalCompositeOperation="destination-out";
+      const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,rad);
+      g.addColorStop(0,"rgba(0,0,0,1)"); g.addColorStop(.72,"rgba(0,0,0,1)"); g.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,rad,0,7); ctx.fill();
+    }else{
+      ctx.beginPath(); ctx.arc(p.x,p.y,rad,0,7); ctx.clip();
+      ctx.drawImage(EST.origen,0,0);
+    }
+    ctx.restore();
+    rbPintarVista();
+  }
+  function abajo(ev){
+    if(!EST.abierto || EST.pincel==="off") return;
+    ev.preventDefault(); pintando=true; rbGuardarHistoria(); trazo(punto(ev));
+  }
+  function mover(ev){ if(pintando){ ev.preventDefault(); trazo(punto(ev)); } }
+  function arriba(){ pintando=false; }
+  cv.addEventListener("mousedown",abajo);
+  cv.addEventListener("mousemove",mover);
+  window.addEventListener("mouseup",arriba);
+  cv.addEventListener("touchstart",abajo,{passive:false});
+  cv.addEventListener("touchmove",mover,{passive:false});
+  cv.addEventListener("touchend",arriba);
+})();
+/* ---- controles del estudio ---- */
+document.querySelectorAll("#rbModo button").forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll("#rbModo button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    EST.modo=b.dataset.m;
+    $("#rbFilaTol").style.display = EST.modo==="rapido" ? "flex" : "none";
+    $("#rbHuecosFila").style.display = EST.modo==="rapido" ? "flex" : "none";
+    procesarEstudio();
+  };
+});
+document.querySelectorAll("#rbPincel button").forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll("#rbPincel button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    EST.pincel=b.dataset.p;
+    $("#rbFilaPincel").style.display = EST.pincel==="off" ? "none" : "flex";
+    $("#rbCv").style.cursor = EST.pincel==="off" ? "default" : "crosshair";
+  };
+});
+let _rbTolT=null;
+$("#rbTol").oninput = e=>{
+  $("#rbTolVal").textContent=e.target.value;
+  clearTimeout(_rbTolT);
+  _rbTolT=setTimeout(()=>{ if(EST.modo==="rapido") procesarEstudio(); }, 220);
+};
+$("#rbBrocha").oninput = e=>{ $("#rbBrochaVal").textContent=e.target.value; };
+$("#rbHuecos").onchange = ()=>{ if(EST.modo==="rapido") procesarEstudio(); };
+$("#rbUndo").onclick = ()=>{
+  const c=EST.historia.pop();
+  if(!c){ toast("Nada que deshacer"); return; }
+  EST.trabajo=c; rbPintarVista();
+};
+$("#rbRehacerTodo").onclick = ()=>{ EST.historia=[]; procesarEstudio(); };
+$("#rbRecortar").onclick = ()=>{
+  if(!EST.trabajo) return;
+  const caja = rbCajaOpaca(EST.trabajo, 0.02);
+  if(!caja){ toast("No queda nada que recortar"); return; }
+  rbGuardarHistoria();
+  EST.trabajo = rbCortar(EST.trabajo, caja);
+  EST.origen  = rbCortar(EST.origen, caja);   /* el pincel "traer" debe seguir alineado */
+  EST.historia = [];
+  rbPintarVista();
+  toast("✂️ Márgenes vacíos recortados — el producto se verá más grande");
+};
+$("#rbCancelar").onclick = cerrarEstudio;
+$("#rbUsar").onclick = async ()=>{
+  if(!EST.trabajo){ cerrarEstudio(); return; }
+  const listo = rbRecortarTransparente(EST.trabajo, 0.02);
+  try{
+    fotoSinFondo = await rbCanvasAImagen(listo);
+  }catch(e){ toast("⚠️ No se pudo aplicar el recorte"); return; }
+  const uz1=document.getElementById("uzone");
+  if(uz1){ uz1.classList.add("ok"); uz1.innerHTML="✅ <b>Fondo eliminado</b><br>Toca para subir otra foto"; }
+  const uz2=document.getElementById("uzoneEscena");
+  if(uz2){ uz2.classList.add("ok"); uz2.innerHTML="✅ <b>Fondo eliminado</b><br>Toca para subir otra foto"; }
+  const sr=document.getElementById("sizeRow"); if(sr) sr.style.display="flex";
+  cerrarEstudio();
+  if(estilo!=="flotante" && estilo!=="escena"){
+    const b=document.querySelector('.stybtn[data-sty="flotante"]');
+    if(b) b.click();
+  }
+  dibujar(); renderPreviews(); sincronizarHoja();
+  toast("🪄 ¡Listo! Producto recortado sin límites ni claves");
+};
+/* remove.bg queda como opción avanzada para quien tenga clave */
+$("#rbRemoveBg").onclick = async ()=>{
+  const key=($("#inpRmKey").value||"").trim()||leerPref("rmbg_key","");
+  if(!key){ toast("Pega primero tu clave de remove.bg"); return; }
+  if(!sel){ toast("Elige un producto"); return; }
+  rbCap("Consultando remove.bg…",-1);
+  try{
+    const fd=new FormData();
+    fd.append("image_url", sel.imagen); fd.append("size","auto");
+    const r=await fetch("https://api.remove.bg/v1.0/removebg",{method:"POST",headers:{"X-Api-Key":key},body:fd});
+    if(!r.ok) throw new Error("respondió "+r.status+(r.status===402?" (sin créditos)":""));
+    const im=await createImageBitmap(await r.blob());
+    const c=document.createElement("canvas"); c.width=im.width; c.height=im.height;
+    c.getContext("2d").drawImage(im,0,0);
+    rbGuardarHistoria(); EST.trabajo=c; rbPintarVista(); rbCap(null);
+    toast("☁️ Recorte de remove.bg aplicado");
+  }catch(e){ rbCap(null); toast("⚠️ remove.bg: "+e.message); }
+};
+
+/* =====================================================================
+   HOJA DE AJUSTES MÓVIL — se edita viendo el diseño, sin subir ni bajar
+   ===================================================================== */
+const mqMovil = window.matchMedia("(max-width:1020px)");
+function medirHeader(){
+  const h=document.querySelector("header");
+  if(h) document.documentElement.style.setProperty("--hdr", h.offsetHeight+"px");
+}
+function sincronizarHoja(){
+  medirHeader();
+  const enHoja = mqMovil.matches && document.body.classList.contains("preview");
+  const cuerpo = document.getElementById("hojaBody");
+  const derecha = document.querySelector(".right");
+  const lienzo  = derecha ? derecha.querySelector(".canvaswrap") : null;
+  for(const id of ["panelPrev","panelEstilo","panelExtras"]){
+    const el=document.getElementById(id);
+    if(!el) continue;
+    if(enHoja){ if(el.parentElement!==cuerpo) cuerpo.appendChild(el); }
+    else if(derecha && el.parentElement!==derecha){ derecha.insertBefore(el, lienzo); }
+  }
+  if(!enHoja) cerrarHoja();
+  actualizarHojaRapida();
+}
+function rangoTamActivo(){
+  if(comboMode) return document.getElementById("rngEscalaCombo");
+  if(estilo==="escena") return document.getElementById("rngEscEscala");
+  return document.getElementById("rngEscala");
+}
+function actualizarHojaRapida(){
+  const rt=rangoTamActivo(), rb=document.getElementById("rngBrillo");
+  const ht=document.getElementById("hjTam"), hb=document.getElementById("hjBrillo");
+  if(rt&&ht){ ht.min=rt.min; ht.max=rt.max; ht.step=rt.step; ht.value=rt.value; document.getElementById("hjTamVal").textContent=rt.value+"%"; }
+  if(rb&&hb){ hb.value=rb.value; document.getElementById("hjBrilloVal").textContent=rb.value+"%"; }
+}
+function abrirHoja(){
+  if(!mqMovil.matches) return;
+  medirHeader();
+  actualizarHojaRapida();
+  document.body.classList.add("hoja-open");
+  document.getElementById("hoja").setAttribute("aria-hidden","false");
+}
+function cerrarHoja(){
+  document.body.classList.remove("hoja-open","hoja-max");
+  const h=document.getElementById("hoja");
+  if(h) h.setAttribute("aria-hidden","true");
+}
+document.getElementById("hjTam").oninput = e=>{
+  const t=rangoTamActivo();
+  document.getElementById("hjTamVal").textContent=e.target.value+"%";
+  if(!t) return;
+  t.value=e.target.value;
+  t.dispatchEvent(new Event("input"));
+};
+document.getElementById("hjBrillo").oninput = e=>{
+  const t=document.getElementById("rngBrillo");
+  document.getElementById("hjBrilloVal").textContent=e.target.value+"%";
+  if(!t) return;
+  t.value=e.target.value;
+  t.dispatchEvent(new Event("input"));
+};
+document.getElementById("hjFondo").onclick = ()=>{
+  if(!sel){ toast("Elige un producto primero"); return; }
+  cerrarHoja();
+  abrirEstudio(sel.imagen);
+};
+document.getElementById("hjReset").onclick = ()=>{
+  escalaProducto=1; escalaCombo=1; brilloFoto=1; escEscala=1; escOffX=0; escOffY=0;
+  fotoSinFondo=null;
+  [["rngEscala","escalaVal"],["rngEscalaCombo","escalaComboVal"],["rngEscEscala","escEscalaVal"],["rngBrillo","brilloVal"]]
+    .forEach(([r,v])=>{ const a=document.getElementById(r), b=document.getElementById(v); if(a){a.value=100;} if(b){b.textContent="100%";} });
+  const uz1=document.getElementById("uzone");
+  if(uz1){ uz1.classList.remove("ok"); uz1.innerHTML="📤 <b>Sube aquí la foto PNG sin fondo</b><br>Los datos (nombre, precio, specs) se toman solos de la tienda"; }
+  actualizarHojaRapida();
+  dibujar(); renderPreviews();
+  toast("↺ Ajustes de la foto reiniciados");
+};
+document.getElementById("hjCerrar").onclick = cerrarHoja;
+document.getElementById("hjPng").onclick = ()=>document.getElementById("btnPng").click();
+document.getElementById("hjShare").onclick = ()=>document.getElementById("btnShare").click();
+/* arrastrar el asa: agrandar / cerrar */
+(function(){
+  const g=document.getElementById("hojaGrip");
+  let y0=null;
+  const abajo=e=>{ y0=(e.touches?e.touches[0]:e).clientY; };
+  const arriba=e=>{
+    if(y0==null) return;
+    const y=(e.changedTouches?e.changedTouches[0]:e).clientY;
+    const dif=y-y0; y0=null;
+    if(dif<-40) document.body.classList.add("hoja-max");
+    else if(dif>40){
+      if(document.body.classList.contains("hoja-max")) document.body.classList.remove("hoja-max");
+      else cerrarHoja();
+    }else{
+      document.body.classList.toggle("hoja-max");   /* toque simple */
+    }
+  };
+  g.addEventListener("touchstart",abajo,{passive:true});
+  g.addEventListener("touchend",arriba);
+  g.addEventListener("mousedown",abajo);
+  g.addEventListener("mouseup",arriba);
+})();
+document.getElementById("qbAjustes").onclick = ()=>{
+  if(document.body.classList.contains("hoja-open")) cerrarHoja(); else abrirHoja();
+};
+if(mqMovil.addEventListener) mqMovil.addEventListener("change", sincronizarHoja);
+else if(mqMovil.addListener) mqMovil.addListener(sincronizarHoja);
+window.addEventListener("resize", medirHeader);
+window.addEventListener("orientationchange", ()=>setTimeout(sincronizarHoja,250));
+
+/* =====================================================================
+   1) EDICIONES GUARDADAS POR PRODUCTO  (IndexedDB)
+   Vuelves a un producto y aparece exactamente como lo dejaste.
+   ===================================================================== */
+var sombraCfg = {on:true, fuerza:0.45};
+var campana = "auto";
+var textos = [];
+var txSel = null;
+var fotosExtra = [];
+var _cajasTx = [];
+const EDB = {db:null, listo:false};
+const edIds = new Set();
+function edAbrir(){
+  return new Promise(res=>{
+    if(EDB.db) return res(EDB.db);
+    let req;
+    try{ req = indexedDB.open("tmgen-ediciones", 1); }catch(e){ return res(null); }
+    req.onupgradeneeded = e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains("ed")) db.createObjectStore("ed",{keyPath:"id"});
+    };
+    req.onsuccess = e=>{ EDB.db=e.target.result; res(EDB.db); };
+    req.onerror = ()=>res(null);
+  });
+}
+function edTx(modo){
+  return edAbrir().then(db=> db ? db.transaction("ed",modo).objectStore("ed") : null);
+}
+async function edGuardar(reg){
+  const st = await edTx("readwrite"); if(!st) return;
+  return new Promise(r=>{ const q=st.put(reg); q.onsuccess=()=>r(true); q.onerror=()=>r(false); });
+}
+async function edLeer(id){
+  const st = await edTx("readonly"); if(!st) return null;
+  return new Promise(r=>{ const q=st.get(String(id)); q.onsuccess=()=>r(q.result||null); q.onerror=()=>r(null); });
+}
+async function edBorrar(id){
+  const st = await edTx("readwrite"); if(!st) return;
+  edIds.delete(String(id));
+  return new Promise(r=>{ const q=st.delete(String(id)); q.onsuccess=()=>r(true); q.onerror=()=>r(false); });
+}
+async function edTodos(){
+  const st = await edTx("readonly"); if(!st) return [];
+  return new Promise(r=>{ const q=st.getAll(); q.onsuccess=()=>r((q.result||[]).sort((a,b)=>b.ts-a.ts)); q.onerror=()=>r([]); });
+}
+async function edCargarIndice(){
+  const t = await edTodos();
+  edIds.clear();
+  for(const e of t) edIds.add(String(e.id));
+  actualizarBarraEdiciones();
+}
+function actualizarBarraEdiciones(){
+  const b=document.getElementById("edBar"), t=document.getElementById("edBarTxt");
+  if(!b) return;
+  b.style.display = edIds.size ? "flex" : "none";
+  if(t) t.textContent = `${edIds.size} diseño${edIds.size!==1?"s":""} guardado${edIds.size!==1?"s":""}`;
+}
+/* ¿el producto actual tiene algo que merezca guardarse? */
+function hayEdicion(){
+  return !!(fotoSinFondo || textos.length || ovNombre || ovPrecio!=null ||
+    notaTexto() || escalaProducto!==1 || brilloFoto!==1 || escEscala!==1 ||
+    escOffX!==0 || escOffY!==0 || campana!=="auto" || fotosExtra.length ||
+    !sombraCfg.on || sombraCfg.fuerza!==0.45);
+}
+let _guardarT=null, _restaurando=false, _loteEnCurso=false;
+function programarGuardado(){
+  if(_restaurando || _loteEnCurso || comboMode || !sel) return;
+  clearTimeout(_guardarT);
+  _guardarT = setTimeout(guardarEdicionActual, 700);
+}
+async function guardarEdicionActual(){
+  if(!sel || comboMode || _restaurando || _loteEnCurso) return;
+  const id = String(sel.id);
+  if(!hayEdicion()){ if(edIds.has(id)){ await edBorrar(id); actualizarBarraEdiciones(); render(); } return; }
+  let miniatura="";
+  try{
+    const cv=$("#cv"), m=document.createElement("canvas");
+    const r=Math.min(220/cv.width, 220/cv.height);
+    m.width=Math.max(1,Math.round(cv.width*r)); m.height=Math.max(1,Math.round(cv.height*r));
+    m.getContext("2d").drawImage(cv,0,0,m.width,m.height);
+    miniatura=m.toDataURL("image/jpeg",0.72);
+  }catch(e){}
+  let recorte="";
+  try{ if(fotoSinFondo) recorte = fotoSinFondo.src && fotoSinFondo.src.startsWith("data:") ? fotoSinFondo.src : ""; }catch(e){}
+  const reg = {
+    id, nombre:sel.nombre, categoria:sel.categoria, ts:Date.now(), miniatura, recorte,
+    estilo, escalaProducto, brilloFoto, escEscala, escOffX, escOffY,
+    nota:notaTexto(), ovNombre, ovPrecio, campana,
+    escena:escenaActual, escenaAuto,
+    textos:JSON.parse(JSON.stringify(textos)),
+    sombra:{on:sombraCfg.on, fuerza:sombraCfg.fuerza},
+    fechaFin: (document.getElementById("inpFechaFin")||{}).value || ""
+  };
+  await edGuardar(reg);
+  edIds.add(id);
+  actualizarBarraEdiciones();
+  const tarjeta=document.querySelector(`.card.sel .cmeta`);
+  if(tarjeta && !tarjeta.querySelector(".edbadge")){
+    const sp=document.createElement("span"); sp.className="edbadge"; sp.textContent="✏️";
+    tarjeta.appendChild(sp);
+  }
+}
+async function restaurarEdicion(p){
+  const reg = await edLeer(p.id);
+  if(!reg) return false;
+  _restaurando = true;
+  try{
+    escalaProducto = reg.escalaProducto ?? 1;
+    brilloFoto     = reg.brilloFoto ?? 1;
+    escEscala      = reg.escEscala ?? 1;
+    escOffX        = reg.escOffX ?? 0;
+    escOffY        = reg.escOffY ?? 0;
+    ovNombre       = reg.ovNombre || "";
+    ovPrecio       = reg.ovPrecio ?? null;
+    campana        = reg.campana || "auto";
+    textos         = Array.isArray(reg.textos) ? reg.textos : [];
+    sombraCfg.on     = reg.sombra ? reg.sombra.on : true;
+    sombraCfg.fuerza = reg.sombra ? reg.sombra.fuerza : 0.45;
+    escenaActual   = reg.escena || escenaActual;
+    escenaAuto     = reg.escenaAuto !== false;
+    const inN=$("#inpNombre"); if(inN) inN.value = ovNombre;
+    const inP=$("#inpPrecio"); if(inP) inP.value = ovPrecio!=null?ovPrecio:"";
+    const inNo=$("#inpNota");  if(inNo) inNo.value = reg.nota||"";
+    const inF=document.getElementById("inpFechaFin"); if(inF) inF.value = reg.fechaFin||"";
+    const pon=(r,v,suf)=>{ const a=document.getElementById(r); if(a){ a.value=v; const b=document.getElementById(suf); if(b) b.textContent=v+"%"; } };
+    pon("rngEscala", Math.round(escalaProducto*100), "escalaVal");
+    pon("rngBrillo", Math.round(brilloFoto*100), "brilloVal");
+    pon("rngEscEscala", Math.round(escEscala*100), "escEscalaVal");
+    const rs=document.getElementById("rngSombra");
+    if(rs){ rs.value=Math.round(sombraCfg.fuerza*100); document.getElementById("sombraVal").textContent=rs.value+"%"; }
+    const cs=document.getElementById("chkSombra"); if(cs) cs.checked=sombraCfg.on;
+    document.querySelectorAll("#campRow .campchip").forEach(b=>b.classList.toggle("on", b.dataset.c===campana));
+    if(reg.estilo){
+      estilo = reg.estilo;
+      document.querySelectorAll(".stybtn").forEach(x=>x.classList.toggle("on", x.dataset.sty===estilo));
+      $("#uploadbox").style.display = estilo==="flotante" ? "block" : "none";
+      $("#escenaBox").style.display = estilo==="escena" ? "block" : "none";
+    }
+    if(reg.recorte){
+      await new Promise(res=>{
+        const im=new Image();
+        im.onload=()=>{ fotoSinFondo=im; res(); };
+        im.onerror=res; im.src=reg.recorte;
+      });
+      const uz1=document.getElementById("uzone");
+      if(uz1){ uz1.classList.add("ok"); uz1.innerHTML="✅ <b>Recorte guardado</b><br>Toca para subir otra foto"; }
+    }
+    renderTextos();
+    actualizarCajasEstilo();
+  }finally{ _restaurando=false; }
+  return true;
+}
+/* guardado automático al tocar cualquier control del diseño */
+["panelEstilo","panelExtras"].forEach(id=>{
+  const el=document.getElementById(id);
+  if(!el) return;
+  ["input","change","click"].forEach(ev=>el.addEventListener(ev, ()=>programarGuardado(), true));
+});
+
+/* --------- galería "Mis ediciones" --------- */
+function cerrarModal(id){ const m=document.getElementById(id); if(m) m.remove(); }
+function crearModal(id, htmlDentro, ancho){
+  cerrarModal(id);
+  const m=document.createElement("div");
+  m.className="modalfondo"; m.id=id;
+  m.innerHTML=`<div class="modalcaja" ${ancho?`style="max-width:${ancho}px"`:""}>${htmlDentro}</div>`;
+  m.onclick=e=>{ if(e.target===m) m.remove(); };
+  document.body.appendChild(m);
+  return m;
+}
+async function abrirEdiciones(){
+  const lista = await edTodos();
+  const cuerpo = lista.length ? `<div class="edgrid">`+lista.map(e=>`
+      <div class="edcard" data-id="${e.id}">
+        <span class="edt">${(ESTILO_NOMBRE[e.estilo]||e.estilo||"").split(" ")[0]}</span>
+        <button class="edx" data-del="${e.id}" title="Borrar">✕</button>
+        ${e.miniatura?`<img src="${e.miniatura}" alt="">`:`<div style="aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:26px;">🎨</div>`}
+        <div class="edn">${e.nombre||""}</div>
+      </div>`).join("")+`</div>`
+    : `<div style="text-align:center;padding:34px 10px;color:var(--tx2);font-size:13px;line-height:1.8;">
+         Aún no has guardado ningún diseño.<br>Edita un producto (tamaño, brillo, recorte, textos…)<br>y aparecerá aquí automáticamente.</div>`;
+  const m = crearModal("edModal", `
+    <h3>🎨 Mis ediciones <span style="margin-left:auto;font-size:11px;color:var(--tx2);font-weight:600;">${lista.length}</span></h3>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:12px;line-height:1.6;">Toca cualquiera para abrirlo con todos sus ajustes: recorte, tamaño, brillo, textos y estilo.</div>
+    ${cuerpo}
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      ${lista.length?`<button class="btn dark" id="edVaciar" style="flex:1;justify-content:center;">🗑️ Vaciar todo</button>`:""}
+      <button class="btn orange" id="edCerrar" style="flex:2;justify-content:center;">Cerrar</button>
+    </div>`, 660);
+  m.querySelector("#edCerrar").onclick=()=>m.remove();
+  const vac=m.querySelector("#edVaciar");
+  if(vac) vac.onclick=async()=>{
+    if(!confirm("¿Borrar TODOS los diseños guardados?")) return;
+    for(const e of lista) await edBorrar(e.id);
+    actualizarBarraEdiciones(); render(); m.remove();
+    toast("🗑️ Ediciones borradas");
+  };
+  m.querySelectorAll(".edx").forEach(b=>{
+    b.onclick=async e=>{
+      e.stopPropagation();
+      await edBorrar(b.dataset.del);
+      b.closest(".edcard").remove();
+      actualizarBarraEdiciones(); render();
+    };
+  });
+  m.querySelectorAll(".edcard").forEach(c=>{
+    c.onclick=()=>{
+      const p = productos.find(x=>String(x.id)===c.dataset.id);
+      if(!p){ toast("Ese producto ya no está en el catálogo"); return; }
+      m.remove();
+      seleccionar(p, true);
+    };
+  });
+}
+const ESTILO_NOMBRE = {vitrina:"🖼️ Vitrina",oferta:"🔥 Oferta",story:"📱 Story",flotante:"✨ Flotante",
+  claro:"🌅 Claro",resena:"⭐ Reseña",escena:"🏠 Escena",urgencia:"⏰ Urgencia",galeria:"🖼️ Galería"};
+document.getElementById("btnVerEdiciones").onclick = abrirEdiciones;
+
+/* =====================================================================
+   2) SOMBRA REALISTA · 3) COLOR DE CAMPAÑA · 4) TEXTOS LIBRES · 5) MARCA DE AGUA
+   ===================================================================== */
+/* (declarados con var para que typeof sea seguro desde cualquier punto) */
+
+function sombraPiso(ctx, cx, baseY, ancho){
+  if(!sombraCfg.on || sombraCfg.fuerza<=0) return;
+  ctx.save();
+  const rx = ancho*0.46, ry = Math.max(10, ancho*0.075);
+  const g = ctx.createRadialGradient(cx,baseY,0,cx,baseY,rx);
+  g.addColorStop(0,`rgba(0,0,0,${0.62*sombraCfg.fuerza/0.45*0.72})`);
+  g.addColorStop(.55,`rgba(0,0,0,${0.28*sombraCfg.fuerza/0.45*0.72})`);
+  g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle=g;
+  ctx.beginPath(); ctx.ellipse(cx,baseY,rx,ry,0,0,7); ctx.fill();
+  ctx.restore();
+}
+function marcaAgua(ctx,W,H){
+  if(!leerPref("marca_agua",false)) return;
+  const num = leerPref("wa_num", WHATSAPP);
+  const t = `📲 ${num.replace(/^53/,"+53 ")}`;
+  ctx.save();
+  ctx.font=`800 ${Math.round(W*0.026)}px ${SANS}`;
+  ctx.textAlign="right"; ctx.textBaseline="alphabetic";
+  const w=ctx.measureText(t).width, x=W-30, y=H-Math.round(W*0.030);
+  rr(ctx, x-w-22, y-Math.round(W*0.030), w+34, Math.round(W*0.044), Math.round(W*0.022));
+  ctx.fillStyle="rgba(0,0,0,.42)"; ctx.fill();
+  ctx.fillStyle="rgba(255,255,255,.86)";
+  ctx.fillText(t, x-4, y);
+  ctx.restore();
+}
+function dibujarTextos(ctx,W,H){
+  _cajasTx = [];
+  for(const t of textos){
+    const size = t.size||52;
+    ctx.save();
+    ctx.font=`900 ${size}px ${SANS}`;
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    const x = t.x*W, y = t.y*H;
+    const w = ctx.measureText(t.txt).width;
+    ctx.shadowColor="rgba(0,0,0,.6)"; ctx.shadowBlur=size*0.35; ctx.shadowOffsetY=size*0.06;
+    ctx.fillStyle = t.color||"#FFFFFF";
+    ctx.fillText(t.txt, x, y);
+    ctx.restore();
+    _cajasTx.push({id:t.id, x:x-w/2-14, y:y-size*0.72, w:w+28, h:size*1.44});
+  }
+}
+function textoEnPunto(x,y){
+  for(let i=_cajasTx.length-1;i>=0;i--){
+    const c=_cajasTx[i];
+    if(x>=c.x && x<=c.x+c.w && y>=c.y && y<=c.y+c.h) return textos.find(t=>t.id===c.id);
+  }
+  return null;
+}
+function renderTextos(){
+  const l=document.getElementById("txLista");
+  if(!l) return;
+  l.innerHTML = textos.map(t=>`
+    <div class="txitem ${txSel===t.id?"on":""}" data-id="${t.id}">
+      <span style="width:12px;height:12px;border-radius:3px;background:${t.color};flex:none;"></span>
+      <span class="tn">${t.txt}</span>
+      <button data-up="${t.id}" title="Editar">✏️</button>
+      <button data-del="${t.id}" title="Borrar">🗑️</button>
+    </div>`).join("");
+  l.querySelectorAll(".txitem").forEach(it=>{
+    it.onclick = e=>{ if(e.target.dataset.del||e.target.dataset.up) return; txSel=it.dataset.id; renderTextos(); };
+  });
+  l.querySelectorAll("[data-del]").forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    textos=textos.filter(t=>t.id!==b.dataset.del);
+    if(txSel===b.dataset.del) txSel=null;
+    renderTextos(); dibujar(); programarGuardado();
+  });
+  l.querySelectorAll("[data-up]").forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const t=textos.find(x=>x.id===b.dataset.up);
+    const nuevo=prompt("Texto:", t.txt);
+    if(nuevo!=null && nuevo.trim()){ t.txt=nuevo.trim(); renderTextos(); dibujar(); programarGuardado(); }
+  });
+  const ed=document.getElementById("txEdit");
+  if(ed){
+    ed.style.display = txSel ? "block" : "none";
+    const t=textos.find(x=>x.id===txSel);
+    if(t){
+      const r=document.getElementById("rngTxSize");
+      r.value=t.size; document.getElementById("txSizeVal").textContent=t.size;
+      document.querySelectorAll("[data-tc]").forEach(b=>b.classList.toggle("on", b.dataset.tc===t.color));
+    }
+  }
+}
+document.getElementById("btnTxAdd").onclick = ()=>{
+  const i=document.getElementById("inpTxNuevo");
+  const v=(i.value||"").trim();
+  if(!v){ toast("Escribe la frase primero"); return; }
+  const t={id:"t"+Date.now(), txt:v, x:0.5, y:0.5, size:56, color:"#FFFFFF"};
+  textos.push(t); txSel=t.id; i.value="";
+  renderTextos(); dibujar(); programarGuardado();
+  toast("✍️ Arrastra el texto sobre el diseño para colocarlo");
+};
+document.getElementById("inpTxNuevo").addEventListener("keydown", e=>{ if(e.key==="Enter") document.getElementById("btnTxAdd").click(); });
+document.getElementById("rngTxSize").oninput = e=>{
+  document.getElementById("txSizeVal").textContent=e.target.value;
+  const t=textos.find(x=>x.id===txSel); if(!t) return;
+  t.size=Number(e.target.value); dibujar();
+};
+document.querySelectorAll("[data-tc]").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("[data-tc]").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");
+  const t=textos.find(x=>x.id===txSel); if(!t) return;
+  t.color=b.dataset.tc; renderTextos(); dibujar();
+});
+document.getElementById("chkSombra").onchange = e=>{
+  sombraCfg.on=e.target.checked;
+  document.getElementById("filaSombra").style.display = e.target.checked?"flex":"none";
+  dibujar(); renderPreviews();
+};
+document.getElementById("rngSombra").oninput = e=>{
+  sombraCfg.fuerza=Number(e.target.value)/100;
+  document.getElementById("sombraVal").textContent=e.target.value+"%";
+  dibujar();
+};
+document.querySelectorAll("#campRow .campchip").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll("#campRow .campchip").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    campana=b.dataset.c;
+    dibujar(); renderPreviews();
+    toast(campana==="auto"?"🤖 Color según la categoría":"🎨 Color de campaña aplicado a todos los estilos");
+  };
+});
+
+/* =====================================================================
+   6) ESTILO ⏰ URGENCIA  ·  7) ESTILO 🖼️ GALERÍA
+   ===================================================================== */
+function diasRestantes(){
+  const v=(document.getElementById("inpFechaFin")||{}).value;
+  if(!v) return null;
+  const fin=new Date(v+"T23:59:59"), hoy=new Date();
+  const d=Math.ceil((fin-hoy)/86400000);
+  return d;
+}
+function textoCuentaAtras(){
+  const d=diasRestantes();
+  if(d==null) return "OFERTA POR TIEMPO LIMITADO";
+  if(d<0) return "OFERTA TERMINADA";
+  if(d===0) return "¡ÚLTIMO DÍA!";
+  if(d===1) return "¡SOLO QUEDA 1 DÍA!";
+  return `QUEDAN ${d} DÍAS`;
+}
+function dUrgencia(ctx,p,img){
+  const W=1080,H=1080, ac=acento(p.categoria);
+  fondoOscuro(ctx,W,H,ac);
+  /* franja de urgencia arriba */
+  const bh=112;
+  const g=ctx.createLinearGradient(0,0,W,bh);
+  g.addColorStop(0,"#ff3d00"); g.addColorStop(1,"#c81e00");
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,bh);
+  dither(ctx,0,0,W,bh);
+  ctx.save();
+  ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.font=`900 52px ${SANS}`;
+  ctx.fillText("⏰ "+textoCuentaAtras(), W/2, bh/2+2);
+  ctx.restore();
+  ctx.textBaseline="alphabetic";
+  chipMarca(ctx,56,bh+26);
+  pillCat(ctx,W-56,bh+34,p.categoria);
+  const disc = p.precioOriginal>p.precioActual?Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100):0;
+  ctx.textBaseline="alphabetic";
+  /* ---- anclado de abajo hacia arriba: nada se pisa ---- */
+  const ctaH=92, ctaY=H-56-ctaH;              /* 932..1024 */
+  const mnY   = ctaY-28;                       /* 904 */
+  const bigY  = mnY-46;                        /* 858 */
+  const oldY  = bigY-94;                       /* 764 */
+  ctx.font=`800 44px ${SANS}`;
+  const ln=calcLines(ctx,p.nombre,W-140,2);
+  const nameLast  = (disc?oldY:bigY) - 100;
+  const nameFirst = nameLast-(ln.length-1)*52;
+  const fy=bh+72, fx=150, fw=W-300;
+  const fh=Math.max(240, nameFirst-46-28-fy);
+  vitrina(ctx,fx,fy,fw,fh,img,ac,26);
+  if(disc) badgeDesc(ctx,fx+fw-16,fy+8,disc);
+  const st=Number(p.stock);
+  if(st>0&&st<=5) badgeUltimas(ctx,fx+18,fy+fh-70,st);
+  if(qrOn()) dibujarQR(ctx, linkProducto(p), fx+fw-116-18, fy+fh-116-34, 116);
+  /* nombre */
+  ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="alphabetic"; ctx.font=`800 44px ${SANS}`;
+  ln.forEach((l,i)=>ctx.fillText(l, W/2, nameFirst+i*52));
+  /* precio anterior tachado */
+  if(disc){
+    ctx.font=`700 54px ${SANS}`; ctx.fillStyle="#9a9aa2"; ctx.textAlign="center";
+    const ot=`Antes $${p.precioOriginal}`;
+    const ow=ctx.measureText(ot).width;
+    ctx.fillText(ot, W/2, oldY);
+    ctx.strokeStyle="#ff3d00"; ctx.lineWidth=7; ctx.lineCap="round";
+    ctx.beginPath(); ctx.moveTo(W/2-ow/2-10, oldY-17); ctx.lineTo(W/2+ow/2+10, oldY-17); ctx.stroke();
+    ctx.lineCap="butt";
+  }
+  precioGradCentered(ctx, W/2, bigY, 100, `$${p.precioActual} USD`);
+  ctx.font=`700 26px ${SANS}`; ctx.fillStyle="#9a9aa2"; ctx.textAlign="center";
+  ctx.fillText(`≈ ${fmtMN(p.precioActual)} MN · pago al recibir`, W/2, mnY);
+  ctaVerde(ctx,56,ctaY,W-112,ctaH,`📲 Escribe "${keyword(p)}" ahora`,"Antes de que se acabe la oferta");
+  footerUrl(ctx,W,H-22);
+  cintaNota(ctx,W,H,true);
+  marcoLuz(ctx,W,H);
+}
+function dGaleria(ctx,p,img){
+  const W=1080,H=1080, ac=acento(p.categoria);
+  fondoOscuro(ctx,W,H,ac);
+  chipMarca(ctx,56,50);
+  pillCat(ctx,W-56,58,p.categoria);
+  const disc=p.precioOriginal>p.precioActual?Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100):0;
+  /* anclado desde abajo */
+  const ctaH=92, ctaY=H-60-ctaH;               /* 928..1020 */
+  const priceY=ctaY-42;                        /* 886 */
+  ctx.font=`800 44px ${SANS}`;
+  const ln=calcLines(ctx,p.nombre,W-112,2);
+  const nameLast=priceY-76, nameFirst=nameLast-(ln.length-1)*52;
+  const top=150, x0=56, ancho=W-112;
+  const alto=Math.max(300, nameFirst-46-30-top);
+  const fotos=[img].concat(fotosExtra).filter(Boolean).slice(0,4);
+  const gap=14;
+  if(fotos.length<=1){
+    vitrina(ctx,x0,top,ancho,alto,fotos[0]||null,ac,26);
+  }else if(fotos.length===2){
+    const w=(ancho-gap)/2;
+    vitrina(ctx,x0,top,w,alto,fotos[0],ac,20);
+    vitrina(ctx,x0+w+gap,top,w,alto,fotos[1],ac,20);
+  }else{
+    const wG=Math.round(ancho*0.60), wP=ancho-wG-gap;
+    const n=fotos.length-1, hP=(alto-gap*(n-1))/n;
+    vitrina(ctx,x0,top,wG,alto,fotos[0],ac,22);
+    for(let i=1;i<fotos.length;i++)
+      vitrina(ctx, x0+wG+gap, top+(i-1)*(hP+gap), wP, hP, fotos[i], ac, 14);
+  }
+  if(disc) badgeDesc(ctx,x0+ancho-16,top+8,disc);
+  if(qrOn()) dibujarQR(ctx, linkProducto(p), x0+8, top+alto-116-8, 108);
+  ctx.fillStyle="#fff"; ctx.textAlign="left"; ctx.textBaseline="alphabetic"; ctx.font=`800 44px ${SANS}`;
+  ln.forEach((l,i)=>ctx.fillText(l,56,nameFirst+i*52));
+  let px=56;
+  if(disc){
+    ctx.font=`700 44px ${SANS}`; ctx.fillStyle="#9a9aa2"; ctx.textAlign="left";
+    const ot=`$${p.precioOriginal}`, ow=ctx.measureText(ot).width;
+    ctx.fillText(ot,px,priceY);
+    ctx.strokeStyle="#ff3d00"; ctx.lineWidth=6; ctx.lineCap="round";
+    ctx.beginPath(); ctx.moveTo(px-5,priceY-13); ctx.lineTo(px+ow+5,priceY-13); ctx.stroke();
+    ctx.lineCap="butt"; px+=ow+28;
+  }
+  const pw=precioGrad(ctx,px,priceY,78,`$${p.precioActual}`);
+  ctx.font=`800 28px ${SANS}`; ctx.fillStyle="#FF6B35"; ctx.textAlign="left";
+  ctx.fillText("USD",px+pw+12,priceY-2);
+  ctaVerde(ctx,56,ctaY,W-112,ctaH,`📲 Escribe "${keyword(p)}" al WhatsApp`,`${fotos.length} foto${fotos.length!==1?"s":""} real${fotos.length!==1?"es":""} · Pago al recibir`);
+  footerUrl(ctx,W,H-22);
+  cintaNota(ctx,W,H,true);
+  marcoLuz(ctx,W,H);
+}
+function actualizarCajasEstilo(){
+  const u=document.getElementById("cajaUrgencia"), g=document.getElementById("cajaGaleria");
+  if(u) u.style.display = estilo==="urgencia" ? "block" : "none";
+  if(g) g.style.display = estilo==="galeria" ? "block" : "none";
+}
+document.getElementById("btnFinDomingo").onclick = ()=>{
+  const h=new Date(); const d=(7-h.getDay())%7 || 7;
+  h.setDate(h.getDate()+d);
+  document.getElementById("inpFechaFin").value = h.toISOString().slice(0,10);
+  dibujar(); renderPreviews(); programarGuardado();
+};
+document.getElementById("inpFechaFin").onchange = ()=>{ dibujar(); renderPreviews(); programarGuardado(); };
+document.getElementById("uzoneGal").onclick = ()=>document.getElementById("fileGal").click();
+document.getElementById("fileGal").onchange = async e=>{
+  const fs=[...e.target.files].slice(0,3);
+  fotosExtra=[];
+  for(const f of fs){
+    await new Promise(res=>{ const im=new Image(); im.onload=()=>{fotosExtra.push(im);res();}; im.onerror=res; im.src=URL.createObjectURL(f); });
+  }
+  renderGaleriaLista(); dibujar(); renderPreviews();
+  toast(`🖼️ ${fotosExtra.length} foto(s) añadidas a la galería`);
+};
+function renderGaleriaLista(){
+  const l=document.getElementById("galLista");
+  if(!l) return;
+  l.innerHTML="";
+  fotosExtra.forEach((im,i)=>{
+    const d=document.createElement("div");
+    d.style.cssText="position:relative;width:56px;height:56px;border-radius:9px;overflow:hidden;background:#fff;";
+    d.innerHTML=`<img src="${im.src}" style="width:100%;height:100%;object-fit:contain;"><button style="position:absolute;top:1px;right:1px;border:none;background:rgba(0,0,0,.7);color:#ff9a9a;border-radius:6px;width:18px;height:18px;font-size:10px;cursor:pointer;">✕</button>`;
+    d.querySelector("button").onclick=()=>{ fotosExtra.splice(i,1); renderGaleriaLista(); dibujar(); };
+    l.appendChild(d);
+  });
+}
+
+/* =====================================================================
+   8) RECORTE DE FONDOS EN LOTE   ·  9) COMPARAR ANTES / DESPUÉS
+   ===================================================================== */
+async function recortarFondoDe(url){
+  const im = await loadImage(url);
+  const cv = rbLienzoDe(im, 1200);
+  const ctx = cv.getContext("2d",{willReadFrequently:true});
+  const {width:w, height:h} = cv;
+  const base = ctx.getImageData(0,0,w,h);
+  const datos = new Uint8ClampedArray(base.data);
+  const r = rbMascaraRapida(datos,w,h,14);
+  rbRellenarHuecos(datos,r.alpha,w,h,r.fondo,14);
+  rbContrasteAlfa(r.alpha,0.32,0.78);
+  rbQuitarMotas(r.alpha,w,h,0.0004);
+  rbSuavizar(r.alpha,w,h,1);
+  rbAplicar(datos,r.alpha,w,h,r.fondo.color);
+  const out=document.createElement("canvas"); out.width=w; out.height=h;
+  out.getContext("2d").putImageData(new ImageData(datos,w,h),0,0);
+  return rbRecortarTransparente(out, 0.02);
+}
+document.getElementById("btnLoteFondo").onclick = async ()=>{
+  if(comboMode){ toast("Sal del modo combo primero"); return; }
+  const lista = multiSel.size ? productos.filter(p=>multiSel.has(p.id)) : filtrados();
+  if(!lista.length){ toast("No hay productos que procesar"); return; }
+  if(lista.length>40 && !confirm(`Vas a recortar ${lista.length} fotos. Puede tardar un par de minutos. ¿Seguir?`)) return;
+  const btn=document.getElementById("btnLoteFondo");
+  btn.disabled=true; $("#prog").style.display="block";
+  _loteEnCurso = true;
+  let ok=0, fallos=0;
+  for(let i=0;i<lista.length;i++){
+    const p=lista[i];
+    $("#progTxt").textContent=`${i+1}/${lista.length}`;
+    $("#progBar").style.width=((i+1)/lista.length*100)+"%";
+    try{
+      const cv = await recortarFondoDe(p.imagen);
+      const dataUrl = cv.toDataURL("image/png");
+      const previo = await edLeer(p.id) || {id:String(p.id), nombre:p.nombre, categoria:p.categoria, textos:[]};
+      previo.recorte = dataUrl;
+      previo.nombre = p.nombre; previo.categoria = p.categoria;
+      previo.estilo = previo.estilo || "flotante";
+      previo.ts = Date.now();
+      if(!previo.miniatura){
+        const m=document.createElement("canvas");
+        const r=Math.min(200/cv.width,200/cv.height);
+        m.width=Math.max(1,Math.round(cv.width*r)); m.height=Math.max(1,Math.round(cv.height*r));
+        const mc=m.getContext("2d");
+        mc.fillStyle="#141417"; mc.fillRect(0,0,m.width,m.height);
+        mc.drawImage(cv,0,0,m.width,m.height);
+        previo.miniatura=m.toDataURL("image/jpeg",0.72);
+      }
+      await edGuardar(previo);
+      edIds.add(String(p.id));
+      ok++;
+    }catch(e){ fallos++; }
+    await new Promise(r=>setTimeout(r,10));   /* deja respirar al móvil */
+  }
+  _loteEnCurso = false;
+  $("#prog").style.display="none"; btn.disabled=false;
+  actualizarBarraEdiciones(); render();
+  toast(`🪄 ${ok} recorte(s) guardados${fallos?` · ${fallos} fallaron`:""} — los verás en 🎨 Mis ediciones`);
+  if(sel && edIds.has(String(sel.id))) { await restaurarEdicion(sel); dibujar(); renderPreviews(); }
+};
+/* comparar antes / después dentro del estudio */
+let _cmpOn=false;
+function rbPintarComparacion(){
+  const cmp=$("#rbCmp"), cv=$("#rbCv");
+  if(!_cmpOn || !EST.origen){ cmp.classList.remove("on"); return; }
+  cmp.classList.add("on");
+  cmp.width=cv.width; cmp.height=cv.height;
+  cmp.style.width=cv.offsetWidth+"px"; cmp.style.height=cv.offsetHeight+"px";
+  cmp.style.position="absolute";
+  const r=cv.getBoundingClientRect(), pr=cmp.parentElement.getBoundingClientRect();
+  cmp.style.left=(r.left-pr.left)+"px"; cmp.style.top=(r.top-pr.top)+"px";
+  const pos=Number($("#rbCmpPos").value)/100;
+  const c=cmp.getContext("2d");
+  c.clearRect(0,0,cmp.width,cmp.height);
+  c.save();
+  c.beginPath(); c.rect(0,0,cmp.width*pos,cmp.height); c.clip();
+  c.drawImage(EST.origen,0,0,cmp.width,cmp.height);
+  c.restore();
+  c.strokeStyle="#FF6B35"; c.lineWidth=Math.max(2,cmp.width*0.004);
+  c.beginPath(); c.moveTo(cmp.width*pos,0); c.lineTo(cmp.width*pos,cmp.height); c.stroke();
+  c.font=`900 ${Math.round(cmp.width*0.035)}px sans-serif`;
+  c.fillStyle="rgba(0,0,0,.6)"; c.textAlign="left";
+  c.fillRect(8,8,c.measureText("ANTES").width+18, cmp.width*0.055);
+  c.fillStyle="#fff"; c.fillText("ANTES", 17, 8+cmp.width*0.041);
+}
+$("#rbComparar").onclick = ()=>{
+  _cmpOn=!_cmpOn;
+  $("#rbFilaCmp").style.display=_cmpOn?"flex":"none";
+  $("#rbComparar").textContent=_cmpOn?"👁️ Ocultar":"👁️ Comparar";
+  rbPintarComparacion();
+};
+$("#rbCmpPos").oninput = e=>{ $("#rbCmpVal").textContent=e.target.value+"%"; rbPintarComparacion(); };
+
+/* =====================================================================
+   10) ESTADÍSTICAS DE PUBLICACIÓN
+   ===================================================================== */
+function abrirEstadisticas(){
+  const log = pubLog();
+  const total = log.length;
+  const porCat = {}, porProd = {};
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  let ultimos30=0, dias=new Set();
+  for(const r of log){
+    const p = productos.find(x=>String(x.id)===String(r.id));
+    const cat = (p&&p.categoria) || r.categoria || "—";
+    porCat[cat]=(porCat[cat]||0)+1;
+    porProd[r.id]=(porProd[r.id]||0)+1;
+    const d=new Date(r.ts); d.setHours(0,0,0,0);
+    dias.add(d.getTime());
+    if((hoy-d)/86400000 <= 30) ultimos30++;
+  }
+  /* racha de días seguidos publicando */
+  let racha=0; const t=hoy.getTime();
+  for(let i=0;i<400;i++){ if(dias.has(t-i*86400000)) racha++; else if(i>0) break; }
+  const sinPub = productos.filter(p=>diasSinPub(p.id)==null).length;
+  const cats = Object.entries(porCat).sort((a,b)=>b[1]-a[1]);
+  const maxCat = cats.length?cats[0][1]:1;
+  const top = Object.entries(porProd).sort((a,b)=>b[1]-a[1]).slice(0,5)
+    .map(([id,n])=>{ const p=productos.find(x=>String(x.id)===String(id)); return [p?p.nombre:("#"+id), n]; });
+  const olvidados = productos
+    .map(p=>({p, d:diasSinPub(p.id)}))
+    .filter(o=>o.d!=null && o.d>=14)
+    .sort((a,b)=>b.d-a.d).slice(0,5);
+  const m = crearModal("statModal", `
+    <h3>📊 Tus estadísticas</h3>
+    <div class="stat">📤 Publicaciones totales <b>${total}</b></div>
+    <div class="stat">🗓️ En los últimos 30 días <b>${ultimos30}</b></div>
+    <div class="stat">🔥 Racha de días seguidos <b>${racha}</b></div>
+    <div class="stat">📦 Productos sin publicar nunca <b>${sinPub}</b></div>
+    <div class="stat">🎨 Diseños guardados <b>${edIds.size}</b></div>
+    <h4>Por categoría</h4>
+    ${cats.length?cats.map(([c,n])=>`
+      <div style="margin-bottom:8px;">
+        <div style="display:flex;font-size:11.5px;font-weight:700;"><span>${ICONS_CAT[c]||"🛒"} ${c}</span><span style="margin-left:auto;color:var(--naranja);">${n}</span></div>
+        <div class="barra"><i style="width:${n/maxCat*100}%"></i></div>
+      </div>`).join(""):`<div style="font-size:12px;color:var(--tx2);">Aún sin datos</div>`}
+    <h4>Los que más publicas</h4>
+    ${top.length?top.map(([n,c])=>`<div class="stat" style="font-size:11.5px;">${n} <b>${c}</b></div>`).join(""):`<div style="font-size:12px;color:var(--tx2);">Aún sin datos</div>`}
+    <h4>⚠️ Llevan más de 2 semanas sin publicarse</h4>
+    ${olvidados.length?olvidados.map(o=>`<div class="stat" style="font-size:11.5px;">${o.p.nombre} <b>${o.d}d</b></div>`).join(""):`<div style="font-size:12px;color:var(--tx2);">¡Todo al día! 🎉</div>`}
+    <button class="btn orange" id="stCerrar" style="width:100%;justify-content:center;margin-top:16px;">Cerrar</button>`, 560);
+  m.querySelector("#stCerrar").onclick=()=>m.remove();
+}
+
+/* =====================================================================
+   11) FORMATO DE SALIDA (PNG / WebP / JPG)  ·  12) AHORRO DE DATOS
+   16) TEMA CLARO  ·  15) PROGRAMADOR CON AVISOS
+   ===================================================================== */
+function formatoSalida(){ return leerPref("formato","image/png"); }
+function extSalida(){ return {"image/png":"png","image/webp":"webp","image/jpeg":"jpg"}[formatoSalida()]||"png"; }
+function aplicarTema(){
+  document.body.classList.toggle("tema-claro", leerPref("tema","oscuro")==="claro");
+  const mt=document.querySelector('meta[name="theme-color"]');
+  if(mt) mt.setAttribute("content", leerPref("tema","oscuro")==="claro" ? "#f6f6f9" : "#0B0B0D");
+}
+function ahorroDatos(){ return leerPref("ahorro", false); }
+
+/* --- programador de publicaciones --- */
+function agenda(){ return leerPref("agenda", []); }
+function guardarAgenda(a){ guardarPref("agenda", a); }
+function programarPublicacion(p, cuando, nota){
+  const a=agenda();
+  a.push({id:String(p.id), nombre:p.nombre, ts:cuando, nota:nota||"", hecho:false});
+  a.sort((x,y)=>x.ts-y.ts);
+  guardarAgenda(a);
+}
+async function pedirPermisoAvisos(){
+  if(!("Notification" in window)) return false;
+  if(Notification.permission==="granted") return true;
+  if(Notification.permission==="denied") return false;
+  try{ return (await Notification.requestPermission())==="granted"; }catch(e){ return false; }
+}
+function revisarAgenda(){
+  const a=agenda(); const ahora=Date.now();
+  let cambio=false, pendientes=[];
+  for(const it of a){
+    if(!it.hecho && it.ts<=ahora){
+      pendientes.push(it); it.hecho=true; cambio=true;
+    }
+  }
+  if(cambio) guardarAgenda(a);
+  for(const it of pendientes){
+    const txt=`⏰ Toca publicar: ${it.nombre}${it.nota?" · "+it.nota:""}`;
+    try{
+      if("Notification" in window && Notification.permission==="granted")
+        new Notification("TiendaMax — recordatorio", {body:txt, icon:"icon-192.png", tag:"tm-"+it.id});
+      else toast(txt);
+    }catch(e){ toast(txt); }
+  }
+  /* aviso de lo que toca hoy */
+  const hoy=new Date(); hoy.setHours(23,59,59,999);
+  const hoyPend=a.filter(x=>!x.hecho && x.ts<=hoy.getTime()).length;
+  const b=document.getElementById("btnPlan");
+  if(b) b.textContent = hoyPend ? `📆 Mi semana (${hoyPend})` : "📆 Mi semana";
+}
+function abrirProgramador(){
+  const a=agenda().filter(x=>!x.hecho);
+  const opciones = productos.slice(0,300).map(p=>`<option value="${p.id}">${p.nombre.slice(0,52)}</option>`).join("");
+  const ahora=new Date(Date.now()-new Date().getTimezoneOffset()*60000);
+  const m=crearModal("progModal", `
+    <h3>⏰ Programar publicaciones</h3>
+    <div style="font-size:11px;color:var(--tx2);line-height:1.6;margin-bottom:12px;">
+      Te avisa con una notificación cuando llegue la hora. Funciona con la app abierta o en segundo plano;
+      si el teléfono la cierra del todo, verás el aviso al volver a abrirla.
+    </div>
+    <select id="pgProd" style="width:100%;margin-bottom:8px;">${opciones}</select>
+    <div style="display:flex;gap:7px;margin-bottom:8px;">
+      <input type="datetime-local" id="pgCuando" value="${ahora.toISOString().slice(0,16)}"
+        style="flex:1;min-width:0;background:var(--panel2);border:1px solid rgba(255,255,255,.12);color:var(--tx);padding:9px 12px;border-radius:10px;font-size:13px;">
+    </div>
+    <input type="text" id="pgNota" placeholder="Nota (ej: subir a estado y grupos)" maxlength="60" style="width:100%;margin-bottom:10px;">
+    <button class="btn orange" id="pgAdd" style="width:100%;justify-content:center;">➕ Programar</button>
+    <h4>Pendientes (${a.length})</h4>
+    <div id="pgLista">${a.length?a.map((x,i)=>`
+      <div class="stat" style="font-size:11.5px;">
+        <span style="flex:1;min-width:0;">${new Date(x.ts).toLocaleString("es-CU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})} · ${x.nombre}</span>
+        <button data-q="${i}" style="border:none;background:transparent;color:#ff9a9a;cursor:pointer;font-size:14px;">🗑️</button>
+      </div>`).join(""):`<div style="font-size:12px;color:var(--tx2);">Nada programado</div>`}</div>
+    <button class="btn dark" id="pgCerrar" style="width:100%;justify-content:center;margin-top:14px;">Cerrar</button>`, 560);
+  m.querySelector("#pgCerrar").onclick=()=>m.remove();
+  m.querySelector("#pgAdd").onclick=async()=>{
+    const p=productos.find(x=>String(x.id)===m.querySelector("#pgProd").value);
+    const cuando=new Date(m.querySelector("#pgCuando").value).getTime();
+    if(!p||!isFinite(cuando)){ toast("Elige producto y fecha"); return; }
+    await pedirPermisoAvisos();
+    programarPublicacion(p, cuando, m.querySelector("#pgNota").value.trim());
+    m.remove(); abrirProgramador();
+    toast("⏰ Programado — te avisaré");
+  };
+  m.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{
+    const todas=agenda(); const pend=todas.filter(x=>!x.hecho);
+    const obj=pend[Number(b.dataset.q)];
+    guardarAgenda(todas.filter(x=>x!==obj));
+    m.remove(); abrirProgramador();
+  });
+}
+
+/* --- modal de ajustes y herramientas --- */
+function abrirAjustes(){
+  const m=crearModal("cfgModal", `
+    <h3>⚙️ Ajustes y herramientas</h3>
+    <div class="filaop">
+      <div class="d">🎨 Mis ediciones<small>${edIds.size} diseño(s) guardado(s)</small></div>
+      <button class="btn dark" id="cfgEd" style="padding:8px 14px;font-size:12px;">Abrir</button>
+    </div>
+    <div class="filaop">
+      <div class="d">📊 Estadísticas<small>Qué publicas, racha y olvidados</small></div>
+      <button class="btn dark" id="cfgSt" style="padding:8px 14px;font-size:12px;">Ver</button>
+    </div>
+    <div class="filaop">
+      <div class="d">⏰ Programador<small>Recordatorios de publicación</small></div>
+      <button class="btn dark" id="cfgPg" style="padding:8px 14px;font-size:12px;">Abrir</button>
+    </div>
+    <div class="filaop">
+      <div class="d">💾 Respaldo de datos<small>Exportar / importar tu historial</small></div>
+      <button class="btn dark" id="cfgBk" style="padding:8px 14px;font-size:12px;">Abrir</button>
+    </div>
+    <h4>Apariencia y datos</h4>
+    <div class="filaop">
+      <div class="d">☀️ Modo claro<small>Se ve mejor con sol directo en la calle</small></div>
+      <label class="sw"><input type="checkbox" id="cfgTema" ${leerPref("tema","oscuro")==="claro"?"checked":""}><i></i></label>
+    </div>
+    <div class="filaop">
+      <div class="d">📉 Ahorro de datos<small>No precarga escenas ni tipografías; miniaturas más ligeras</small></div>
+      <label class="sw"><input type="checkbox" id="cfgAhorro" ${ahorroDatos()?"checked":""}><i></i></label>
+    </div>
+    <div class="filaop">
+      <div class="d">🖼️ Formato al descargar<small>WebP pesa 60–70 % menos que PNG</small></div>
+      <select id="cfgFormato" style="flex:none;width:120px;">
+        <option value="image/png"  ${formatoSalida()==="image/png"?"selected":""}>PNG</option>
+        <option value="image/webp" ${formatoSalida()==="image/webp"?"selected":""}>WebP</option>
+        <option value="image/jpeg" ${formatoSalida()==="image/jpeg"?"selected":""}>JPG</option>
+      </select>
+    </div>
+    <h4>Marca de agua</h4>
+    <div class="filaop">
+      <div class="d">📲 Poner mi WhatsApp en la imagen<small>Viaja con la foto cuando la reenvían</small></div>
+      <label class="sw"><input type="checkbox" id="cfgMarca" ${leerPref("marca_agua",false)?"checked":""}><i></i></label>
+    </div>
+    <input type="text" id="cfgWa" value="${leerPref("wa_num",WHATSAPP)}" placeholder="Número de WhatsApp" style="width:100%;">
+    <h4>Motor de recorte</h4>
+    <div class="filaop">
+      <div class="d">🤖 Borrar la IA descargada<small>Libera unos 5 MB; se vuelve a bajar si la usas</small></div>
+      <button class="btn dark" id="cfgIA" style="padding:8px 14px;font-size:12px;">Borrar</button>
+    </div>
+    <button class="btn orange" id="cfgCerrar" style="width:100%;justify-content:center;margin-top:16px;">Listo</button>`, 560);
+  m.querySelector("#cfgCerrar").onclick=()=>m.remove();
+  m.querySelector("#cfgEd").onclick=()=>{ m.remove(); abrirEdiciones(); };
+  m.querySelector("#cfgSt").onclick=()=>{ m.remove(); abrirEstadisticas(); };
+  m.querySelector("#cfgPg").onclick=()=>{ m.remove(); abrirProgramador(); };
+  m.querySelector("#cfgBk").onclick=()=>{ m.remove(); document.getElementById("btnBackup").click(); };
+  m.querySelector("#cfgTema").onchange=e=>{ guardarPref("tema", e.target.checked?"claro":"oscuro"); aplicarTema(); };
+  m.querySelector("#cfgAhorro").onchange=e=>{ guardarPref("ahorro", e.target.checked); toast(e.target.checked?"📉 Ahorro de datos activado":"📶 Ahorro desactivado"); };
+  m.querySelector("#cfgFormato").onchange=e=>{ guardarPref("formato", e.target.value); toast("🖼️ Se descargará en "+extSalida().toUpperCase()); };
+  m.querySelector("#cfgMarca").onchange=e=>{ guardarPref("marca_agua", e.target.checked); dibujar(); renderPreviews(); };
+  m.querySelector("#cfgWa").onchange=e=>{ guardarPref("wa_num", e.target.value.replace(/\D/g,"")||WHATSAPP); dibujar(); };
+  m.querySelector("#cfgIA").onclick=async()=>{
+    try{ await caches.delete(RB.CACHE); RB.sesion=null; toast("🗑️ Motor de IA borrado"); }
+    catch(e){ toast("No se pudo borrar"); }
+  };
+}
+document.getElementById("btnAjustes").onclick = abrirAjustes;
+
+/* =====================================================================
+   14) VIDEO CARRUSEL DE VARIOS PRODUCTOS
+   ===================================================================== */
+async function videoCarrusel(){
+  const lista = multiSel.size>=2 ? productos.filter(p=>multiSel.has(p.id)).slice(0,5)
+              : (comboSel.length>=2 ? comboSel.slice(0,5) : null);
+  if(!lista){ toast("Marca 2 a 5 productos con ☑️ y vuelve a tocarlo"); return; }
+  if(!window.VideoEncoder){ toast("Tu navegador no puede grabar video — usa Chrome"); return; }
+  const W=1080, H=1920, FPS=30, SEG=3.4;
+  const total = Math.round(lista.length*SEG*FPS);
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H;
+  const ctx=cv.getContext("2d");
+  $("#progVid").style.display="block";
+  const guardaEstilo=estilo, guardaSel=sel;
+  const muxer=new Mp4Muxer.Muxer({
+    target:new Mp4Muxer.ArrayBufferTarget(),
+    video:{codec:"avc", width:W, height:H}, fastStart:"in-memory"
+  });
+  const enc=new VideoEncoder({ output:(c,meta)=>muxer.addVideoChunk(c,meta), error:e=>console.error(e) });
+  enc.configure({codec:"avc1.42003c", width:W, height:H, bitrate:5_000_000, framerate:FPS});
+  for(const p of lista){ try{ await loadImage(p.imagen); }catch(e){} }
+  estilo="story";
+  for(let f=0; f<total; f++){
+    const idx=Math.min(lista.length-1, Math.floor(f/(SEG*FPS)));
+    const local=(f-idx*SEG*FPS)/(SEG*FPS);
+    sel=lista[idx];
+    const img=imgCache[sel.imagen]||null;
+    ctx.save();
+    /* entrada y salida con deslizamiento suave */
+    let dx=0, alfa=1;
+    if(local<0.14){ const t=easeOut(local/0.14); dx=(1-t)*W*0.22; alfa=t; }
+    else if(local>0.88){ const t=easeInOut((local-0.88)/0.12); dx=-t*W*0.22; alfa=1-t; }
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle="#0B0B0D"; ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha=alfa; ctx.translate(dx,0);
+    try{ dStory(ctx, prodEfectivo(sel), img); }catch(e){}
+    ctx.restore();
+    /* barra de progreso del carrusel */
+    ctx.fillStyle="rgba(255,255,255,.18)"; ctx.fillRect(56,H-26,W-112,5);
+    ctx.fillStyle="#FF6B35"; ctx.fillRect(56,H-26,(W-112)*((f+1)/total),5);
+    const frame=new VideoFrame(cv,{timestamp:Math.round(f/FPS*1e6), duration:Math.round(1e6/FPS)});
+    enc.encode(frame, {keyFrame: f%60===0});
+    frame.close();
+    if(f%6===0){
+      $("#progVidTxt").textContent=Math.round(f/total*100)+"%";
+      $("#progVidBar").style.width=(f/total*100)+"%";
+      await new Promise(r=>setTimeout(r,0));
+    }
+  }
+  await enc.flush(); muxer.finalize();
+  const blob=new Blob([muxer.target.buffer],{type:"video/mp4"});
+  estilo=guardaEstilo; sel=guardaSel; dibujar();
+  $("#progVid").style.display="none";
+  mostrarVideo(blob, `tiendamax-carrusel-${lista.length}.mp4`, "video/mp4");
+  toast(`🎬 Video carrusel de ${lista.length} productos listo`);
+}
+
+document.getElementById("btnVideoMulti").onclick = videoCarrusel;
+medirHeader();
+sincronizarHoja();
+aplicarTema();
+renderTextos();
+edCargarIndice();
+revisarAgenda();
+setInterval(revisarAgenda, 60000);
 init();
 </script>
 </body>

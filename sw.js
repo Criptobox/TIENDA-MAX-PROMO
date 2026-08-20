@@ -4,7 +4,9 @@
    - Datos de la tienda (productos.json, config.json): red primero, caché de respaldo
    - Imágenes de productos: caché con actualización (stale-while-revalidate)
 */
-const CACHE = "tmgen-v5";
+const CACHE = "tmgen-v7";
+const CACHE_IA = "tm-modelos-v1";   /* motor de IA para quitar fondos */
+const CDN_IA = ["cdn.jsdelivr.net","unpkg.com","huggingface.co","hf-mirror.com","cdn-lfs.huggingface.co","cdn-lfs-us-1.hf.co"];
 const APP_FILES = [
   "./",
   "./index.html",
@@ -30,7 +32,7 @@ self.addEventListener("install", e => {
 self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k !== CACHE && k !== CACHE_IA).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
@@ -38,6 +40,22 @@ self.addEventListener("activate", e => {
 self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
   if (e.request.method !== "GET") return;
+
+  /* Motor de IA para quitar fondos (ONNX + wasm): caché permanente.
+     Se descarga una sola vez y después funciona sin conexión y sin gastar datos. */
+  if (CDN_IA.includes(url.hostname)) {
+    e.respondWith(
+      caches.open(CACHE_IA).then(c =>
+        c.match(e.request).then(hit =>
+          hit || fetch(e.request).then(r => {
+            if (r && r.ok) c.put(e.request, r.clone());
+            return r;
+          })
+        )
+      )
+    );
+    return;
+  }
 
   /* Datos de la tienda: red primero (siempre frescos), caché si no hay conexión */
   if (url.hostname === "tiendamax.org" && url.pathname.endsWith(".json")) {
