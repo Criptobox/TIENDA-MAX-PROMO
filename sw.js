@@ -4,7 +4,7 @@
    - Datos de la tienda (productos.json, config.json): red primero, caché de respaldo
    - Imágenes de productos: caché con actualización (stale-while-revalidate)
 */
-const CACHE = "tmgen-v6";
+const CACHE = "tmgen-v7";
 const CACHE_IA = "tm-modelos-v1";   /* motor de IA para quitar fondos */
 const CDN_IA = ["cdn.jsdelivr.net","unpkg.com","huggingface.co","hf-mirror.com","cdn-lfs.huggingface.co","cdn-lfs-us-1.hf.co"];
 const APP_FILES = [

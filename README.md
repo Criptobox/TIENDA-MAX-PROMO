@@ -12,6 +12,12 @@ Generador de imágenes y videos promocionales conectado en vivo al catálogo de 
 - **⚡ Generación por lotes**: toda una categoría o selección múltiple con checkboxes → ZIP
 - **🔳 Código QR** de cada producto apuntando a la tienda
 - **🪄 Quitar fondo GRATIS e ILIMITADO** — se procesa dentro del propio teléfono, sin clave API y sin cuota mensual. Dos motores: **⚡ Rápido** (instantáneo, 0 datos) y **🤖 IA** (red U²-Netp de 4,5 MB que se descarga una sola vez), más **pincel de retoque** para dejarlo perfecto
+- **🎨 Mis ediciones**: cada diseño que tocas se guarda solo en el teléfono y el producto vuelve a abrirse exactamente como lo dejaste — con su recorte, tamaño, brillo, textos y estilo. Chip “✏️ Ya editados” y galería con miniaturas
+- **🌑 Sombra realista** bajo el producto recortado, **✍️ textos libres arrastrables**, **🎨 colores de campaña** (Black Friday, Navidad, dorado…) y **marca de agua** con tu WhatsApp
+- **⏰ Estilo Urgencia** con cuenta atrás real y precio anterior tachado · **🖼️ Estilo Galería** con hasta 4 fotos
+- **🪄 Recorte de fondos en lote** para toda una categoría, y **🎬 fondos de estudio generados** (estudio, podio, degradado)
+- **🎞️ Video carrusel** de 2 a 5 productos · **📊 Estadísticas** de publicación · **⏰ Programador** con avisos
+- **⚙️ Ajustes**: modo claro, ahorro de datos y exportación en PNG / WebP / JPG
 - **📱 Hoja de ajustes móvil** — el diseño queda fijo arriba y los controles (tamaño, brillo, quitar fondo, estilo) suben desde abajo: se edita viendo el resultado, sin subir y bajar la pantalla
 - **📤 Registro de publicaciones**: marca qué producto publicaste y cuándo; orden "sin publicar primero"
 - **🗓️ Historial visual**: galería de todo lo publicado agrupado por día — toca cualquiera para republicarlo

@@ -1,104 +1,85 @@
-# 💡 Sugerencias de mejora — TiendaMax Generador
+# 💡 Mejoras — TiendaMax Generador
 
-Lista priorizada por **impacto real en ventas ÷ esfuerzo**. Lo marcado con ✅ ya quedó
-hecho en esta versión; el resto son propuestas listas para pedirlas cuando quieras.
+Estado de las 16 sugerencias propuestas. **15 implementadas**, 1 sustituida por una
+alternativa gratuita (ver el final).
 
 ---
 
-## ✅ Hecho en esta versión
+## ✅ Todo lo que ya está funcionando
 
-| # | Mejora | Por qué importa |
+### 🎨 Mis ediciones — lo que pediste
+Cada vez que tocas algo de un diseño (recorte, tamaño, brillo, textos, color, estilo…)
+se guarda **solo**, en el propio teléfono, asociado a ese producto.
+
+- Vuelves a tocar el producto y **se abre exactamente como lo dejaste**.
+- Chip **✏️ Ya editados** en el catálogo para verlos filtrados.
+- Barra **🎨 N diseños guardados** arriba, con botón para abrir la galería.
+- Galería con miniatura de cada diseño, el estilo que usaste y botón para borrar.
+- Distintivo **✏️ editado** en la tarjeta de cada producto del catálogo.
+- Se guarda en IndexedDB: sobrevive a cerrar la app y a quedarte sin conexión.
+
+### El resto
+
+| # | Mejora | Dónde está |
 |---|---|---|
-| ✅ | **Hoja de ajustes móvil** — el lienzo se queda fijo arriba y los controles suben desde abajo | Se acabó el subir-y-bajar: mueves el deslizador y ves el cambio al instante |
-| ✅ | **Quitar fondo sin API, gratis e ilimitado** (modo ⚡ Rápido + 🤖 IA local) | remove.bg se quedó sin créditos; ahora no hay clave, ni cuota, ni servidor |
-| ✅ | **Pincel de retoque** (borrar / traer) dentro del estudio de recorte | Ninguna IA acierta el 100%: con dos brochazos queda perfecto |
-| ✅ | **Vaciado de huecos internos** (asas, aros, espacios entre patas) | Antes quedaba un parche blanco dentro del mango o el mosquetón |
-| ✅ | **Recorte automático de márgenes vacíos** | El producto sale hasta un 40 % más grande en el diseño |
-| ✅ | **El deslizador de tamaño funciona en TODOS los estilos** (antes solo en Flotante) | Puedes agrandar el producto en Vitrina, Oferta, Story y Claro |
-| ✅ | **Barra rápida con iconos + etiqueta** y botón 🎛️ Ajustar | Se toca sin fallar con el dedo |
-| ✅ | **Botón ↺ Reiniciar** los ajustes de la foto | Volver atrás sin tener que reelegir el producto |
-| ✅ | El motor de IA queda **cacheado por el service worker** | Se baja una sola vez (4,5 MB) y después funciona sin conexión |
+| 1 | **Sombra realista** bajo el producto recortado, con interruptor e intensidad | Panel *✨ Extras* |
+| 2 | **Recordar ajustes por producto** + sección de editados | Ver arriba |
+| 3 | **Recorte de fondos en lote** — toda la categoría o los marcados con ☑️ | Botón *🪄 Quitar fondos en lote* |
+| 4 | **Estilo ⏰ Urgencia** — cuenta atrás real, precio anterior tachado y CTA | Estilos |
+| 5 | **Marca de agua** con tu WhatsApp sobre la imagen | ⚙️ Ajustes |
+| 6 | **Textos libres** — añade frases y **arrástralas** sobre el diseño; tamaño y color | Panel *✨ Extras* |
+| 7 | **Colores de campaña** — Black Friday, Navidad, dorado, azul… se aplican a todos los estilos | Panel *✨ Extras* |
+| 8 | **Estilo 🖼️ Galería** — hasta 4 fotos del producto en un solo post | Estilos |
+| 9 | **Comparar antes / después** con deslizador dentro del estudio de recorte | Botón *👁️ Comparar* |
+| 10 | **📊 Estadísticas** — totales, últimos 30 días, racha, por categoría, más publicados y olvidados | ⚙️ Ajustes |
+| 11 | **Exportar en WebP o JPG** además de PNG (WebP pesa 60–70 % menos) | ⚙️ Ajustes |
+| 12 | **📉 Modo ahorro de datos** — no precarga escenas ni tipografías, menos miniaturas | ⚙️ Ajustes |
+| 13 | **Fondos de estudio generados** (ver nota abajo) | Estilo Escena |
+| 14 | **🎞️ Video carrusel** de 2 a 5 productos en vertical con transiciones | Panel de compartir |
+| 15 | **⏰ Programador** de publicaciones con notificación a la hora elegida | ⚙️ Ajustes |
+| 16 | **☀️ Modo claro** para usar la app con sol directo | ⚙️ Ajustes |
+
+Y de la ronda anterior: hoja de ajustes móvil, recorte de fondo local gratis e ilimitado
+(⚡ Rápido + 🤖 IA), pincel de retoque, vaciado de huecos y recorte de márgenes.
 
 ---
 
-## 🔥 Prioridad alta — mucho impacto, poco trabajo
+## ⚠️ Nota sobre la #13 (generar el fondo con IA)
 
-1. **Sombra realista bajo el producto recortado.**
-   Al quitar el fondo, el producto "flota" sin peso. Generar una elipse difuminada bajo él
-   (con opacidad y desplazamiento ajustables) sube muchísimo la calidad percibida.
-   *Estimado: pequeño. Todo en canvas, sin dependencias.*
+Generar fondos fotorrealistas con IA **necesita un servicio de pago** (unos 3–4 ¢ por
+imagen) y un servidor con la clave: no se puede hacer gratis ni dentro del navegador con
+una calidad decente.
 
-2. **Recordar los ajustes por producto.**
-   Hoy, si vuelves a un producto que ya editaste, pierdes el recorte, el tamaño y el brillo.
-   Guardar `{escala, brillo, recorte PNG}` en IndexedDB por `id` de producto te evita
-   rehacer el trabajo cada semana. *Estimado: mediano.*
+En su lugar añadí **tres fondos generados por código**, gratis e instantáneos, dentro del
+estilo Escena:
 
-3. **Recorte en lote.**
-   "Quitar fondo a los 12 productos de esta categoría" y que genere el ZIP con todos los
-   Flotantes ya recortados mientras tomas café. El motor ya es local, así que no cuesta dinero.
-   *Estimado: mediano.*
+- **🎬 Estudio** — ciclorama de estudio fotográfico con foco y viñeteado.
+- **⬜ Podio** — pedestal oscuro con halo del color de la categoría o de la campaña.
+- **🌈 Degradado** — degradado premium con luces suaves.
 
-4. **Plantilla "precio tachado + cuenta atrás".**
-   Diseños con urgencia real (*"solo hasta el domingo"*) convierten notablemente mejor que
-   los de catálogo. *Estimado: pequeño.*
-
-5. **Marca de agua opcional con tu WhatsApp.**
-   Cuando reenvían tu imagen en grupos, el número viaja con ella.
-   *Estimado: pequeño.*
+Se combinan con el producto recortado y la sombra realista, así que el resultado se parece
+mucho a una foto de estudio, sin datos ni coste.
 
 ---
 
-## ⚡ Prioridad media
+## 📌 Detalles prácticos
 
-6. **Editor de texto libre sobre el diseño** — arrastrar una frase donde quieras
-   (hoy solo hay nombre, precio y nota fija).
-
-7. **Colores por campaña** — un selector para cambiar el acento naranja a rojo (Black Friday),
-   verde (Navidad), etc., y que se aplique a todos los estilos.
-
-8. **Multi-foto por producto** — carrusel de 3–4 ángulos en un solo post cuadrado.
-
-9. **Comparativa "antes / después" del recorte** con un deslizador dentro del estudio.
-
-10. **Estadísticas de publicación** — qué categoría publicas más, cuántos días llevas sin
-    publicar cada producto, qué palabra clave trajo más pedidos.
-
-11. **Exportar en WebP** además de PNG: pesa 60–70 % menos, importante con datos móviles caros.
-
-12. **Modo ahorro de datos** — no precargar las 7 escenas ni las fuentes hasta que hagan falta.
+- **El recorte en lote** guarda cada recorte como una edición: después vas a
+  *🎨 Mis ediciones* y todos están listos para publicar.
+- **Las notificaciones del programador** funcionan con la app abierta o en segundo plano.
+  Si el teléfono cierra la app del todo, verás el aviso al volver a abrirla (una PWA en
+  GitHub Pages no puede recibir avisos push sin servidor).
+- **El modo claro y el ahorro de datos** solo cambian la interfaz: las imágenes que generas
+  salen siempre igual.
+- **Borrar el motor de IA** desde ⚙️ Ajustes libera unos 5 MB si te hace falta espacio.
 
 ---
 
-## 🧪 Prioridad baja / exploratorio
+## 🔭 Ideas para más adelante
 
-13. **Generar el fondo con IA** en lugar de usar las 7 escenas fijas (necesita servicio externo de pago).
-
-14. **Video vertical con varios productos** (tipo carrusel animado de 15 s) para Reels.
-
-15. **Programador de publicaciones** con recordatorio push desde la PWA.
-
-16. **Modo claro** de la interfaz para usarla con sol directo en la calle.
-
----
-
-## 🔎 Nota técnica: por qué el recorte ya no usa una API
-
-| Opción | Gratis | Ilimitado | Sin clave | Funciona sin datos |
-|---|---|---|---|---|
-| remove.bg | 50/mes | ❌ | ❌ | ❌ |
-| PhotoRoom / Fotor / Pixlr API | 25–40/mes | ❌ | ❌ | ❌ |
-| APIs "gratis" de terceros | hasta que cierran | ❌ | a veces | ❌ |
-| **Procesar en el teléfono (lo que hace ahora)** | ✅ | ✅ | ✅ | ✅ |
-
-Cualquier API gratuita termina poniendo cuota o cerrando; por eso el recorte se hace **dentro
-del navegador**. Dos motores:
-
-- **⚡ Rápido** — análisis del color de fondo + relleno por inundación con borde suave,
-  vaciado de huecos y limpieza del halo. **0 bytes de descarga**, ~0,2 s. Perfecto para las
-  fotos de catálogo (fondo blanco o liso), que son la mayoría.
-- **🤖 IA** — red neuronal **U²-Netp** (Apache-2.0) de 4,5 MB corriendo con ONNX Runtime Web.
-  Se descarga una sola vez, queda en caché y después funciona hasta sin conexión.
-  Para fotos con fondo real o desordenado.
-
-Se descartó **RMBG-1.4** (mejor calidad) porque su licencia prohíbe el uso comercial, y
-**BiRefNet** porque pesa 114 MB — inviable con datos móviles.
+1. **Publicación directa** a Facebook/Instagram con la API de Meta (requiere cuenta de
+   empresa y aprobación de la app).
+2. **Detección automática del mejor encuadre** del producto para recortar el post al vuelo.
+3. **A/B de captions**: guardar cuál trajo más mensajes por palabra clave.
+4. **Plantillas propias**: que puedas diseñar tu estilo y guardarlo como plantilla.
+5. **Sincronizar las ediciones entre teléfono y PC** (necesitaría un pequeño backend).
