@@ -265,6 +265,109 @@ input[type=number]:focus{border-color:var(--naranja);}
   padding:8px 10px calc(8px + env(safe-area-inset-bottom));gap:8px;
 }
 #quickBar .btn{flex:1;justify-content:center;font-size:12px;padding:12px 6px;}
+#quickBar .qb{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  border:none;cursor:pointer;border-radius:12px;padding:8px 2px;color:#fff;font-weight:800;
+  background:var(--panel2);border:1px solid rgba(255,255,255,.14);
+}
+#quickBar .qb i{font-style:normal;font-size:17px;line-height:1;}
+#quickBar .qb u{text-decoration:none;font-size:9px;letter-spacing:.2px;opacity:.9;}
+#quickBar .qb.naranja{background:linear-gradient(135deg,var(--naranja),var(--naranja-osc));border-color:transparent;}
+#quickBar .qb.verde{background:linear-gradient(135deg,#2ee578,#1eb257);border-color:transparent;}
+#quickBar .qb.wa{background:linear-gradient(135deg,#25D366,#1a9e4b);border-color:transparent;}
+
+/* ============================================================
+   HOJA DE AJUSTES — editar sin perder de vista el diseño (móvil)
+   ============================================================ */
+#hoja{display:none;}
+@media(max-width:1020px){
+  #hoja{
+    display:flex;flex-direction:column;
+    position:fixed;left:0;right:0;bottom:0;z-index:99;
+    height:var(--hoja-h,50vh);
+    background:rgba(15,15,18,.985);backdrop-filter:blur(14px);
+    border-top:1px solid rgba(255,255,255,.16);border-radius:20px 20px 0 0;
+    box-shadow:0 -16px 44px rgba(0,0,0,.65);
+    transform:translateY(105%);transition:transform .26s cubic-bezier(.2,.85,.3,1), height .2s;
+    will-change:transform;
+  }
+  body.hoja-open #hoja{transform:translateY(0);}
+  body.hoja-max{--hoja-h:86vh;}
+  /* mientras la hoja está abierta el lienzo queda fijo arriba y se ve completo */
+  body.hoja-open .canvaswrap{
+    position:fixed;top:calc(var(--hdr,58px) + 6px);left:8px;right:8px;
+    height:max(0px, calc(100vh - var(--hoja-h,50vh) - var(--hdr,58px) - 18px));
+    z-index:96;display:flex;align-items:center;justify-content:center;background:#08080a;overflow:hidden;
+  }
+  body.hoja-open .canvaswrap canvas{width:auto;height:auto;max-width:100%;max-height:100%;}
+  body.hoja-open{overflow:hidden;}   /* el fondo no se mueve mientras editas */
+  body.hoja-open #quickBar,body.hoja-open #selBar,body.hoja-open #comboBar{display:none !important;}
+  body.hoja-open .toast{bottom:calc(var(--hoja-h,50vh) + 14px);}
+}
+#hojaGrip{flex:none;padding:9px 0 3px;display:flex;flex-direction:column;align-items:center;gap:6px;touch-action:none;cursor:grab;}
+#hojaGrip .bar{width:46px;height:5px;border-radius:5px;background:rgba(255,255,255,.32);}
+#hojaGrip .tit{font-size:10px;letter-spacing:1.4px;color:var(--tx2);font-weight:800;text-transform:uppercase;}
+#hojaFast{flex:none;padding:4px 12px 10px;border-bottom:1px solid rgba(255,255,255,.09);display:flex;flex-direction:column;gap:7px;}
+#hojaFast .sizerow{margin-top:0;padding:7px 11px;}
+#hojaFast .sizerow input[type=range]{height:30px;}
+#hojaBody{
+  flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:10px 12px calc(74px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain;
+}
+#hojaAcc{
+  position:absolute;left:0;right:0;bottom:0;display:flex;gap:7px;
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  background:rgba(11,11,13,.97);border-top:1px solid rgba(255,255,255,.12);
+}
+#hojaAcc .btn{flex:1;justify-content:center;font-size:12px;padding:11px 6px;}
+/* dedos gordos: sliders más cómodos en móvil */
+@media(max-width:700px){
+  .sizerow input[type=range]{height:32px;}
+  .sizerow input[type=range]::-webkit-slider-thumb{width:26px;height:26px;}
+  .sizelbl{font-size:11px;}
+}
+
+/* ============================================================
+   ESTUDIO DE RECORTE — quitar fondo sin API ni límites
+   ============================================================ */
+#rbWrap{position:fixed;inset:0;z-index:130;background:#0a0a0c;display:none;flex-direction:column;}
+#rbWrap.on{display:flex;}
+#rbHead{
+  flex:none;display:flex;align-items:center;gap:10px;padding:12px 14px;
+  border-bottom:1px solid rgba(255,255,255,.1);background:rgba(11,11,13,.95);
+}
+#rbHead .t{font-weight:900;font-size:14px;flex:1;min-width:0;}
+#rbHead .t small{display:block;font-size:10px;color:var(--tx2);font-weight:600;}
+#rbStage{
+  flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:10px;
+  background-color:#26262b;
+  background-image:linear-gradient(45deg,#33333a 25%,transparent 25%),linear-gradient(-45deg,#33333a 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#33333a 75%),linear-gradient(-45deg,transparent 75%,#33333a 75%);
+  background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0;
+}
+#rbCv{max-width:100%;max-height:100%;touch-action:none;cursor:crosshair;}
+#rbCap{
+  position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  background:rgba(8,8,10,.82);font-size:13px;font-weight:700;text-align:center;padding:24px;z-index:5;
+}
+#rbCap.on{display:flex;}
+#rbTools{
+  flex:none;background:var(--panel);border-top:1px solid rgba(255,255,255,.1);
+  padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;
+  max-height:52vh;overflow-y:auto;
+}
+.rbSeg{display:flex;gap:6px;background:var(--panel2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:4px;}
+.rbSeg button{
+  flex:1;border:none;background:transparent;color:var(--tx2);font-weight:800;font-size:11.5px;
+  padding:9px 4px;border-radius:9px;cursor:pointer;line-height:1.3;
+}
+.rbSeg button small{display:block;font-size:8.5px;font-weight:600;opacity:.8;}
+.rbSeg button.on{background:linear-gradient(135deg,var(--naranja),var(--naranja-osc));color:#fff;}
+#rbAvz{border-top:1px dashed rgba(255,255,255,.14);padding-top:8px;}
+#rbAvz summary{font-size:11px;color:var(--tx2);font-weight:700;cursor:pointer;list-style:none;}
+#rbAvz summary::-webkit-details-marker{display:none;}
+.rbInfo{font-size:10.5px;color:var(--tx2);line-height:1.55;}
+.rbInfo b{color:#ffb28f;}
 </style>
 </head>
 <body>
@@ -323,12 +426,12 @@ input[type=number]:focus{border-color:var(--naranja);}
   </div>
 
   <div class="right">
-    <div class="panel">
+    <div class="panel" id="panelPrev">
       <h3>👀 Vista previa — toca el estilo que más te guste</h3>
       <div class="prevrow" id="prevRow"></div>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="panelEstilo">
       <h3>🎨 Estilo del diseño</h3>
       <div class="stylesrow">
         <button class="stybtn on" data-sty="vitrina">🖼️ Vitrina<small>Feed 1080×1080</small></button>
@@ -377,8 +480,8 @@ input[type=number]:focus{border-color:var(--naranja);}
           <span class="sizeval" id="escEscalaVal">100%</span>
         </div>
         <div style="font-size:11px;color:#7ee8a5;font-weight:700;margin-top:8px;">👆 Arrastra el producto sobre la imagen para moverlo · doble toque para centrarlo</div>
-        <button class="btn dark" id="btnRmBgEscena" style="width:100%;justify-content:center;margin-top:8px;">🪄 Quitar fondo automáticamente</button>
-        <div style="font-size:10px;color:var(--tx2);margin-top:6px;">Usa la foto del catálogo del producto y le borra el fondo con remove.bg (misma clave API que en Flotante)</div>
+        <button class="btn orange" id="btnRmBgEscena" style="width:100%;justify-content:center;margin-top:8px;">🪄 Quitar fondo (gratis e ilimitado)</button>
+        <div style="font-size:10px;color:var(--tx2);margin-top:6px;line-height:1.5;">Toma la foto del catálogo y recorta el producto <b style="color:#7ee8a5;">en tu propio teléfono</b>, sin clave ni límites.</div>
       </div>
       <div style="display:flex;gap:8px;margin-top:10px;">
         <input type="text" id="inpNombre" placeholder="✏️ Nombre en el diseño" maxlength="70" style="flex:2;min-width:0;">
@@ -386,6 +489,11 @@ input[type=number]:focus{border-color:var(--naranja);}
       </div>
       <div class="hint" style="margin-top:4px;">Edita cómo saldrán en la imagen — no cambia nada en la tienda. Vacío = como en el catálogo.</div>
       <input type="text" id="inpNota" placeholder="✏️ Nota destacada (ej: ENVÍO GRATIS HOY · 2×1 · SOLO ESTA SEMANA)" maxlength="32" style="width:100%;margin-top:10px;">
+      <div class="sizerow" id="sizeRow" style="margin-top:10px;">
+        <span class="sizelbl">🔍 Tamaño de la foto</span>
+        <input type="range" id="rngEscala" min="50" max="160" value="100" step="5">
+        <span class="sizeval" id="escalaVal">100%</span>
+      </div>
       <div class="sizerow" style="margin-top:10px;">
         <span class="sizelbl">☀️ Brillo de la foto</span>
         <input type="range" id="rngBrillo" min="80" max="140" value="100" step="5">
@@ -394,19 +502,8 @@ input[type=number]:focus{border-color:var(--naranja);}
       <div id="uploadbox" style="display:none;margin-top:10px;">
         <div class="uploadzone" id="uzone">📤 <b>Sube aquí la foto PNG sin fondo</b><br>Los datos (nombre, precio, specs) se toman solos de la tienda</div>
         <input type="file" id="fileUp" accept="image/png,image/webp" style="display:none;">
-        <div style="margin-top:8px;background:var(--panel2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;">
-          <div style="font-size:11px;color:var(--tx2);font-weight:700;margin-bottom:6px;">🔑 API key de remove.bg <a href="https://www.remove.bg/api" target="_blank" style="color:var(--naranja);font-weight:800;text-decoration:none;">(conseguir gratis →)</a></div>
-          <div style="display:flex;gap:6px;">
-            <input type="text" id="inpRmKey" placeholder="Pega aquí tu clave…" style="flex:1;min-width:0;">
-            <button class="btn dark" id="btnRmKeySave" style="padding:9px 14px;font-size:12px;flex:none;">💾</button>
-          </div>
-        </div>
-        <button class="btn dark" id="btnRmBg" style="width:100%;justify-content:center;margin-top:8px;">🪄 Quitar fondo automáticamente</button>
-        <div class="sizerow" id="sizeRow" style="display:none;">
-          <span class="sizelbl">🔍 Tamaño del producto</span>
-          <input type="range" id="rngEscala" min="50" max="150" value="100" step="5">
-          <span class="sizeval" id="escalaVal">100%</span>
-        </div>
+        <button class="btn orange" id="btnRmBg" style="width:100%;justify-content:center;margin-top:8px;">🪄 Quitar fondo (gratis e ilimitado)</button>
+        <div style="font-size:10px;color:var(--tx2);margin-top:6px;line-height:1.5;">Se procesa <b style="color:#7ee8a5;">dentro de tu teléfono</b> — sin clave, sin límite mensual y funciona sin conexión.</div>
       </div>
     </div>
 
@@ -454,10 +551,93 @@ input[type=number]:focus{border-color:var(--naranja);}
 </div>
 
 <div id="quickBar">
-  <button class="btn dark" id="qbBack">🔍</button>
-  <button class="btn orange" id="qbPng">⬇️ PNG</button>
-  <button class="btn green" id="qbShare">📲 Compartir</button>
-  <button class="btn green" id="qbWa" style="background:linear-gradient(135deg,#25D366,#1a9e4b);">🟢 Estado</button>
+  <button class="qb" id="qbBack"><i>🔍</i><u>Catálogo</u></button>
+  <button class="qb naranja" id="qbAjustes"><i>🎛️</i><u>Ajustar</u></button>
+  <button class="qb" id="qbPng"><i>⬇️</i><u>PNG</u></button>
+  <button class="qb verde" id="qbShare"><i>📲</i><u>Compartir</u></button>
+  <button class="qb wa" id="qbWa"><i>🟢</i><u>Estado</u></button>
+</div>
+
+<!-- ===== HOJA DE AJUSTES: editar viendo el diseño en todo momento ===== -->
+<div id="hoja" aria-hidden="true">
+  <div id="hojaGrip">
+    <div class="bar"></div>
+    <div class="tit">Ajustes · desliza para agrandar</div>
+  </div>
+  <div id="hojaFast">
+    <div class="sizerow">
+      <span class="sizelbl">🔍 Tamaño</span>
+      <input type="range" id="hjTam" min="40" max="200" value="100" step="5">
+      <span class="sizeval" id="hjTamVal">100%</span>
+    </div>
+    <div class="sizerow">
+      <span class="sizelbl">☀️ Brillo</span>
+      <input type="range" id="hjBrillo" min="80" max="140" value="100" step="5">
+      <span class="sizeval" id="hjBrilloVal">100%</span>
+    </div>
+    <div style="display:flex;gap:7px;">
+      <button class="btn orange" id="hjFondo" style="flex:2;justify-content:center;font-size:12px;padding:10px 8px;">🪄 Quitar fondo</button>
+      <button class="btn dark" id="hjReset" style="flex:1;justify-content:center;font-size:12px;padding:10px 8px;">↺ Reiniciar</button>
+    </div>
+  </div>
+  <div id="hojaBody"></div>
+  <div id="hojaAcc">
+    <button class="btn dark" id="hjCerrar" style="flex:.8;">✕</button>
+    <button class="btn orange" id="hjPng">⬇️ PNG</button>
+    <button class="btn green" id="hjShare">📲 Compartir</button>
+  </div>
+</div>
+
+<!-- ===== ESTUDIO DE RECORTE: quitar fondo local, gratis e ilimitado ===== -->
+<div id="rbWrap">
+  <div id="rbHead">
+    <div class="t">🪄 Quitar fondo<small id="rbSub">100% en tu teléfono · sin límites</small></div>
+    <button class="btn dark" id="rbCancelar" style="padding:8px 12px;font-size:12px;">✕</button>
+    <button class="btn green" id="rbUsar" style="padding:8px 14px;font-size:12px;">✅ Usar</button>
+  </div>
+  <div id="rbStage">
+    <canvas id="rbCv"></canvas>
+    <div id="rbCap"><div class="spin"></div><div id="rbCapTxt">Procesando…</div></div>
+  </div>
+  <div id="rbTools">
+    <div class="rbSeg" id="rbModo">
+      <button data-m="rapido" class="on">⚡ Rápido<small>0 datos · instantáneo</small></button>
+      <button data-m="ia">🤖 IA<small>fondos difíciles</small></button>
+    </div>
+    <div class="sizerow" id="rbFilaTol">
+      <span class="sizelbl">🎚️ Sensibilidad</span>
+      <input type="range" id="rbTol" min="2" max="60" value="14" step="1">
+      <span class="sizeval" id="rbTolVal">14</span>
+    </div>
+    <label class="qrtoggle" id="rbHuecosFila" style="margin-top:0;font-size:11.5px;">
+      <input type="checkbox" id="rbHuecos" checked> 🕳️ Vaciar huecos internos (asas, aros, espacios)
+    </label>
+    <div class="rbSeg" id="rbPincel">
+      <button data-p="off" class="on">✋ Ver<small>sin pintar</small></button>
+      <button data-p="borrar">🧽 Borrar<small>quita de más</small></button>
+      <button data-p="restaurar">🖌️ Traer<small>devuelve</small></button>
+    </div>
+    <div class="sizerow" id="rbFilaPincel" style="display:none;">
+      <span class="sizelbl">⭕ Pincel</span>
+      <input type="range" id="rbBrocha" min="10" max="180" value="55" step="5">
+      <span class="sizeval" id="rbBrochaVal">55</span>
+    </div>
+    <div style="display:flex;gap:7px;">
+      <button class="btn dark" id="rbUndo" style="flex:1;justify-content:center;font-size:12px;padding:10px 6px;">↩️ Deshacer</button>
+      <button class="btn dark" id="rbRehacerTodo" style="flex:1;justify-content:center;font-size:12px;padding:10px 6px;">🔄 Rehacer</button>
+      <button class="btn dark" id="rbRecortar" style="flex:1;justify-content:center;font-size:12px;padding:10px 6px;">✂️ Ajustar</button>
+    </div>
+    <div class="rbInfo" id="rbDiag"></div>
+    <details id="rbAvz">
+      <summary>⚙️ Avanzado — usar remove.bg (opcional)</summary>
+      <div style="margin-top:8px;display:flex;gap:6px;">
+        <input type="text" id="inpRmKey" placeholder="API key de remove.bg…" style="flex:1;min-width:0;">
+        <button class="btn dark" id="btnRmKeySave" style="padding:9px 12px;font-size:12px;flex:none;">💾</button>
+      </div>
+      <button class="btn dark" id="rbRemoveBg" style="width:100%;justify-content:center;margin-top:7px;font-size:12px;">☁️ Probar con remove.bg</button>
+      <div class="rbInfo" style="margin-top:6px;">Solo si tienes clave propia. El plan gratis da <b>50 imágenes al mes</b>; los modos ⚡ y 🤖 de arriba no tienen límite.</div>
+    </details>
+  </div>
 </div>
 
 <div id="comboBar" style="display:none;position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:98;background:linear-gradient(135deg,#1c1c20,#141417);border:1px solid rgba(245,166,35,.5);border-radius:30px;padding:10px 18px;box-shadow:0 12px 32px rgba(0,0,0,.55);display:none;align-items:center;gap:12px;font-size:13px;font-weight:700;">
@@ -3208,7 +3388,15 @@ function renderComboList(){
 function modoPreview(on){
   document.body.classList.toggle("preview", !!on);
   renderPicked();
-  if(on) window.scrollTo({top:0, behavior:"smooth"});
+  if(typeof sincronizarHoja==="function") sincronizarHoja();
+  if(on){
+    window.scrollTo({top:0, behavior:"smooth"});
+    /* la primera vez en el móvil enseñamos dónde están ahora los ajustes */
+    if(window.matchMedia("(max-width:1020px)").matches && !leerPref("vio_hoja",false)){
+      guardarPref("vio_hoja", true);
+      setTimeout(()=>{ abrirHoja(); toast("🎛️ Aquí están tamaño, brillo y quitar fondo — el diseño se ve arriba mientras editas"); }, 500);
+    }
+  }
 }
 function renderPicked(){
   const el = document.getElementById("pickedList");
@@ -3241,8 +3429,6 @@ function seleccionar(p, abrirPreview){
   if(inP){ inP.value = ""; inP.placeholder = "$"+p.precioActual; }
   const re = document.getElementById("rngEscEscala");
   if(re){ re.value = 100; document.getElementById("escEscalaVal").textContent = "100%"; }
-  const sr = document.getElementById("sizeRow");
-  if(sr){ sr.style.display = "none"; }
   const rg = document.getElementById("rngEscala");
   if(rg){ rg.value = 100; document.getElementById("escalaVal").textContent = "100%"; }
   $("#uzone").classList.remove("ok");
@@ -3253,6 +3439,7 @@ function seleccionar(p, abrirPreview){
   updCapPrev();
   renderPreviews();
   actualizarEscenaInfo();
+  if(typeof actualizarHojaRapida==="function") actualizarHojaRapida();
   if(abrirPreview) modoPreview(true);
   else renderPicked();
 }
@@ -3369,7 +3556,7 @@ function conBrillo(ctx,fn){
   fn();
   try{ ctx.filter = prev; }catch(e){}
 }
-function vitrina(ctx,x,y,w,h,img,ac,pad=26){
+function vitrina(ctx,x,y,w,h,img,ac,pad=26,esc){
   ctx.save();
   const halo = ctx.createRadialGradient(x+w/2,y+h/2,0,x+w/2,y+h/2,Math.max(w,h)*.7);
   halo.addColorStop(0,hex2rgba(ac,.5));
@@ -3383,7 +3570,8 @@ function vitrina(ctx,x,y,w,h,img,ac,pad=26){
   ctx.restore();
   if(img){
     ctx.save();rr(ctx,x,y,w,h,26);ctx.clip();
-    const iw=w-pad*2, ih=h-pad*2, r=Math.min(iw/img.width, ih/img.height);
+    const iw=w-pad*2, ih=h-pad*2;
+    const r=Math.min(iw/img.width, ih/img.height)*(esc==null?escalaProducto:esc);
     const dw=img.width*r, dh=img.height*r;
     conBrillo(ctx, ()=>ctx.drawImage(img, x+(w-dw)/2, y+(h-dh)/2, dw, dh));
     const gl = ctx.createLinearGradient(x,y,x+w*.55,y+h*.55);
@@ -3889,7 +4077,7 @@ function dClaro(ctx,p,img){
   if(img){
     ctx.save();rr(ctx,fx,fy,fw,fh,30);ctx.clip();
     const pad=40, iw=fw-pad*2, ih=fh-pad*2;
-    const rr2=Math.min(iw/img.width, ih/img.height);
+    const rr2=Math.min(iw/img.width, ih/img.height)*escalaProducto;
     const dw=img.width*rr2, dh=img.height*rr2;
     conBrillo(ctx, ()=>ctx.drawImage(img, fx+(fw-dw)/2, fy+(fh-dh)/2, dw, dh));
     ctx.restore();
@@ -4174,7 +4362,7 @@ function dCombo(ctx, items, precioCombo){
       conBrillo(ctx, ()=>ctx.drawImage(png, ccx-dw/2, ccy-dh/2, dw, dh));
       ctx.restore();
     }else{
-      vitrina(ctx,x,vy,vw,vh,imgCache[it.imagen]||null,acento(it.categoria),18);
+      vitrina(ctx,x,vy,vw,vh,imgCache[it.imagen]||null,acento(it.categoria),18,1);
     }
     // etiqueta nombre debajo
     ctx.font=`700 22px ${SANS}`;
@@ -4682,6 +4870,7 @@ document.querySelectorAll(".stybtn").forEach(b=>{
     $("#uploadbox").style.display = estilo==="flotante" ? "block" : "none";
     $("#escenaBox").style.display = estilo==="escena" ? "block" : "none";
     if(estilo==="escena") actualizarEscenaInfo();
+    if(typeof actualizarHojaRapida==="function") actualizarHojaRapida();
     dibujar();
     marcarPrevActiva();
   };
@@ -4743,55 +4932,13 @@ $("#fileEscena").onchange = e=>{
   if(pl) $("#selPlantilla").value = pl;
 })();
 
-/* quitar fondo automático (#6) */
-async function quitarFondoComun(btn){
+/* quitar fondo — ahora con el estudio local (sin API, sin límites) */
+function quitarFondoComun(){
   if(!sel){ toast("Elige un producto primero"); return; }
-  let key = ($("#inpRmKey").value||"").trim() || leerPref("rmbg_key","");
-  if(!key){
-    key = prompt("Pega tu API key de remove.bg (gratis en remove.bg/api — 50 imágenes/mes)");
-    if(!key){ toast("🔑 Necesitas la clave de remove.bg — también puedes ponerla en el estilo Flotante"); return; }
-    key = key.trim();
-    const inp = document.getElementById("inpRmKey");
-    if(inp) inp.value = key;
-  }
-  guardarPref("rmbg_key", key);
-  const txtOrig = btn.textContent;
-  btn.disabled=true; btn.textContent="🪄 Quitando fondo…";
-  try{
-    const fd = new FormData();
-    fd.append("image_url", sel.imagen);
-    fd.append("size", "auto");
-    const r = await fetch("https://api.remove.bg/v1.0/removebg",{
-      method:"POST",
-      headers:{"X-Api-Key": key},
-      body: fd
-    });
-    if(!r.ok){
-      if(r.status===403||r.status===402){ guardarPref("rmbg_key",""); const inp=document.getElementById("inpRmKey"); if(inp) inp.value=""; throw new Error("API key inválida o sin créditos — revisa la clave"); }
-      throw new Error("remove.bg respondió "+r.status);
-    }
-    const blob = await r.blob();
-    const im = new Image();
-    im.onload = ()=>{
-      fotoSinFondo = im;
-      const uz1 = document.getElementById("uzone");
-      if(uz1){ uz1.classList.add("ok"); uz1.innerHTML = `✅ <b>Fondo eliminado automáticamente</b><br>Toca para subir otra foto`; }
-      const uz2 = document.getElementById("uzoneEscena");
-      if(uz2){ uz2.classList.add("ok"); uz2.innerHTML = `✅ <b>Fondo eliminado automáticamente</b><br>Toca para subir otra foto`; }
-      const sr = document.getElementById("sizeRow");
-      if(sr) sr.style.display = "flex";
-      dibujar();
-      renderPreviews();
-      toast("🪄 ¡Fondo eliminado! Producto integrado");
-    };
-    im.src = URL.createObjectURL(blob);
-  }catch(err){
-    toast("⚠️ "+err.message);
-  }
-  btn.disabled=false; btn.textContent=txtOrig;
+  abrirEstudio(sel.imagen);
 }
-$("#btnRmBg").onclick = ()=>quitarFondoComun($("#btnRmBg"));
-$("#btnRmBgEscena").onclick = ()=>quitarFondoComun($("#btnRmBgEscena"));
+$("#btnRmBg").onclick = ()=>quitarFondoComun();
+$("#btnRmBgEscena").onclick = ()=>quitarFondoComun();
 $("#btnRmKeySave").onclick = ()=>{
   const k = ($("#inpRmKey").value||"").trim();
   if(!k){ toast("El campo está vacío"); return; }
@@ -5777,6 +5924,684 @@ $("#btnCampana").onclick = async ()=>{
   toast("🎯 Campaña de 3 días lista: 6 imágenes + guía");
 };
 
+
+/* =====================================================================
+   MOTOR DE RECORTE DE FONDO — 100% en el dispositivo
+   · Modo ⚡ Rápido: análisis de color + relleno por inundación (0 datos)
+   · Modo 🤖 IA: red neuronal U²-Netp (4,5 MB, se descarga UNA vez)
+   Sin API key, sin cuota mensual, sin subir la foto a ningún servidor.
+   ===================================================================== */
+const RB = {
+  MODELO: [
+    "https://huggingface.co/BritishWerewolf/U-2-Netp/resolve/main/onnx/model.onnx",
+    "https://hf-mirror.com/BritishWerewolf/U-2-Netp/resolve/main/onnx/model.onnx"
+  ],
+  ORT_JS: [
+    "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js",
+    "https://unpkg.com/onnxruntime-web@1.20.1/dist/ort.min.js"
+  ],
+  ORT_WASM: "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/",
+  CACHE: "tm-modelos-v1",
+  LADO: 320,
+  sesion: null
+};
+
+/* ---------- análisis del fondo (grupo de color dominante del borde) ---------- */
+function rbAnalizarFondo(d, w, h){
+  const band = Math.max(2, Math.round(Math.min(w,h)*0.03));
+  const esq  = Math.max(3, Math.round(Math.min(w,h)*0.08));
+  const cuenta = new Map();
+  const muestras = [];
+  const add=(x,y,peso)=>{
+    const i=(y*w+x)*4;
+    const k=((d[i]>>4)<<8)|((d[i+1]>>4)<<4)|(d[i+2]>>4);
+    cuenta.set(k,(cuenta.get(k)||0)+peso);
+    muestras.push(i);
+  };
+  for(let y=0;y<h;y++){
+    if(y<band || y>=h-band){ for(let x=0;x<w;x++) add(x,y,1); }
+    else { for(let x=0;x<band;x++) add(x,y,1); for(let x=w-band;x<w;x++) add(x,y,1); }
+  }
+  /* las esquinas casi siempre son fondo: pesan el triple */
+  for(const [bx,by] of [[0,0],[w-esq,0],[0,h-esq],[w-esq,h-esq]])
+    for(let y=by;y<by+esq;y++) for(let x=bx;x<bx+esq;x++) add(x,y,3);
+
+  let mejor=0, mejorK=-1;
+  for(const [k,v] of cuenta) if(v>mejor){ mejor=v; mejorK=k; }
+  const ref=[((mejorK>>8)&15)*16+8, ((mejorK>>4)&15)*16+8, (mejorK&15)*16+8];
+
+  let n=0,sr=0,sg=0,sb=0;
+  for(const i of muestras){
+    if(Math.abs(d[i]-ref[0])<=26 && Math.abs(d[i+1]-ref[1])<=26 && Math.abs(d[i+2]-ref[2])<=26){
+      sr+=d[i]; sg+=d[i+1]; sb+=d[i+2]; n++;
+    }
+  }
+  const color = n ? [sr/n,sg/n,sb/n] : ref;
+  let v=0;
+  for(const i of muestras){
+    if(Math.abs(d[i]-color[0])<=30 && Math.abs(d[i+1]-color[1])<=30 && Math.abs(d[i+2]-color[2])<=30)
+      v += (Math.abs(d[i]-color[0])+Math.abs(d[i+1]-color[1])+Math.abs(d[i+2]-color[2]))/3;
+  }
+  return {color, varianza:n?v/n:0, cobertura:n/muestras.length};
+}
+function rbDist(r,g,b,c){
+  const dr=Math.abs(r-c[0]), dg=Math.abs(g-c[1]), db=Math.abs(b-c[2]);
+  return Math.sqrt((dr*dr+dg*dg+db*db)/3)*0.45 + Math.max(dr,dg,db)*0.55;
+}
+/* ---------- máscara por inundación desde los bordes ---------- */
+function rbMascaraRapida(d, w, h, tol){
+  const fondo = rbAnalizarFondo(d,w,h);
+  const t1 = 8 + tol*1.35 + Math.min(22, fondo.varianza*1.1);
+  const t2 = t1 + 20 + tol*0.25;
+  const N=w*h;
+  const alpha=new Uint8Array(N).fill(255), vis=new Uint8Array(N), pila=new Int32Array(N);
+  let sp=0;
+  const dentro=(q)=>{ const j=q*4; return rbDist(d[j],d[j+1],d[j+2],fondo.color)<t2; };
+  const semilla=(x,y)=>{ const p=y*w+x; if(!vis[p] && dentro(p)){ vis[p]=1; pila[sp++]=p; } };
+  for(let x=0;x<w;x++){ semilla(x,0); semilla(x,h-1); }
+  for(let y=0;y<h;y++){ semilla(0,y); semilla(w-1,y); }
+  while(sp>0){
+    const p=pila[--sp], i=p*4;
+    const dist=rbDist(d[i],d[i+1],d[i+2],fondo.color);
+    alpha[p] = dist<=t1 ? 0 : Math.round(255*Math.min(1,(dist-t1)/(t2-t1)));
+    if(alpha[p]>=250) continue;
+    const x=p%w, y=(p-x)/w;
+    if(x>0   && !vis[p-1] && dentro(p-1)){ vis[p-1]=1; pila[sp++]=p-1; }
+    if(x<w-1 && !vis[p+1] && dentro(p+1)){ vis[p+1]=1; pila[sp++]=p+1; }
+    if(y>0   && !vis[p-w] && dentro(p-w)){ vis[p-w]=1; pila[sp++]=p-w; }
+    if(y<h-1 && !vis[p+w] && dentro(p+w)){ vis[p+w]=1; pila[sp++]=p+w; }
+  }
+  return {alpha, fondo};
+}
+/* ---------- huecos internos: zonas del color del fondo encerradas por el producto
+   (el interior de un asa, un mosquetón, el espacio entre las patas...) ---------- */
+function rbRellenarHuecos(d, alpha, w, h, fondo, tol){
+  const t1 = 8 + tol*1.1 + Math.min(18, fondo.varianza);
+  const t2 = t1 + 18;
+  const N=w*h, lab=new Int32Array(N).fill(-1), cola=new Int32Array(N);
+  const cand=new Uint8Array(N);
+  for(let p=0;p<N;p++){
+    if(alpha[p]<250) continue;
+    const i=p*4;
+    if(rbDist(d[i],d[i+1],d[i+2],fondo.color) < t2) cand[p]=1;
+  }
+  const maxArea = N*0.06;      /* un hueco interno nunca es una parte enorme de la foto */
+  let comp=0; const areas=[], borde=[];
+  for(let p=0;p<N;p++){
+    if(!cand[p] || lab[p]>=0) continue;
+    let qi=0,qe=0; cola[qe++]=p; lab[p]=comp;
+    let area=0, tocaBorde=false;
+    while(qi<qe){
+      const c=cola[qi++]; area++;
+      const x=c%w, y=(c-x)/w;
+      if(x===0||y===0||x===w-1||y===h-1) tocaBorde=true;
+      if(x>0   && cand[c-1] && lab[c-1]<0){ lab[c-1]=comp; cola[qe++]=c-1; }
+      if(x<w-1 && cand[c+1] && lab[c+1]<0){ lab[c+1]=comp; cola[qe++]=c+1; }
+      if(y>0   && cand[c-w] && lab[c-w]<0){ lab[c-w]=comp; cola[qe++]=c-w; }
+      if(y<h-1 && cand[c+w] && lab[c+w]<0){ lab[c+w]=comp; cola[qe++]=c+w; }
+    }
+    areas.push(area); borde.push(tocaBorde); comp++;
+  }
+  for(let p=0;p<N;p++){
+    const l=lab[p];
+    if(l<0 || borde[l] || areas[l]>maxArea) continue;
+    const i=p*4;
+    const dist=rbDist(d[i],d[i+1],d[i+2],fondo.color);
+    alpha[p] = dist<=t1 ? 0 : Math.round(255*Math.min(1,(dist-t1)/(t2-t1)));
+  }
+}
+/* ---------- limpieza: motas sueltas ---------- */
+function rbQuitarMotas(alpha, w, h, minFrac){
+  const N=w*h, lab=new Int32Array(N).fill(-1), cola=new Int32Array(N);
+  const minPix=Math.max(12, Math.round(N*minFrac));
+  const areas=[]; let comp=0;
+  for(let p=0;p<N;p++){
+    if(alpha[p]<40 || lab[p]>=0) continue;
+    let qi=0,qe=0; cola[qe++]=p; lab[p]=comp; let area=0;
+    while(qi<qe){
+      const c=cola[qi++]; area++;
+      const x=c%w, y=(c-x)/w;
+      if(x>0   && alpha[c-1]>=40 && lab[c-1]<0){ lab[c-1]=comp; cola[qe++]=c-1; }
+      if(x<w-1 && alpha[c+1]>=40 && lab[c+1]<0){ lab[c+1]=comp; cola[qe++]=c+1; }
+      if(y>0   && alpha[c-w]>=40 && lab[c-w]<0){ lab[c-w]=comp; cola[qe++]=c-w; }
+      if(y<h-1 && alpha[c+w]>=40 && lab[c+w]<0){ lab[c+w]=comp; cola[qe++]=c+w; }
+    }
+    areas.push(area); comp++;
+  }
+  if(!comp) return;
+  const maxA=Math.max.apply(null,areas);
+  for(let p=0;p<N;p++){
+    const l=lab[p];
+    if(l>=0 && areas[l]<minPix && areas[l]<maxA*0.12) alpha[p]=0;
+  }
+}
+/* ---------- contraste del alfa: corta las franjas semitransparentes anchas
+   que dejan las sombras suaves, conservando el borde antialias real ---------- */
+function rbContrasteAlfa(alpha, bajo, alto){
+  const b=bajo*255, r=(alto-bajo)*255;
+  for(let p=0;p<alpha.length;p++){
+    const a=alpha[p];
+    if(a===0||a===255) continue;
+    const v=(a-b)/r;
+    alpha[p]= v<=0?0:(v>=1?255:Math.round(v*255));
+  }
+}
+/* ---------- suavizado del borde ---------- */
+function rbSuavizar(alpha, w, h, pasadas){
+  for(let k=0;k<pasadas;k++){
+    const s=alpha.slice();
+    for(let y=1;y<h-1;y++) for(let x=1;x<w-1;x++){
+      const p=y*w+x, a=s[p], n0=s[p-1],n1=s[p+1],n2=s[p-w],n3=s[p+w];
+      if(a===255&&n0===255&&n1===255&&n2===255&&n3===255) continue;
+      if(a===0&&n0===0&&n1===0&&n2===0&&n3===0) continue;
+      alpha[p]=(s[p-w-1]+n2+s[p-w+1]+n0+a*2+n1+s[p+w-1]+n3+s[p+w+1])/10|0;
+    }
+  }
+}
+/* ---------- aplicar alfa quitando el halo del fondo ---------- */
+function rbAplicar(d, alpha, w, h, bg){
+  for(let p=0;p<w*h;p++){
+    const a=alpha[p], i=p*4;
+    if(a===0){ d[i+3]=0; continue; }
+    if(a<250 && a>=110 && bg){
+      const f=a/255;
+      for(let k=0;k<3;k++){
+        const v=(d[i+k]-bg[k]*(1-f))/f;
+        d[i+k]= v<0?0:(v>255?255:v);
+      }
+    }
+    d[i+3]=a;
+  }
+}
+/* ---------- utilidades de lienzo ---------- */
+function rbLienzoDe(img, maxLado){
+  let w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+  const r=Math.min(1, maxLado/Math.max(w,h));
+  w=Math.max(1,Math.round(w*r)); h=Math.max(1,Math.round(h*r));
+  const c=document.createElement("canvas"); c.width=w; c.height=h;
+  c.getContext("2d",{willReadFrequently:true}).drawImage(img,0,0,w,h);
+  return c;
+}
+function rbCajaOpaca(cv, margenPct){
+  const ctx=cv.getContext("2d",{willReadFrequently:true});
+  const {data:d,width:w,height:h}=ctx.getImageData(0,0,cv.width,cv.height);
+  let x0=w,y0=h,x1=-1,y1=-1;
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++)
+    if(d[(y*w+x)*4+3]>12){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  if(x1<0) return null;
+  const m=Math.round(Math.max(x1-x0,y1-y0)*(margenPct||0));
+  x0=Math.max(0,x0-m); y0=Math.max(0,y0-m);
+  x1=Math.min(w-1,x1+m); y1=Math.min(h-1,y1+m);
+  return {x:x0,y:y0,w:x1-x0+1,h:y1-y0+1};
+}
+function rbCortar(cv, caja){
+  const out=document.createElement("canvas");
+  out.width=caja.w; out.height=caja.h;
+  out.getContext("2d",{willReadFrequently:true}).drawImage(cv,caja.x,caja.y,caja.w,caja.h,0,0,caja.w,caja.h);
+  return out;
+}
+function rbRecortarTransparente(cv, margenPct){
+  const caja=rbCajaOpaca(cv,margenPct);
+  return caja ? rbCortar(cv,caja) : cv;
+}
+function rbCanvasAImagen(cv){
+  return new Promise((res,rej)=>{
+    const im=new Image();
+    im.onload=()=>res(im); im.onerror=rej;
+    im.src=cv.toDataURL("image/png");
+  });
+}
+
+/* ---------- IA: U²-Netp vía ONNX Runtime Web ---------- */
+function rbCargarScript(url){
+  return new Promise((res,rej)=>{
+    const s=document.createElement("script");
+    s.src=url; s.onload=res; s.onerror=()=>rej(new Error("no se pudo cargar "+url));
+    document.head.appendChild(s);
+  });
+}
+async function rbIntentar(lista, fn){
+  let ultimo=null;
+  for(const u of lista){ try{ return await fn(u); }catch(e){ ultimo=e; } }
+  throw ultimo || new Error("sin fuentes disponibles");
+}
+async function rbBajarModelo(prog){
+  /* caché propia: se descarga una sola vez y queda para siempre */
+  let cache=null;
+  try{ cache = await caches.open(RB.CACHE); }catch(e){}
+  if(cache){
+    for(const u of RB.MODELO){
+      const hit = await cache.match(u);
+      if(hit) return new Uint8Array(await hit.arrayBuffer());
+    }
+  }
+  return await rbIntentar(RB.MODELO, async (url)=>{
+    const r = await fetch(url);
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const total = Number(r.headers.get("content-length")) || 4574861;
+    const partes=[]; let leido=0;
+    const rd = r.body && r.body.getReader ? r.body.getReader() : null;
+    if(rd){
+      for(;;){
+        const {done,value}=await rd.read();
+        if(done) break;
+        partes.push(value); leido+=value.length;
+        if(prog) prog(Math.min(99, Math.round(leido/total*100)));
+      }
+      const buf=new Uint8Array(leido); let off=0;
+      for(const p of partes){ buf.set(p,off); off+=p.length; }
+      if(cache) try{ await cache.put(url, new Response(buf)); }catch(e){}
+      return buf;
+    }
+    const ab = await r.arrayBuffer();
+    if(cache) try{ await cache.put(url, new Response(ab)); }catch(e){}
+    return new Uint8Array(ab);
+  });
+}
+async function rbSesionIA(prog){
+  if(RB.sesion) return RB.sesion;
+  if(!window.ort){
+    if(prog) prog(-1,"Preparando el motor de IA…");
+    await rbIntentar(RB.ORT_JS, rbCargarScript);
+  }
+  if(!window.ort) throw new Error("ONNX Runtime no disponible");
+  try{
+    ort.env.wasm.wasmPaths = RB.ORT_WASM;
+    ort.env.wasm.numThreads = 1;   /* GitHub Pages no permite SharedArrayBuffer */
+    ort.env.wasm.proxy = false;
+    ort.env.logLevel = "error";
+  }catch(e){}
+  if(prog) prog(0,"Descargando la IA (4,5 MB, solo esta vez)…");
+  const bytes = await rbBajarModelo(p=>prog&&prog(p,"Descargando la IA (4,5 MB, solo esta vez)…"));
+  if(prog) prog(-1,"Encendiendo la IA…");
+  RB.sesion = await ort.InferenceSession.create(bytes, {
+    executionProviders:["wasm"], graphOptimizationLevel:"all"
+  });
+  return RB.sesion;
+}
+async function rbMascaraIA(cv, prog){
+  const ses = await rbSesionIA(prog);
+  if(prog) prog(-1,"Analizando la foto…");
+  const L=RB.LADO;
+  const tmp=document.createElement("canvas"); tmp.width=L; tmp.height=L;
+  tmp.getContext("2d").drawImage(cv,0,0,L,L);
+  const px=tmp.getContext("2d").getImageData(0,0,L,L).data;
+  const t=new Float32Array(3*L*L);
+  const M=[0.485,0.456,0.406], S=[0.229,0.224,0.225];
+  /* U²-Net normaliza dividiendo por el máximo del canal */
+  let mx=0; for(let i=0;i<px.length;i+=4) mx=Math.max(mx,px[i],px[i+1],px[i+2]);
+  mx = mx||255;
+  for(let p=0;p<L*L;p++){
+    for(let k=0;k<3;k++) t[k*L*L+p] = ((px[p*4+k]/mx) - M[k]) / S[k];
+  }
+  const nombreIn = ses.inputNames[0];
+  const feeds={}; feeds[nombreIn]=new ort.Tensor("float32", t, [1,3,L,L]);
+  const salida = await ses.run(feeds);
+  const clave = ses.outputNames[0];
+  const o = salida[clave].data;
+  let mn=Infinity, mxv=-Infinity;
+  for(let i=0;i<L*L;i++){ if(o[i]<mn)mn=o[i]; if(o[i]>mxv)mxv=o[i]; }
+  const rango=(mxv-mn)||1;
+  /* máscara a lienzo para reescalarla suavemente al tamaño real */
+  const mc=document.createElement("canvas"); mc.width=L; mc.height=L;
+  const mctx=mc.getContext("2d");
+  const mim=mctx.createImageData(L,L);
+  for(let i=0;i<L*L;i++){
+    let v=(o[i]-mn)/rango;
+    v = v<0.5 ? Math.pow(v*2,1.6)/2 : 1-Math.pow((1-v)*2,1.6)/2;  /* más contraste en el borde */
+    const g=Math.round(v*255);
+    mim.data[i*4]=g; mim.data[i*4+1]=g; mim.data[i*4+2]=g; mim.data[i*4+3]=255;
+  }
+  mctx.putImageData(mim,0,0);
+  const gc=document.createElement("canvas"); gc.width=cv.width; gc.height=cv.height;
+  const gctx=gc.getContext("2d",{willReadFrequently:true});
+  gctx.imageSmoothingEnabled=true; gctx.imageSmoothingQuality="high";
+  gctx.drawImage(mc,0,0,cv.width,cv.height);
+  const gd=gctx.getImageData(0,0,cv.width,cv.height).data;
+  const alpha=new Uint8Array(cv.width*cv.height);
+  for(let p=0;p<alpha.length;p++) alpha[p]=gd[p*4];
+  return alpha;
+}
+
+/* =====================================================================
+   ESTUDIO DE RECORTE (interfaz)
+   ===================================================================== */
+const EST = {
+  origen:null,      /* lienzo con la foto original ya escalada */
+  trabajo:null,     /* lienzo con el resultado actual */
+  historia:[],
+  modo:"rapido",
+  pincel:"off",
+  destino:"flotante",
+  abierto:false
+};
+function rbCap(txt, pct){
+  const c=$("#rbCap"), t=$("#rbCapTxt");
+  if(txt===null){ c.classList.remove("on"); return; }
+  c.classList.add("on");
+  t.innerHTML = txt + (pct>=0 ? `<div style="margin-top:8px;font-size:20px;font-weight:900;color:var(--naranja);">${pct}%</div>` : "");
+}
+function rbPintarVista(){
+  const cv=$("#rbCv"), t=EST.trabajo;
+  if(!t) return;
+  cv.width=t.width; cv.height=t.height;
+  cv.getContext("2d").clearRect(0,0,cv.width,cv.height);
+  cv.getContext("2d").drawImage(t,0,0);
+}
+function rbGuardarHistoria(){
+  if(!EST.trabajo) return;
+  const c=document.createElement("canvas");
+  c.width=EST.trabajo.width; c.height=EST.trabajo.height;
+  c.getContext("2d").drawImage(EST.trabajo,0,0);
+  EST.historia.push(c);
+  if(EST.historia.length>8) EST.historia.shift();
+}
+function rbDiag(msg){ const e=$("#rbDiag"); if(e) e.innerHTML=msg||""; }
+
+async function abrirEstudio(fuente, destino){
+  EST.destino = destino || (estilo==="escena" ? "escena" : "flotante");
+  let img;
+  try{
+    if(fuente instanceof HTMLImageElement) img=fuente;
+    else img = await loadImage(fuente);
+  }catch(e){ toast("⚠️ No se pudo cargar la foto del producto"); return; }
+  EST.origen = rbLienzoDe(img, 1400);
+  EST.trabajo = rbLienzoDe(img, 1400);
+  EST.historia = [];
+  EST.abierto = true;
+  $("#rbWrap").classList.add("on");
+  document.body.style.overflow="hidden";
+  rbPintarVista();
+  rbDiag("");
+  await procesarEstudio();
+}
+function cerrarEstudio(){
+  EST.abierto=false;
+  $("#rbWrap").classList.remove("on");
+  document.body.style.overflow="";
+  rbCap(null);
+}
+async function procesarEstudio(){
+  if(!EST.origen) return;
+  if(EST.trabajo) rbGuardarHistoria();
+  const w=EST.origen.width, h=EST.origen.height;
+  const octx=EST.origen.getContext("2d",{willReadFrequently:true});
+  const base=octx.getImageData(0,0,w,h);
+  const datos=new Uint8ClampedArray(base.data);   /* copia de trabajo */
+  let alpha, bg=null;
+  try{
+    if(EST.modo==="ia"){
+      rbCap("Preparando la IA…",-1);
+      alpha = await rbMascaraIA(EST.origen, (p,txt)=>rbCap(txt||"Descargando la IA…", p));
+      rbSuavizar(alpha,w,h,1);
+    }else{
+      rbCap("Recortando…",-1);
+      await new Promise(r=>setTimeout(r,16));
+      const tol=Number($("#rbTol").value);
+      const r=rbMascaraRapida(datos,w,h,tol);
+      alpha=r.alpha; bg=r.fondo.color;
+      if($("#rbHuecos").checked) rbRellenarHuecos(datos,alpha,w,h,r.fondo,tol);
+      rbContrasteAlfa(alpha,0.32,0.78);
+      rbQuitarMotas(alpha,w,h,0.0004);
+      rbSuavizar(alpha,w,h,1);
+      const cob=r.fondo.cobertura;
+      rbDiag(cob<0.62
+        ? "⚠️ El fondo de esta foto es <b>complejo</b>. Si el recorte sale mal prueba el modo <b>🤖 IA</b> o retoca con el pincel."
+        : "✅ Fondo uniforme detectado. Sube o baja la <b>sensibilidad</b> si quedó fondo o se comió parte del producto.");
+    }
+  }catch(err){
+    rbCap(null);
+    toast("⚠️ IA no disponible: "+(err.message||err));
+    rbDiag("⚠️ No se pudo usar la IA (¿sin conexión?). Usa el modo <b>⚡ Rápido</b>, funciona siempre.");
+    document.querySelectorAll("#rbModo button").forEach(b=>b.classList.toggle("on", b.dataset.m==="rapido"));
+    EST.modo="rapido"; $("#rbFilaTol").style.display="flex";
+    return;
+  }
+  rbAplicar(datos, alpha, w, h, bg);
+  let vacio=0; for(let p=0;p<w*h;p++) if(alpha[p]<10) vacio++;
+  const frac=vacio/(w*h);
+  const out=document.createElement("canvas");
+  out.width=w; out.height=h;
+  out.getContext("2d").putImageData(new ImageData(datos,w,h),0,0);
+  EST.trabajo=out;
+  rbPintarVista();
+  rbCap(null);
+  if(frac>0.985) rbDiag("⚠️ Se borró <b>casi todo</b>. Baja la sensibilidad o usa 🤖 IA.");
+  else if(frac<0.03) rbDiag("⚠️ <b>Casi no se quitó nada</b>. Sube la sensibilidad o usa 🤖 IA.");
+}
+/* ---- pincel de retoque ---- */
+(function(){
+  const cv=$("#rbCv");
+  let pintando=false;
+  function punto(ev){
+    const r=cv.getBoundingClientRect();
+    const t=ev.touches?ev.touches[0]:ev;
+    return {x:(t.clientX-r.left)*(cv.width/r.width), y:(t.clientY-r.top)*(cv.height/r.height)};
+  }
+  function trazo(p){
+    const rad=Number($("#rbBrocha").value)/100*Math.max(EST.trabajo.width,EST.trabajo.height)*0.14;
+    const ctx=EST.trabajo.getContext("2d");
+    ctx.save();
+    if(EST.pincel==="borrar"){
+      ctx.globalCompositeOperation="destination-out";
+      const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,rad);
+      g.addColorStop(0,"rgba(0,0,0,1)"); g.addColorStop(.72,"rgba(0,0,0,1)"); g.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,rad,0,7); ctx.fill();
+    }else{
+      ctx.beginPath(); ctx.arc(p.x,p.y,rad,0,7); ctx.clip();
+      ctx.drawImage(EST.origen,0,0);
+    }
+    ctx.restore();
+    rbPintarVista();
+  }
+  function abajo(ev){
+    if(!EST.abierto || EST.pincel==="off") return;
+    ev.preventDefault(); pintando=true; rbGuardarHistoria(); trazo(punto(ev));
+  }
+  function mover(ev){ if(pintando){ ev.preventDefault(); trazo(punto(ev)); } }
+  function arriba(){ pintando=false; }
+  cv.addEventListener("mousedown",abajo);
+  cv.addEventListener("mousemove",mover);
+  window.addEventListener("mouseup",arriba);
+  cv.addEventListener("touchstart",abajo,{passive:false});
+  cv.addEventListener("touchmove",mover,{passive:false});
+  cv.addEventListener("touchend",arriba);
+})();
+/* ---- controles del estudio ---- */
+document.querySelectorAll("#rbModo button").forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll("#rbModo button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    EST.modo=b.dataset.m;
+    $("#rbFilaTol").style.display = EST.modo==="rapido" ? "flex" : "none";
+    $("#rbHuecosFila").style.display = EST.modo==="rapido" ? "flex" : "none";
+    procesarEstudio();
+  };
+});
+document.querySelectorAll("#rbPincel button").forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll("#rbPincel button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    EST.pincel=b.dataset.p;
+    $("#rbFilaPincel").style.display = EST.pincel==="off" ? "none" : "flex";
+    $("#rbCv").style.cursor = EST.pincel==="off" ? "default" : "crosshair";
+  };
+});
+let _rbTolT=null;
+$("#rbTol").oninput = e=>{
+  $("#rbTolVal").textContent=e.target.value;
+  clearTimeout(_rbTolT);
+  _rbTolT=setTimeout(()=>{ if(EST.modo==="rapido") procesarEstudio(); }, 220);
+};
+$("#rbBrocha").oninput = e=>{ $("#rbBrochaVal").textContent=e.target.value; };
+$("#rbHuecos").onchange = ()=>{ if(EST.modo==="rapido") procesarEstudio(); };
+$("#rbUndo").onclick = ()=>{
+  const c=EST.historia.pop();
+  if(!c){ toast("Nada que deshacer"); return; }
+  EST.trabajo=c; rbPintarVista();
+};
+$("#rbRehacerTodo").onclick = ()=>{ EST.historia=[]; procesarEstudio(); };
+$("#rbRecortar").onclick = ()=>{
+  if(!EST.trabajo) return;
+  const caja = rbCajaOpaca(EST.trabajo, 0.02);
+  if(!caja){ toast("No queda nada que recortar"); return; }
+  rbGuardarHistoria();
+  EST.trabajo = rbCortar(EST.trabajo, caja);
+  EST.origen  = rbCortar(EST.origen, caja);   /* el pincel "traer" debe seguir alineado */
+  EST.historia = [];
+  rbPintarVista();
+  toast("✂️ Márgenes vacíos recortados — el producto se verá más grande");
+};
+$("#rbCancelar").onclick = cerrarEstudio;
+$("#rbUsar").onclick = async ()=>{
+  if(!EST.trabajo){ cerrarEstudio(); return; }
+  const listo = rbRecortarTransparente(EST.trabajo, 0.02);
+  try{
+    fotoSinFondo = await rbCanvasAImagen(listo);
+  }catch(e){ toast("⚠️ No se pudo aplicar el recorte"); return; }
+  const uz1=document.getElementById("uzone");
+  if(uz1){ uz1.classList.add("ok"); uz1.innerHTML="✅ <b>Fondo eliminado</b><br>Toca para subir otra foto"; }
+  const uz2=document.getElementById("uzoneEscena");
+  if(uz2){ uz2.classList.add("ok"); uz2.innerHTML="✅ <b>Fondo eliminado</b><br>Toca para subir otra foto"; }
+  const sr=document.getElementById("sizeRow"); if(sr) sr.style.display="flex";
+  cerrarEstudio();
+  if(estilo!=="flotante" && estilo!=="escena"){
+    const b=document.querySelector('.stybtn[data-sty="flotante"]');
+    if(b) b.click();
+  }
+  dibujar(); renderPreviews(); sincronizarHoja();
+  toast("🪄 ¡Listo! Producto recortado sin límites ni claves");
+};
+/* remove.bg queda como opción avanzada para quien tenga clave */
+$("#rbRemoveBg").onclick = async ()=>{
+  const key=($("#inpRmKey").value||"").trim()||leerPref("rmbg_key","");
+  if(!key){ toast("Pega primero tu clave de remove.bg"); return; }
+  if(!sel){ toast("Elige un producto"); return; }
+  rbCap("Consultando remove.bg…",-1);
+  try{
+    const fd=new FormData();
+    fd.append("image_url", sel.imagen); fd.append("size","auto");
+    const r=await fetch("https://api.remove.bg/v1.0/removebg",{method:"POST",headers:{"X-Api-Key":key},body:fd});
+    if(!r.ok) throw new Error("respondió "+r.status+(r.status===402?" (sin créditos)":""));
+    const im=await createImageBitmap(await r.blob());
+    const c=document.createElement("canvas"); c.width=im.width; c.height=im.height;
+    c.getContext("2d").drawImage(im,0,0);
+    rbGuardarHistoria(); EST.trabajo=c; rbPintarVista(); rbCap(null);
+    toast("☁️ Recorte de remove.bg aplicado");
+  }catch(e){ rbCap(null); toast("⚠️ remove.bg: "+e.message); }
+};
+
+/* =====================================================================
+   HOJA DE AJUSTES MÓVIL — se edita viendo el diseño, sin subir ni bajar
+   ===================================================================== */
+const mqMovil = window.matchMedia("(max-width:1020px)");
+function medirHeader(){
+  const h=document.querySelector("header");
+  if(h) document.documentElement.style.setProperty("--hdr", h.offsetHeight+"px");
+}
+function sincronizarHoja(){
+  medirHeader();
+  const enHoja = mqMovil.matches && document.body.classList.contains("preview");
+  const cuerpo = document.getElementById("hojaBody");
+  const derecha = document.querySelector(".right");
+  const lienzo  = derecha ? derecha.querySelector(".canvaswrap") : null;
+  for(const id of ["panelPrev","panelEstilo"]){
+    const el=document.getElementById(id);
+    if(!el) continue;
+    if(enHoja){ if(el.parentElement!==cuerpo) cuerpo.appendChild(el); }
+    else if(derecha && el.parentElement!==derecha){ derecha.insertBefore(el, lienzo); }
+  }
+  if(!enHoja) cerrarHoja();
+  actualizarHojaRapida();
+}
+function rangoTamActivo(){
+  if(comboMode) return document.getElementById("rngEscalaCombo");
+  if(estilo==="escena") return document.getElementById("rngEscEscala");
+  return document.getElementById("rngEscala");
+}
+function actualizarHojaRapida(){
+  const rt=rangoTamActivo(), rb=document.getElementById("rngBrillo");
+  const ht=document.getElementById("hjTam"), hb=document.getElementById("hjBrillo");
+  if(rt&&ht){ ht.min=rt.min; ht.max=rt.max; ht.step=rt.step; ht.value=rt.value; document.getElementById("hjTamVal").textContent=rt.value+"%"; }
+  if(rb&&hb){ hb.value=rb.value; document.getElementById("hjBrilloVal").textContent=rb.value+"%"; }
+}
+function abrirHoja(){
+  if(!mqMovil.matches) return;
+  medirHeader();
+  actualizarHojaRapida();
+  document.body.classList.add("hoja-open");
+  document.getElementById("hoja").setAttribute("aria-hidden","false");
+}
+function cerrarHoja(){
+  document.body.classList.remove("hoja-open","hoja-max");
+  const h=document.getElementById("hoja");
+  if(h) h.setAttribute("aria-hidden","true");
+}
+document.getElementById("hjTam").oninput = e=>{
+  const t=rangoTamActivo();
+  document.getElementById("hjTamVal").textContent=e.target.value+"%";
+  if(!t) return;
+  t.value=e.target.value;
+  t.dispatchEvent(new Event("input"));
+};
+document.getElementById("hjBrillo").oninput = e=>{
+  const t=document.getElementById("rngBrillo");
+  document.getElementById("hjBrilloVal").textContent=e.target.value+"%";
+  if(!t) return;
+  t.value=e.target.value;
+  t.dispatchEvent(new Event("input"));
+};
+document.getElementById("hjFondo").onclick = ()=>{
+  if(!sel){ toast("Elige un producto primero"); return; }
+  cerrarHoja();
+  abrirEstudio(sel.imagen);
+};
+document.getElementById("hjReset").onclick = ()=>{
+  escalaProducto=1; escalaCombo=1; brilloFoto=1; escEscala=1; escOffX=0; escOffY=0;
+  fotoSinFondo=null;
+  [["rngEscala","escalaVal"],["rngEscalaCombo","escalaComboVal"],["rngEscEscala","escEscalaVal"],["rngBrillo","brilloVal"]]
+    .forEach(([r,v])=>{ const a=document.getElementById(r), b=document.getElementById(v); if(a){a.value=100;} if(b){b.textContent="100%";} });
+  const uz1=document.getElementById("uzone");
+  if(uz1){ uz1.classList.remove("ok"); uz1.innerHTML="📤 <b>Sube aquí la foto PNG sin fondo</b><br>Los datos (nombre, precio, specs) se toman solos de la tienda"; }
+  actualizarHojaRapida();
+  dibujar(); renderPreviews();
+  toast("↺ Ajustes de la foto reiniciados");
+};
+document.getElementById("hjCerrar").onclick = cerrarHoja;
+document.getElementById("hjPng").onclick = ()=>document.getElementById("btnPng").click();
+document.getElementById("hjShare").onclick = ()=>document.getElementById("btnShare").click();
+/* arrastrar el asa: agrandar / cerrar */
+(function(){
+  const g=document.getElementById("hojaGrip");
+  let y0=null;
+  const abajo=e=>{ y0=(e.touches?e.touches[0]:e).clientY; };
+  const arriba=e=>{
+    if(y0==null) return;
+    const y=(e.changedTouches?e.changedTouches[0]:e).clientY;
+    const dif=y-y0; y0=null;
+    if(dif<-40) document.body.classList.add("hoja-max");
+    else if(dif>40){
+      if(document.body.classList.contains("hoja-max")) document.body.classList.remove("hoja-max");
+      else cerrarHoja();
+    }else{
+      document.body.classList.toggle("hoja-max");   /* toque simple */
+    }
+  };
+  g.addEventListener("touchstart",abajo,{passive:true});
+  g.addEventListener("touchend",arriba);
+  g.addEventListener("mousedown",abajo);
+  g.addEventListener("mouseup",arriba);
+})();
+document.getElementById("qbAjustes").onclick = ()=>{
+  if(document.body.classList.contains("hoja-open")) cerrarHoja(); else abrirHoja();
+};
+if(mqMovil.addEventListener) mqMovil.addEventListener("change", sincronizarHoja);
+else if(mqMovil.addListener) mqMovil.addListener(sincronizarHoja);
+window.addEventListener("resize", medirHeader);
+window.addEventListener("orientationchange", ()=>setTimeout(sincronizarHoja,250));
+
+medirHeader();
+sincronizarHoja();
 init();
 </script>
 </body>

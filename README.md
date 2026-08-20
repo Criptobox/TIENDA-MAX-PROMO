@@ -11,7 +11,8 @@ Generador de imágenes y videos promocionales conectado en vivo al catálogo de 
 - **📅 Plan semanal**: elige 7 productos variados automáticamente y genera ZIP con guía de publicación
 - **⚡ Generación por lotes**: toda una categoría o selección múltiple con checkboxes → ZIP
 - **🔳 Código QR** de cada producto apuntando a la tienda
-- **🪄 Quitar fondo automático** vía remove.bg (API key propia, 50 imágenes/mes gratis)
+- **🪄 Quitar fondo GRATIS e ILIMITADO** — se procesa dentro del propio teléfono, sin clave API y sin cuota mensual. Dos motores: **⚡ Rápido** (instantáneo, 0 datos) y **🤖 IA** (red U²-Netp de 4,5 MB que se descarga una sola vez), más **pincel de retoque** para dejarlo perfecto
+- **📱 Hoja de ajustes móvil** — el diseño queda fijo arriba y los controles (tamaño, brillo, quitar fondo, estilo) suben desde abajo: se edita viendo el resultado, sin subir y bajar la pantalla
 - **📤 Registro de publicaciones**: marca qué producto publicaste y cuándo; orden "sin publicar primero"
 - **🗓️ Historial visual**: galería de todo lo publicado agrupado por día — toca cualquiera para republicarlo
 - **⭐ Estilo Reseña**: convierte las opiniones reales de clientes (de la web) en tarjetas con estrellas doradas, compra verificada y el producto comprado
@@ -46,4 +47,6 @@ Generador de imágenes y videos promocionales conectado en vivo al catálogo de 
 - Los datos vienen de `tiendamax.org` con CORS abierto — no necesita servidor propio ni claves
 - Todo se genera en el navegador (canvas): no se sube nada a ningún servidor
 - El registro de publicaciones y las preferencias se guardan en `localStorage` del dispositivo
-- Para quitar fondos automáticamente se necesita una API key gratuita de [remove.bg/api](https://www.remove.bg/api)
+- Quitar el fondo **no necesita ninguna clave ni conexión a un servicio**: todo se calcula en el navegador. El modelo de IA (4,5 MB, licencia Apache-2.0) se descarga una única vez desde Hugging Face y queda en caché
+- remove.bg sigue disponible como opción avanzada dentro del estudio de recorte, para quien tenga clave propia
+- Consulta [`MEJORAS.md`](MEJORAS.md) para la lista de mejoras propuestas
