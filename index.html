@@ -405,6 +405,62 @@ body.tema-claro .modalcaja{background:#fff;color:#17171c;}
   background:linear-gradient(135deg,rgba(168,85,247,.14),rgba(255,107,53,.10));
   border:1px solid rgba(168,85,247,.4);border-radius:14px;font-size:12px;font-weight:700;
 }
+#edBar .syncdot{width:8px;height:8px;border-radius:50%;background:#25D366;box-shadow:0 0 8px #25D366;animation:pulse 2s infinite;display:inline-block;}
+@keyframes pulse{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+/* === NUEVO: guardados v2 === */
+.guardados-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:12px 14px;background:linear-gradient(135deg,rgba(168,85,247,.16),rgba(255,107,53,.12));border:1px solid rgba(168,85,247,.45);border-radius:14px;}
+.guardados-head .gh{flex:1;min-width:180px;}
+.guardados-head .gh b{color:#d8b4fe;}
+.guardados-stats{display:flex;gap:8px;flex-wrap:wrap;font-size:11px;}
+.guardados-stats span{padding:4px 10px;border-radius:20px;font-weight:800;border:1px solid rgba(255,255,255,.12);background:var(--panel2);}
+.guardados-stats .ok{background:rgba(37,211,102,.15);border-color:rgba(37,211,102,.45);color:#7ee8a5;}
+.guardados-stats .warn{background:rgba(245,166,35,.15);border-color:rgba(245,166,35,.5);color:#f5a623;}
+.guardados-stats .bad{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.5);color:#ff9a9a;}
+.guardados-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.guardados-toolbar .btn{padding:8px 14px;font-size:11.5px;}
+.edgrid2{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;}
+.edcard2{
+  background:var(--panel2);border:1.5px solid rgba(255,255,255,.12);border-radius:14px;
+  overflow:hidden;position:relative;transition:all .15s;display:flex;flex-direction:column;
+}
+.edcard2:hover{transform:translateY(-2px);border-color:rgba(168,85,247,.6);}
+.edcard2.disponible{border-color:rgba(37,211,102,.35);}
+.edcard2.poco{border-color:rgba(245,166,35,.55);box-shadow:0 0 0 1px rgba(245,166,35,.2);}
+.edcard2.agotado{opacity:.55;border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.06);}
+.edcard2.eliminado{opacity:.4;border-color:rgba(255,255,255,.08);filter:grayscale(.7);}
+.edcard2 .edimg{position:relative;aspect-ratio:1/1;background:#0b0b0d;overflow:hidden;}
+.edcard2 .edimg img{width:100%;height:100%;object-fit:contain;display:block;}
+.edcard2 .edcheck{
+  position:absolute;top:8px;left:8px;width:28px;height:28px;border-radius:9px;
+  background:rgba(11,11,13,.85);border:1.5px solid rgba(255,255,255,.35);
+  display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;
+  cursor:pointer;z-index:3;color:transparent;transition:all .15s;
+}
+.edcard2 .edcheck.on{background:linear-gradient(135deg,#FF6B35,#E8501E);border-color:#fff;color:#fff;box-shadow:0 4px 12px rgba(255,107,53,.4);}
+.edcard2.agotado .edcheck,.edcard2.eliminado .edcheck{display:none;}
+.edcard2 .edbadges{position:absolute;top:6px;right:6px;display:flex;flex-direction:column;gap:4px;align-items:flex-end;z-index:2;}
+.edcard2 .edbadge2{font-size:8px;font-weight:900;padding:3px 7px;border-radius:20px;color:#fff;letter-spacing:.3px;}
+.edcard2 .edbadge2.estilo{background:rgba(168,85,247,.9);}
+.edcard2 .edbadge2.stock-ok{background:rgba(37,211,102,.9);}
+.edcard2 .edbadge2.stock-poco{background:linear-gradient(135deg,#f5a623,#e67e00);animation:blink 1.6s infinite;}
+.edcard2 .edbadge2.stock-bad{background:linear-gradient(135deg,#ef4444,#b91c1c);}
+.edcard2 .edbadge2.stock-del{background:#6b7280;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.7}}
+.edcard2 .edinfo{padding:8px 10px;flex:1;display:flex;flex-direction:column;gap:4px;}
+.edcard2 .edn2{font-size:11px;font-weight:700;line-height:1.3;max-height:32px;overflow:hidden;}
+.edcard2 .edprice{font-size:13px;font-weight:900;color:var(--naranja);}
+.edcard2 .edprice s{font-size:9px;color:var(--tx2);margin-right:4px;}
+.edcard2 .edmeta{font-size:9px;color:var(--tx2);display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.edcard2 .edactions{display:flex;gap:6px;padding:0 8px 8px;}
+.edcard2 .edactions .btn{flex:1;padding:7px 6px;font-size:10.5px;justify-content:center;}
+.edcard2 .edagotado-overlay{
+  position:absolute;inset:0;background:rgba(11,11,13,.72);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:6px;font-weight:900;font-size:12px;color:#ff9a9a;
+  text-align:center;padding:10px;z-index:4;
+}
+.edcard2 .edagotado-overlay b{font-size:22px;}
+.sync-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel2);border:1px solid rgba(255,255,255,.08);border-radius:12px;margin-bottom:12px;font-size:11px;color:var(--tx2);}
+.sync-bar b{color:#7ee8a5;}
 .modalfondo{
   position:fixed;inset:0;background:rgba(5,5,7,.82);z-index:140;display:flex;
   align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(6px);
@@ -3435,6 +3491,8 @@ async function init(){
       }
     }, 2200);
     render();
+    actualizarBarraEdiciones();
+    iniciarAutoSync();
     if(productos.length){ seleccionar(productos[0]); }
     setTimeout(precargarEscenas, 1500);
     /* accesos directos del ícono de la app */
@@ -6917,18 +6975,92 @@ async function edTodos(){
   const st = await edTx("readonly"); if(!st) return [];
   return new Promise(r=>{ const q=st.getAll(); q.onsuccess=()=>r((q.result||[]).sort((a,b)=>b.ts-a.ts)); q.onerror=()=>r([]); });
 }
+let guardadosSel = new Set();
+let ultimaSync = Date.now();
+let _autoSyncTimer = null;
+
+function estadoProductoGuardado(id){
+  const prod = productos.find(p=>String(p.id)===String(id));
+  if(!prod) return {estado:"eliminado", prod:null, stock:0, label:"Eliminado de la tienda", badge:"stock-del"};
+  const st = Number(prod.stock);
+  if(st<=0) return {estado:"agotado", prod, stock:st, label:"⛔ Agotado", badge:"stock-bad"};
+  if(st<=3) return {estado:"poco", prod, stock:st, label:`⚠️ Quedan ${st}`, badge:"stock-poco"};
+  return {estado:"disponible", prod, stock:st, label:`✅ ${st} disponibles`, badge:"stock-ok"};
+}
+
 async function edCargarIndice(){
   const t = await edTodos();
   edIds.clear();
   for(const e of t) edIds.add(String(e.id));
   actualizarBarraEdiciones();
+  if(document.getElementById("edModal")) abrirEdiciones();
 }
 function actualizarBarraEdiciones(){
   const b=document.getElementById("edBar"), t=document.getElementById("edBarTxt");
   if(!b) return;
-  b.style.display = edIds.size ? "flex" : "none";
-  if(t) t.textContent = `${edIds.size} diseño${edIds.size!==1?"s":""} guardado${edIds.size!==1?"s":""}`;
+  if(!edIds.size){ b.style.display="none"; return; }
+  b.style.display="flex";
+  // calcular disponibles vs agotados en tiempo real si ya tenemos productos
+  let disp=0, agot=0, poco=0;
+  if(productos.length){
+    for(const id of edIds){
+      const es = estadoProductoGuardado(id);
+      if(es.estado==="disponible") disp++;
+      else if(es.estado==="poco"){ disp++; poco++; }
+      else agot++;
+    }
+  }else{
+    disp = edIds.size;
+  }
+  const dot = `<span class="syncdot" title="Sincronizado en tiempo real con tiendamax.org"></span>`;
+  if(t){
+    if(productos.length){
+      t.innerHTML = `${dot} 🎨 ${edIds.size} guardado${edIds.size!==1?"s":""} · <span style="color:#7ee8a5;">${disp} disponible${disp!==1?"s":""}</span>${poco?` · <span style="color:#f5a623;">${poco} últimas</span>`:""}${agot?` · <span style="color:#ff9a9a;">${agot} agotado${agot!==1?"s":""}</span>`:""} — <span style="color:var(--tx2);font-weight:600;">con check descarga solo los disponibles</span>`;
+    }else{
+      t.innerHTML = `${dot} ${edIds.size} diseño${edIds.size!==1?"s":""} guardado${edIds.size!==1?"s":""}`;
+    }
+  }
 }
+
+function iniciarAutoSync(){
+  if(_autoSyncTimer) clearInterval(_autoSyncTimer);
+  // cada 90 segundos refrescar stock silenciosamente
+  _autoSyncTimer = setInterval(async ()=>{
+    try{
+      const prods = await fetch(BASE+"/productos.json?_="+Date.now()).then(r=>r.json());
+      const nuevos = prods.filter(p=>p && p.nombre && Number(p.stock)>0);
+      const antes = productos.length;
+      productos = nuevos;
+      ultimaSync = Date.now();
+      actualizarBarraEdiciones();
+      render();
+      // si el modal de guardados está abierto, refrescarlo
+      if(document.getElementById("edModal")){
+        // no recrear todo, solo actualizar badges
+        const modal = document.getElementById("edModal");
+        const listaEl = modal.querySelector("#edGrid2");
+        if(listaEl){
+          // reabrir para simplificar y mantener selección
+          const selTemp = new Set(guardadosSel);
+          await abrirEdiciones();
+          guardadosSel = selTemp;
+          actualizarChecksGuardados();
+        }
+      }
+      // avisar si algún guardado se agotó
+      let agotadosAhora = 0;
+      for(const id of edIds){
+        const es = estadoProductoGuardado(id);
+        if(es.estado==="agotado" || es.estado==="eliminado") agotadosAhora++;
+      }
+      if(agotadosAhora>0){
+        const statusEl = document.getElementById("status");
+        if(statusEl) statusEl.textContent = `✅ Conectado · ${productos.length} productos · ⚠️ ${agotadosAhora} de tus guardados agotados`;
+      }
+    }catch(e){}
+  }, 90000);
+}
+
 /* ¿el producto actual tiene algo que merezca guardarse? */
 function hayEdicion(){
   return !!(fotoSinFondo || textos.length || ovNombre || ovPrecio!=null ||
@@ -6963,7 +7095,10 @@ async function guardarEdicionActual(){
     escena:escenaActual, escenaAuto,
     textos:JSON.parse(JSON.stringify(textos)),
     sombra:{on:sombraCfg.on, fuerza:sombraCfg.fuerza},
-    fechaFin: (document.getElementById("inpFechaFin")||{}).value || ""
+    fechaFin: (document.getElementById("inpFechaFin")||{}).value || "",
+    precioGuardado: sel.precioActual,
+    precioOrigGuardado: sel.precioOriginal,
+    imagenOriginal: sel.imagen
   };
   await edGuardar(reg);
   edIds.add(id);
@@ -7042,53 +7177,439 @@ function crearModal(id, htmlDentro, ancho){
   document.body.appendChild(m);
   return m;
 }
+async function aplicarEdicionRegistro(reg){
+  // aplica un registro de edición directamente (sin leer de IDB)
+  _restaurando = true;
+  try{
+    escalaProducto = reg.escalaProducto ?? 1;
+    brilloFoto     = reg.brilloFoto ?? 1;
+    escEscala      = reg.escEscala ?? 1;
+    escOffX        = reg.escOffX ?? 0;
+    escOffY        = reg.escOffY ?? 0;
+    ovNombre       = reg.ovNombre || "";
+    ovPrecio       = reg.ovPrecio ?? null;
+    campana        = reg.campana || "auto";
+    textos         = Array.isArray(reg.textos) ? reg.textos : [];
+    sombraCfg.on     = reg.sombra ? reg.sombra.on : true;
+    sombraCfg.fuerza = reg.sombra ? reg.sombra.fuerza : 0.45;
+    escenaActual   = reg.escena || escenaActual;
+    escenaAuto     = reg.escenaAuto !== false;
+    const inN=document.getElementById("inpNombre"); if(inN) inN.value = ovNombre;
+    const inP=document.getElementById("inpPrecio"); if(inP) inP.value = ovPrecio!=null?ovPrecio:"";
+    const inNo=document.getElementById("inpNota");  if(inNo) inNo.value = reg.nota||"";
+    const inF=document.getElementById("inpFechaFin"); if(inF) inF.value = reg.fechaFin||"";
+    const pon=(r,v,suf)=>{ const a=document.getElementById(r); if(a){ a.value=v; const b=document.getElementById(suf); if(b) b.textContent=v+"%"; } };
+    pon("rngEscala", Math.round(escalaProducto*100), "escalaVal");
+    pon("rngBrillo", Math.round(brilloFoto*100), "brilloVal");
+    pon("rngEscEscala", Math.round(escEscala*100), "escEscalaVal");
+    const rs=document.getElementById("rngSombra");
+    if(rs){ rs.value=Math.round(sombraCfg.fuerza*100); const sv=document.getElementById("sombraVal"); if(sv) sv.textContent=rs.value+"%"; }
+    const cs=document.getElementById("chkSombra"); if(cs) cs.checked=sombraCfg.on;
+    document.querySelectorAll("#campRow .campchip").forEach(b=>b.classList.toggle("on", b.dataset.c===campana));
+    if(reg.estilo){
+      estilo = reg.estilo;
+      document.querySelectorAll(".stybtn").forEach(x=>x.classList.toggle("on", x.dataset.sty===estilo));
+      const upb=document.getElementById("uploadbox"); if(upb) upb.style.display = estilo==="flotante" ? "block" : "none";
+      const escb=document.getElementById("escenaBox"); if(escb) escb.style.display = estilo==="escena" ? "block" : "none";
+    }
+    if(reg.recorte){
+      await new Promise(res=>{
+        const im=new Image();
+        im.onload=()=>{ fotoSinFondo=im; res(); };
+        im.onerror=res; im.src=reg.recorte;
+      });
+      const uz1=document.getElementById("uzone");
+      if(uz1){ uz1.classList.add("ok"); uz1.innerHTML="✅ <b>Recorte guardado</b><br>Toca para subir otra foto"; }
+    }else{
+      // si no hay recorte guardado, limpiar
+      fotoSinFondo=null;
+      const uz1=document.getElementById("uzone");
+      if(uz1){ uz1.classList.remove("ok"); uz1.innerHTML="📤 <b>Sube aquí la foto PNG sin fondo</b><br>Los datos (nombre, precio, specs) se toman solos de la tienda"; }
+    }
+    renderTextos();
+    if(typeof actualizarCajasEstilo==="function") actualizarCajasEstilo();
+  }finally{ _restaurando=false; }
+}
+
 async function abrirEdiciones(){
-  const lista = await edTodos();
-  const cuerpo = lista.length ? `<div class="edgrid">`+lista.map(e=>`
-      <div class="edcard" data-id="${e.id}">
-        <span class="edt">${(ESTILO_NOMBRE[e.estilo]||e.estilo||"").split(" ")[0]}</span>
-        <button class="edx" data-del="${e.id}" title="Borrar">✕</button>
-        ${e.miniatura?`<img src="${e.miniatura}" alt="">`:`<div style="aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:26px;">🎨</div>`}
-        <div class="edn">${e.nombre||""}</div>
-      </div>`).join("")+`</div>`
-    : `<div style="text-align:center;padding:34px 10px;color:var(--tx2);font-size:13px;line-height:1.8;">
-         Aún no has guardado ningún diseño.<br>Edita un producto (tamaño, brillo, recorte, textos…)<br>y aparecerá aquí automáticamente.</div>`;
+  const listaRaw = await edTodos();
+  // enriquecer con estado real de tienda
+  const lista = listaRaw.map(ed=>{
+    const st = estadoProductoGuardado(ed.id);
+    return {...ed, _estado:st.estado, _prod:st.prod, _stock:st.stock, _label:st.label, _badge:st.badge};
+  });
+  // ordenar: disponibles primero, luego poco, luego agotados
+  const orden = {disponible:0, poco:1, agotado:2, eliminado:3};
+  lista.sort((a,b)=>(orden[a._estado]??9)-(orden[b._estado]??9) || b.ts-a.ts);
+
+  const total = lista.length;
+  const disp = lista.filter(x=>x._estado==="disponible"||x._estado==="poco").length;
+  const agot = lista.filter(x=>x._estado==="agotado"||x._estado==="eliminado").length;
+  const poco = lista.filter(x=>x._estado==="poco").length;
+
+  // construir cuerpo con checks
+  let cuerpo = "";
+  if(!total){
+    cuerpo = `<div style="text-align:center;padding:34px 10px;color:var(--tx2);font-size:13px;line-height:1.8;">
+         Aún no has guardado ningún diseño.<br>Edita un producto (tamaño, brillo, recorte, textos…)<br>y aparecerá aquí automáticamente con sincronización real.</div>`;
+  }else{
+    cuerpo = `
+    <div class="sync-bar">
+      <span class="syncdot"></span> <b>Sincronizado en tiempo real</b> con tiendamax.org · Última sync: ${new Date(ultimaSync).toLocaleTimeString()} 
+      <button class="btn dark" id="edSyncNow" style="margin-left:auto;padding:6px 12px;font-size:11px;">🔄 Sincronizar ahora</button>
+    </div>
+    <div class="guardados-head">
+      <div class="gh"><b>📦 Guardados</b> — tus productos ya editados listos para publicar</div>
+      <div class="guardados-stats">
+        <span class="ok">✅ ${disp} disponibles</span>
+        ${poco?`<span class="warn">⚠️ ${poco} últimas</span>`:""}
+        ${agot?`<span class="bad">⛔ ${agot} agotados</span>`:""}
+        <span>🎨 ${total} total</span>
+      </div>
+    </div>
+    <div class="guardados-toolbar">
+      <button class="btn dark" id="edSelAll">☑️ Seleccionar disponibles (${disp})</button>
+      <button class="btn dark" id="edDesel">◻️ Quitar selección</button>
+      <button class="btn orange" id="edZipSel" style="display:${disp? "inline-flex":"none"};">⚡ ZIP de seleccionados (<span id="edZipCount">0</span>)</button>
+      <button class="btn blue" id="edZipAll" style="display:${disp? "inline-flex":"none"};">📦 ZIP todos los disponibles (${disp})</button>
+      ${agot?`<button class="btn dark" id="edBorrarAgot">🗑️ Borrar agotados (${agot})</button>`:""}
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <input type="text" id="edBuscar" placeholder="🔍 Buscar en guardados…" style="flex:1;min-width:160px;">
+      <select id="edFiltroCat" style="flex:none;min-width:140px;"><option value="">📂 Todas las categorías</option></select>
+      <select id="edFiltroEstado" style="flex:none;min-width:130px;">
+        <option value="">📊 Todos los estados</option>
+        <option value="disponible">✅ Disponibles</option>
+        <option value="poco">⚠️ Últimas unidades</option>
+        <option value="agotado">⛔ Agotados</option>
+        <option value="eliminado">🗑️ Eliminados</option>
+      </select>
+    </div>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:10px;line-height:1.5;">
+      💡 Marca con <b>☑️</b> solo los que quieres descargar. Los <b style="color:#ff9a9a;">agotados</b> no se pueden publicar ni seleccionar — se sincroniza automáticamente con la tienda cada 90s.
+      <span style="display:inline-block;margin-left:6px;padding:2px 8px;border-radius:10px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);color:#7ee8a5;font-size:10px;">● TIEMPO REAL</span>
+    </div>
+    <div class="edgrid2" id="edGrid2">` + lista.map(ed=>{
+      const disc = ed._prod && ed._prod.precioOriginal>ed._prod.precioActual ? Math.round((ed._prod.precioOriginal-ed._prod.precioActual)/ed._prod.precioOriginal*100) : 0;
+      const precio = ed._prod ? ed._prod.precioActual : (ed.ovPrecio||"—");
+      const precioOrig = ed._prod ? ed._prod.precioOriginal : null;
+      const esDisp = ed._estado==="disponible" || ed._estado==="poco";
+      const checked = guardadosSel.has(String(ed.id)) && esDisp;
+      return `
+      <div class="edcard2 ${ed._estado}" data-id="${ed.id}">
+        <div class="edimg">
+          <div class="edcheck ${checked?"on":""}" data-check="${ed.id}">${checked?"✓":""}</div>
+          <div class="edbadges">
+            <span class="edbadge2 estilo">${(ESTILO_NOMBRE[ed.estilo]||ed.estilo||"").split(" ")[0]}</span>
+            <span class="edbadge2 ${ed._badge}">${ed._label}</span>
+            ${disc?`<span class="edbadge2" style="background:linear-gradient(135deg,#ff3d00,#FF6B35);">−${disc}%</span>`:""}
+          </div>
+          ${ed.miniatura?`<img src="${ed.miniatura}" alt="">`:`<div style="aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:32px;background:#0b0b0d;">🎨</div>`}
+          ${!esDisp?`<div class="edagotado-overlay"><b>⛔</b>${ed._estado==="eliminado"?"Eliminado de la tienda<br><small style='font-weight:600;'>Ya no existe</small>":"Agotado<br><small style='font-weight:600;'>Stock 0 · No se puede publicar</small>"}</div>`:""}
+        </div>
+        <div class="edinfo">
+          <div class="edn2">${ed.nombre||ed._prod?.nombre||"Producto"}</div>
+          <div class="edprice">${precioOrig&&precioOrig>precio?`<s>$${precioOrig}</s>`:""}$${precio}${esDisp?` <span style="font-size:9px;color:#7ee8a5;">USD</span>`:""}${ed.precioGuardado && ed._prod && Number(ed.precioGuardado)!==Number(ed._prod.precioActual)?`<span style="font-size:8px;margin-left:6px;padding:2px 6px;border-radius:10px;background:rgba(245,166,35,.2);border:1px solid rgba(245,166,35,.5);color:#f5a623;">$${ed.precioGuardado}→$${ed._prod.precioActual}</span>`:""}</div>
+          <div class="edmeta">
+            <span>${ICONS_CAT[ed.categoria]||"📦"} ${ed.categoria||ed._prod?.categoria||""}</span>
+            ${ed._stock?`<span>📦 ${ed._stock}u</span>`:""}
+            <span style="margin-left:auto;color:var(--tx2);">${new Date(ed.ts).toLocaleDateString()}</span>
+          </div>
+        </div>
+        <div class="edactions">
+          <button class="btn ${esDisp?"green":"dark"}" data-open="${ed.id}" ${!esDisp?"disabled title='No disponible para publicar'":""}>${esDisp?"📂 Abrir":"⛔ No disponible"}</button>
+          <button class="btn dark" data-del="${ed.id}" title="Borrar guardado">🗑️</button>
+        </div>
+      </div>`;
+    }).join("") + `</div>`;
+  }
+
   const m = crearModal("edModal", `
-    <h3>🎨 Mis ediciones <span style="margin-left:auto;font-size:11px;color:var(--tx2);font-weight:600;">${lista.length}</span></h3>
-    <div style="font-size:11px;color:var(--tx2);margin-bottom:12px;line-height:1.6;">Toca cualquiera para abrirlo con todos sus ajustes: recorte, tamaño, brillo, textos y estilo.</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+      <h3 style="flex:1;">🎨 Mis ediciones guardadas <span style="font-size:11px;color:var(--tx2);font-weight:600;">· sincronizado en vivo</span></h3>
+      <span style="font-size:10px;padding:4px 8px;border-radius:20px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.4);color:#7ee8a5;">● EN VIVO</span>
+    </div>
     ${cuerpo}
-    <div style="display:flex;gap:8px;margin-top:16px;">
-      ${lista.length?`<button class="btn dark" id="edVaciar" style="flex:1;justify-content:center;">🗑️ Vaciar todo</button>`:""}
-      <button class="btn orange" id="edCerrar" style="flex:2;justify-content:center;">Cerrar</button>
-    </div>`, 660);
+    <div style="display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;">
+      ${total?`<button class="btn dark" id="edVaciar" style="flex:1;justify-content:center;">🗑️ Vaciar todo (${total})</button>`:""}
+      <button class="btn orange" id="edCerrar" style="flex:2;justify-content:center;">✕ Cerrar</button>
+    </div>
+    <div class="progress" id="progGuardados" style="display:none;margin-top:12px;">Generando ZIP <b id="progGuardTxt">0/0</b>…<div class="pbar"><i id="progGuardBar"></i></div></div>
+  `, 780);
+
+  function actualizarChecksGuardados(){
+    const c = m.querySelector("#edZipCount");
+    if(c) c.textContent = guardadosSel.size;
+    const zipBtn = m.querySelector("#edZipSel");
+    if(zipBtn) zipBtn.style.display = guardadosSel.size? "inline-flex":"none";
+    // actualizar visual de checks
+    m.querySelectorAll(".edcheck").forEach(ch=>{
+      const id = ch.dataset.check;
+      const on = guardadosSel.has(String(id));
+      ch.classList.toggle("on", on);
+      ch.textContent = on? "✓":"";
+    });
+  }
+  // exponer global para refresh
+  window.actualizarChecksGuardados = actualizarChecksGuardados;
+
   m.querySelector("#edCerrar").onclick=()=>m.remove();
+  const syncNow = m.querySelector("#edSyncNow");
+  if(syncNow) syncNow.onclick = async ()=>{
+    syncNow.disabled=true; syncNow.textContent="⏳ Sincronizando…";
+    try{
+      const prods = await fetch(BASE+"/productos.json?_="+Date.now()).then(r=>r.json());
+      productos = prods.filter(p=>p && p.nombre && Number(p.stock)>0);
+      ultimaSync=Date.now();
+      toast("🔄 Sincronizado con la tienda — stock actualizado");
+      m.remove();
+      abrirEdiciones();
+      render();
+      actualizarBarraEdiciones();
+    }catch(e){ toast("⚠️ No se pudo sincronizar"); }
+    syncNow.disabled=false;
+  };
+
+  // poblar categorías
+  const catSet = new Set(lista.map(x=>x.categoria||x._prod?.categoria).filter(Boolean));
+  const selCat = m.querySelector("#edFiltroCat");
+  if(selCat){
+    for(const c of [...catSet].sort()){
+      const o=document.createElement("option"); o.value=c; o.textContent=`${ICONS_CAT[c]||"📦"} ${c}`;
+      selCat.appendChild(o);
+    }
+  }
+
+  function filtrarGuardados(){
+    const q = (m.querySelector("#edBuscar")?.value||"").toLowerCase().trim();
+    const cat = m.querySelector("#edFiltroCat")?.value||"";
+    const est = m.querySelector("#edFiltroEstado")?.value||"";
+    let visibles=0, dispVisibles=0;
+    m.querySelectorAll(".edcard2").forEach(card=>{
+      const id = card.dataset.id;
+      const ed = lista.find(x=>String(x.id)===String(id));
+      if(!ed) return;
+      const matchQ = !q || (ed.nombre||"").toLowerCase().includes(q) || (ed._prod?.nombre||"").toLowerCase().includes(q);
+      const matchCat = !cat || ed.categoria===cat || ed._prod?.categoria===cat;
+      const matchEst = !est || ed._estado===est;
+      const show = matchQ && matchCat && matchEst;
+      card.style.display = show? "flex":"none";
+      if(show){
+        visibles++;
+        if(ed._estado==="disponible"||ed._estado==="poco") dispVisibles++;
+      }
+    });
+    // actualizar contador de selección disponible visible
+    const selAllBtn = m.querySelector("#edSelAll");
+    if(selAllBtn) selAllBtn.textContent = `☑️ Seleccionar visibles (${dispVisibles})`;
+  }
+
+  const inpBuscar = m.querySelector("#edBuscar");
+  if(inpBuscar) inpBuscar.oninput = filtrarGuardados;
+  const filtroCat = m.querySelector("#edFiltroCat");
+  if(filtroCat) filtroCat.onchange = filtrarGuardados;
+  const filtroEst = m.querySelector("#edFiltroEstado");
+  if(filtroEst) filtroEst.onchange = filtrarGuardados;
+
+  const selAll = m.querySelector("#edSelAll");
+  if(selAll) selAll.onclick = ()=>{
+    guardadosSel.clear();
+    // solo visibles según filtros
+    const q = (m.querySelector("#edBuscar")?.value||"").toLowerCase().trim();
+    const cat = m.querySelector("#edFiltroCat")?.value||"";
+    const est = m.querySelector("#edFiltroEstado")?.value||"";
+    lista.forEach(ed=>{
+      if(ed._estado!=="disponible" && ed._estado!=="poco") return;
+      const matchQ = !q || (ed.nombre||"").toLowerCase().includes(q) || (ed._prod?.nombre||"").toLowerCase().includes(q);
+      const matchCat = !cat || ed.categoria===cat || ed._prod?.categoria===cat;
+      const matchEst = !est || ed._estado===est;
+      if(matchQ && matchCat && matchEst) guardadosSel.add(String(ed.id));
+    });
+    actualizarChecksGuardados();
+    toast(`☑️ ${guardadosSel.size} productos visibles seleccionados`);
+  };
+  const desel = m.querySelector("#edDesel");
+  if(desel) desel.onclick = ()=>{
+    guardadosSel.clear();
+    actualizarChecksGuardados();
+    toast("◻️ Selección quitada");
+  };
+
+  const borrarAgot = m.querySelector("#edBorrarAgot");
+  if(borrarAgot) borrarAgot.onclick = async ()=>{
+    if(!confirm(`¿Borrar los ${agot} productos agotados/eliminados de tus guardados?`)) return;
+    for(const ed of lista.filter(x=>x._estado==="agotado"||x._estado==="eliminado")){
+      await edBorrar(ed.id);
+      guardadosSel.delete(String(ed.id));
+    }
+    actualizarBarraEdiciones(); render(); m.remove(); abrirEdiciones();
+    toast("🗑️ Agotados borrados de guardados");
+  };
+
   const vac=m.querySelector("#edVaciar");
   if(vac) vac.onclick=async()=>{
     if(!confirm("¿Borrar TODOS los diseños guardados?")) return;
-    for(const e of lista) await edBorrar(e.id);
+    for(const e of listaRaw) await edBorrar(e.id);
+    guardadosSel.clear();
     actualizarBarraEdiciones(); render(); m.remove();
     toast("🗑️ Ediciones borradas");
   };
-  m.querySelectorAll(".edx").forEach(b=>{
+
+  m.querySelectorAll("[data-del]").forEach(b=>{
     b.onclick=async e=>{
       e.stopPropagation();
-      await edBorrar(b.dataset.del);
-      b.closest(".edcard").remove();
+      const id=b.dataset.del;
+      await edBorrar(id);
+      guardadosSel.delete(String(id));
+      b.closest(".edcard2").remove();
       actualizarBarraEdiciones(); render();
+      // actualizar contadores
+      const restantes = m.querySelectorAll(".edcard2").length;
+      if(!restantes) { m.remove(); abrirEdiciones(); }
     };
   });
-  m.querySelectorAll(".edcard").forEach(c=>{
-    c.onclick=()=>{
-      const p = productos.find(x=>String(x.id)===c.dataset.id);
-      if(!p){ toast("Ese producto ya no está en el catálogo"); return; }
+
+  m.querySelectorAll("[data-check]").forEach(ch=>{
+    ch.onclick = e=>{
+      e.stopPropagation();
+      const id=ch.dataset.check;
+      const ed = lista.find(x=>String(x.id)===String(id));
+      if(!ed || (ed._estado!=="disponible" && ed._estado!=="poco")) return;
+      if(guardadosSel.has(String(id))) guardadosSel.delete(String(id));
+      else guardadosSel.add(String(id));
+      actualizarChecksGuardados();
+    };
+  });
+
+  m.querySelectorAll("[data-open]").forEach(btn=>{
+    btn.onclick=async ()=>{
+      const id=btn.dataset.open;
+      const ed = listaRaw.find(x=>String(x.id)===String(id));
+      const st = estadoProductoGuardado(id);
+      if(!st.prod){ toast("⛔ Ese producto ya no existe en la tienda — no se puede publicar"); return; }
+      if(Number(st.prod.stock)<=0){ toast("⛔ Producto agotado — no se puede publicar hasta que vuelva a tener stock"); return; }
       m.remove();
-      seleccionar(p, true);
+      // seleccionar producto y aplicar edición
+      sel = st.prod;
+      fotoSinFondo=null; textos=[]; // reset temporal
+      render(); // actualizar selección visual
+      if(ed){
+        await aplicarEdicionRegistro(ed);
+      }
+      await dibujar();
+      renderPreviews();
+      updCapPrev();
+      modoPreview(true);
+      toast("🎨 Diseño restaurado — listo para publicar");
     };
   });
+
+  // hacer click en la tarjeta también abre (solo si disponible)
+  m.querySelectorAll(".edcard2").forEach(card=>{
+    card.onclick = (e)=>{
+      if(e.target.closest("button") || e.target.closest(".edcheck")) return;
+      const id=card.dataset.id;
+      const st=estadoProductoGuardado(id);
+      if(!st.prod || Number(st.prod.stock)<=0){
+        toast("⛔ Agotado — no se puede abrir para publicar");
+        return;
+      }
+      const btn = card.querySelector("[data-open]");
+      if(btn) btn.click();
+    };
+  });
+
+  // ZIP seleccionados
+  const zipSelBtn = m.querySelector("#edZipSel");
+  if(zipSelBtn) zipSelBtn.onclick = ()=>generarZipGuardados(false, m);
+  const zipAllBtn = m.querySelector("#edZipAll");
+  if(zipAllBtn) zipAllBtn.onclick = ()=>generarZipGuardados(true, m);
+
+  actualizarChecksGuardados();
 }
+
+async function generarZipGuardados(todos, modal){
+  let ids = [];
+  if(todos){
+    const listaRaw = await edTodos();
+    for(const ed of listaRaw){
+      const st = estadoProductoGuardado(ed.id);
+      if(st.prod && Number(st.prod.stock)>0) ids.push(String(ed.id));
+    }
+  }else{
+    ids = [...guardadosSel];
+    // filtrar solo disponibles
+    ids = ids.filter(id=>{
+      const st=estadoProductoGuardado(id);
+      return st.prod && Number(st.prod.stock)>0;
+    });
+  }
+  if(!ids.length){ toast("Marca al menos un producto disponible con ☑️"); return; }
+  if(ids.length>20 && !confirm(`Vas a generar ${ids.length} imágenes. ¿Continuar?`)) return;
+
+  const prog = modal.querySelector("#progGuardados");
+  const progTxt = modal.querySelector("#progGuardTxt");
+  const progBar = modal.querySelector("#progGuardBar");
+  if(prog) prog.style.display="block";
+
+  const files=[]; let done=0;
+  const guardaSel = sel;
+  const guardaFoto = fotoSinFondo;
+  const guardaTextos = [...textos];
+  const guardaEstilo = estilo;
+
+  _loteEnCurso=true;
+  try{
+    for(const id of ids){
+      const ed = await edLeer(id);
+      const st = estadoProductoGuardado(id);
+      if(!ed || !st.prod) { done++; continue; }
+      if(Number(st.prod.stock)<=0) { done++; continue; }
+      try{
+        sel = st.prod;
+        await aplicarEdicionRegistro(ed);
+        await dibujar();
+        const blob = await canvasBlob();
+        const nombre = `tiendamax-${st.prod.slug||st.prod.id}-${(ed.estilo||estilo)}.png`;
+        files.push({name:nombre, data:new Uint8Array(await blob.arrayBuffer())});
+        registrarPub(st.prod);
+      }catch(e){ console.error(e); }
+      done++;
+      if(progTxt) progTxt.textContent = `${done}/${ids.length}`;
+      if(progBar) progBar.style.width = (done/ids.length*100)+"%";
+      await new Promise(r=>setTimeout(r,20));
+    }
+  }finally{
+    _loteEnCurso=false;
+    sel=guardaSel;
+    fotoSinFondo=guardaFoto;
+    textos=guardaTextos;
+    estilo=guardaEstilo;
+    try{ await dibujar(); }catch(e){}
+    if(prog) prog.style.display="none";
+  }
+
+  if(!files.length){ toast("No se pudo generar ninguna imagen"); return; }
+
+  // mostrar preview lote reutilizando función existente si existe
+  if(typeof mostrarPreviewLote==="function"){
+    modal.remove();
+    mostrarPreviewLote(files, "guardados-disponibles", "zip");
+  }else{
+    const zip = zipStore(files);
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(zip);
+    a.download=`tiendamax-guardados-${new Date().toISOString().slice(0,10)}.zip`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast(`✅ ZIP con ${files.length} diseños disponibles descargado`);
+  }
+}
+
 const ESTILO_NOMBRE = {vitrina:"🖼️ Vitrina",oferta:"🔥 Oferta",story:"📱 Story",flotante:"✨ Flotante",
   claro:"🌅 Claro",resena:"⭐ Reseña",escena:"🏠 Escena",urgencia:"⏰ Urgencia",galeria:"🖼️ Galería"};
 document.getElementById("btnVerEdiciones").onclick = abrirEdiciones;
+
 
 /* =====================================================================
    2) SOMBRA REALISTA · 3) COLOR DE CAMPAÑA · 4) TEXTOS LIBRES · 5) MARCA DE AGUA

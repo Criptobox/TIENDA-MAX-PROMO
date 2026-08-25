@@ -4,6 +4,8 @@ Generador de imágenes y videos promocionales conectado en vivo al catálogo de 
 
 ## ✨ Funciones
 
+- **📦 Guardados v2 en tiempo real**: ver MEJORAS.md — checks, ZIP solo disponibles, no publica agotados, sync cada 90s
+
 - **Catálogo en vivo**: carga los productos, precios, specs y stock directamente de `tiendamax.org/productos.json` — solo muestra productos con stock
 - **5 estilos de diseño**: Vitrina (1080×1080), Oferta del día, Story (1080×1920), Flotante PNG sin fondo (1080×1350) y Claro para estados de WhatsApp (1080×1920)
 - **🎬 Video animado de 6 s** para Reels/Stories con entrada cinematográfica, barrido de brillo y pulso del botón
@@ -12,7 +14,7 @@ Generador de imágenes y videos promocionales conectado en vivo al catálogo de 
 - **⚡ Generación por lotes**: toda una categoría o selección múltiple con checkboxes → ZIP
 - **🔳 Código QR** de cada producto apuntando a la tienda
 - **🪄 Quitar fondo GRATIS e ILIMITADO** — se procesa dentro del propio teléfono, sin clave API y sin cuota mensual. Dos motores: **⚡ Rápido** (instantáneo, 0 datos) y **🤖 IA** (red U²-Netp de 4,5 MB que se descarga una sola vez), más **pincel de retoque** para dejarlo perfecto
-- **🎨 Mis ediciones**: cada diseño que tocas se guarda solo en el teléfono y el producto vuelve a abrirse exactamente como lo dejaste — con su recorte, tamaño, brillo, textos y estilo. Chip “✏️ Ya editados” y galería con miniaturas
+- **🎨 Mis ediciones guardadas v2 — sincronizado en tiempo real**: apartado dedicado donde tus productos ya editados se sincronizan cada 90s con `tiendamax.org`. Si un producto se agota, aparece como ⛔ Agotado sin opción de publicar. Cada tarjeta disponible tiene **☑️ check** para marcarla y descargar **ZIP solo con los disponibles**. Filtros por categoría, estado y búsqueda, badge de cambio de precio, borrar agotados de un toque, y ZIP que respeta tu edición exacta (recorte, textos, sombra, estilo). Barra superior muestra `🎨 N guardados · X disponibles · Y agotados` en vivo
 - **🌑 Sombra realista** bajo el producto recortado, **✍️ textos libres arrastrables**, **🎨 colores de campaña** (Black Friday, Navidad, dorado…) y **marca de agua** con tu WhatsApp
 - **⏰ Estilo Urgencia** con cuenta atrás real y precio anterior tachado · **🖼️ Estilo Galería** con hasta 4 fotos
 - **🪄 Recorte de fondos en lote** para toda una categoría, y **🎬 fondos de estudio generados** (estudio, podio, degradado)
