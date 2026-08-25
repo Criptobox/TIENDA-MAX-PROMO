@@ -526,6 +526,8 @@ body.tema-claro .modalcaja{background:#fff;color:#17171c;}
   <button class="btn dark" id="btnBackup" style="padding:8px 12px;font-size:12px;display:none;" title="Respaldo de datos">💾</button>
   <button class="btn dark" id="btnPlan" style="padding:8px 16px;font-size:12px;">📆 Mi semana</button>
   <button class="btn dark" id="btnHist" style="padding:8px 16px;font-size:12px;">🗓️ Historial</button>
+  <button class="btn dark" id="btnAyer" style="padding:8px 12px;font-size:12px;" title="Re-publicar lo de ayer">🔁 Ayer</button>
+  <button class="btn dark" id="btnClipboardHist" style="padding:8px 12px;font-size:12px;" title="Últimos captions copiados">📋 Historial copy</button>
   <button class="btn orange" id="btnInstall" style="display:none;padding:8px 16px;font-size:12px;">📲 Instalar app</button>
   <div class="tasa">💱 Tasa del día: <b id="tasa">—</b> MN/USD</div>
 </header>
@@ -647,7 +649,15 @@ body.tema-claro .modalcaja{background:#fff;color:#17171c;}
         <input type="text" id="inpPrecio" placeholder="💰 Precio" maxlength="8" style="flex:0.6;min-width:70px;" inputmode="decimal">
       </div>
       <div class="hint" style="margin-top:4px;">Edita cómo saldrán en la imagen — no cambia nada en la tienda. Vacío = como en el catálogo.</div>
-      <input type="text" id="inpNota" placeholder="✏️ Nota destacada (ej: ENVÍO GRATIS HOY · 2×1 · SOLO ESTA SEMANA)" maxlength="32" style="width:100%;margin-top:10px;">
+      <div id="notasRapidas" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+        <button class="fchip" data-nota="ENVÍO GRATIS HOY" style="font-size:10px;padding:5px 10px;">🚚 ENVÍO GRATIS</button>
+        <button class="fchip" data-nota="PAGO AL RECIBIR" style="font-size:10px;padding:5px 10px;">💵 PAGO AL RECIBIR</button>
+        <button class="fchip" data-nota="ÚLTIMAS UNIDADES" style="font-size:10px;padding:5px 10px;">⚠️ ÚLTIMAS</button>
+        <button class="fchip" data-nota="OFERTA LIMITADA" style="font-size:10px;padding:5px 10px;">🔥 OFERTA</button>
+        <button class="fchip" data-nota="2×1 HOY" style="font-size:10px;padding:5px 10px;">🎁 2×1</button>
+        <button class="fchip" data-nota="GARANTÍA REAL" style="font-size:10px;padding:5px 10px;">🛡️ GARANTÍA</button>
+      </div>
+      <input type="text" id="inpNota" placeholder="✏️ Nota destacada (ej: ENVÍO GRATIS HOY · 2×1 · SOLO ESTA SEMANA)" maxlength="32" style="width:100%;margin-top:8px;">
       <div class="sizerow" id="sizeRow" style="margin-top:10px;">
         <span class="sizelbl">🔍 Tamaño de la foto</span>
         <input type="range" id="rngEscala" min="50" max="160" value="100" step="5">
@@ -747,8 +757,10 @@ body.tema-claro .modalcaja{background:#fff;color:#17171c;}
       <pre id="capPrev" style="background:#0B0B0D;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 14px;font-size:11px;line-height:1.65;color:#c9c9cf;white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;max-height:180px;overflow-y:auto;margin-bottom:10px;"></pre>
       <div class="sharerow">
         <button class="btn orange" id="btnPng">⬇️ PNG</button>
-        <button class="btn green" id="btnShare">📲 Compartir imagen</button>
+        <button class="btn green" id="btnShare">📲 Compartir</button>
+        <button class="btn green" id="btnTurbo" style="flex:2;background:linear-gradient(135deg,#FF6B35,#E8501E);box-shadow:0 6px 18px rgba(232,80,30,.4);" title="Genera, copia imagen+caption y abre WhatsApp en 1 click">⚡ TURBO PUBLICAR</button>
       </div>
+      <div style="font-size:10px;color:var(--tx2);margin-top:6px;">⚡ <b>TURBO</b> = 1 click hace todo: copia imagen + caption y abre WhatsApp Web. Ahorra ~30s por producto.</div>
       <div class="sharerow" style="margin-top:8px;">
         <button class="btn blue" id="btnVideo" style="flex:2;">🎬 Video para Reels/Story (6 s)</button>
         <button class="btn blue" id="btnVideoMulti" style="flex:1;background:linear-gradient(135deg,#a855f7,#7c3aed);">🎞️ Carrusel</button>
@@ -5211,7 +5223,12 @@ $("#btnCopyImg").onclick = async ()=>{
 };
 $("#btnCap").onclick = async ()=>{
   if(!sel && !(comboMode&&comboSel.length>=2)) return;
-  try{ await navigator.clipboard.writeText(caption(sel)); toast("📋 Caption copiado — pégalo en tu publicación"); }
+  try{
+    const txt = caption(sel);
+    await navigator.clipboard.writeText(txt);
+    pushClipboardHist(txt);
+    toast("📋 Caption copiado — pégalo en tu publicación");
+  }
   catch(e){ toast("No se pudo copiar"); }
 };
 
@@ -5222,6 +5239,12 @@ document.querySelectorAll(".stybtn").forEach(b=>{
     b.classList.add("on");
     estilo = b.dataset.sty;
     guardarPref("estilo", estilo);
+    // auto-estilo por categoria
+    if(sel){
+      const mapa = leerPref("estilo_por_cat", {});
+      mapa[sel.categoria]=estilo;
+      guardarPref("estilo_por_cat", mapa);
+    }
     $("#uploadbox").style.display = estilo==="flotante" ? "block" : "none";
     $("#escenaBox").style.display = estilo==="escena" ? "block" : "none";
     if(estilo==="escena") actualizarEscenaInfo();
@@ -7216,6 +7239,7 @@ async function edCargarIndice(){
   aplicarAutoBorrado();
   cargarPlantillas();
   cargarHistorialPrecios();
+  setTimeout(()=>precargarGuardadosFondo(), 4000);
   if(document.getElementById("edModal")) abrirEdiciones();
 }
 function actualizarBarraEdiciones(){
@@ -8141,6 +8165,8 @@ async function abrirEdiciones(){
     <div class="guardados-toolbar">
       <button class="btn dark" id="edPlantillasBtn" style="padding:6px 12px;font-size:11px;">🎨 Plantillas</button>
       <button class="btn dark" id="edComboSugBtn" style="padding:6px 12px;font-size:11px;">🎁 Sugerir combos</button>
+      <button class="btn dark" id="edTextoMasivo" style="padding:6px 12px;font-size:11px;">✏️ Texto masivo</button>
+      <button class="btn dark" id="edCopyCaps" style="padding:6px 12px;font-size:11px;">📋 Copiar captions</button>
       <button class="btn dark" id="edCloudExp" style="padding:6px 12px;font-size:11px;">☁️ Subir nube</button>
       <button class="btn dark" id="edCloudImp" style="padding:6px 12px;font-size:11px;">☁️ Bajar nube</button>
     </div>
@@ -8431,6 +8457,33 @@ async function abrirEdiciones(){
   if(cloudExp) cloudExp.onclick=cloudExport;
   const cloudImp = m.querySelector("#edCloudImp");
   if(cloudImp) cloudImp.onclick=()=>cloudImport().then(()=>{ m.remove(); abrirEdiciones(); });
+  const txtMasivo = m.querySelector("#edTextoMasivo");
+  if(txtMasivo) txtMasivo.onclick=async()=>{
+    const uids=[...guardadosSel];
+    if(!uids.length){ toast("Selecciona guardados con ☑️ primero"); return; }
+    const texto = prompt("Texto que quieres añadir a TODOS los seleccionados (ej: ENVÍO GRATIS HOY):");
+    if(!texto) return;
+    const color = prompt("Color (deja vacío = blanco, opciones: #FF6B35 naranja, #F5A623 dorado, #25D366 verde, #EF4444 rojo, #111111 negro)", "#FFFFFF") || "#FFFFFF";
+    const todos = await edTodos();
+    let ok=0;
+    for(const uid of uids){
+      const reg = todos.find(t=> String(t.uid)===String(uid) || String(t.productoId)===String(uid));
+      if(!reg) continue;
+      if(!Array.isArray(reg.textos)) reg.textos=[];
+      // evitar duplicado exacto
+      if(!reg.textos.some(t=>t.txt===texto)){
+        reg.textos.push({id:"t"+Date.now()+ok, txt:texto, x:0.5, y:0.2+ (ok%3)*0.15, size:56, color});
+        await edGuardar(reg);
+        ok++;
+      }
+    }
+    await edCargarIndice();
+    toast(`✏️ Texto "${texto}" añadido a ${ok} guardados`);
+    m.remove(); abrirEdiciones();
+  };
+  const copyCaps = m.querySelector("#edCopyCaps");
+  if(copyCaps) copyCaps.onclick=()=>copiarCaptionsSeleccionados();
+
 
   // nuevos botones por tarjeta
   m.querySelectorAll("[data-dup]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); duplicarEdicion(b.dataset.dup); });
@@ -8497,6 +8550,23 @@ async function generarZipGuardados(todos, modal){
   if(prog) prog.style.display="block";
 
   const files=[]; let done=0;
+  // usar cache si existe
+  let usoCache=0;
+  for(const id of ids){
+    if(cacheGuardadosBlobs.has(id)){
+      const blob = cacheGuardadosBlobs.get(id);
+      const ed = await edLeer(id);
+      const st = estadoProductoGuardado(id);
+      if(ed && st.prod){
+        files.push({name:`tiendamax-${st.prod.slug||st.prod.id}-${(ed.estilo||estilo)}.png`, data:new Uint8Array(await blob.arrayBuffer())});
+        usoCache++;
+      }
+    }
+  }
+  if(usoCache) console.log(`⚡ Usando ${usoCache} desde cache precargado`);
+  // si ya tenemos todos desde cache, saltar generación
+  const idsRestantes = ids.filter(id=> !cacheGuardadosBlobs.has(id));
+  ids = idsRestantes;
   const guardaSel = sel;
   const guardaFoto = fotoSinFondo;
   const guardaTextos = [...textos];
@@ -8533,7 +8603,14 @@ async function generarZipGuardados(todos, modal){
     if(prog) prog.style.display="none";
   }
 
-  if(!files.length){ toast("No se pudo generar ninguna imagen"); return; }
+    // si ya teníamos archivos desde cache y no quedan por generar, ya tenemos files
+  if(!ids.length && files.length){
+    // ya está listo desde cache
+  }else if(!files.length && !ids.length){
+    toast("No se pudo generar ninguna imagen"); return;
+  }
+  if(!files.length && ids.length===0){ toast("No se pudo generar ninguna imagen"); return; }
+
 
   // mostrar preview lote reutilizando función existente si existe
   if(typeof mostrarPreviewLote==="function"){
@@ -9203,6 +9280,9 @@ document.getElementById("btnAjustes").onclick = abrirAjustes;
 document.getElementById("btnSoloDisp").onclick = toggleSoloDisponibles;
 document.getElementById("btnPlantillas").onclick = abrirPlantillas;
 document.getElementById("btnComboSug").onclick = sugerirCombosGuardados;
+document.getElementById("btnAyer").onclick = abrirAyer;
+document.getElementById("btnClipboardHist").onclick = abrirClipboardHist;
+
 // inicializar estado botón solo disp
 const bsd = document.getElementById("btnSoloDisp");
 if(bsd) bsd.classList.toggle("on", soloDisponiblesActivo());
@@ -9266,6 +9346,236 @@ async function videoCarrusel(){
 }
 
 document.getElementById("btnVideoMulti").onclick = videoCarrusel;
+
+
+// === MEJORA TIEMPO: Re-publicar ayer ===
+function abrirAyer(){
+  const log = pubLog();
+  const ayer = new Date(); ayer.setDate(ayer.getDate()-1);
+  const ayerStr = ayer.toDateString();
+  const idsAyer = [...new Set(log.filter(e=> new Date(e.ts).toDateString()===ayerStr).map(e=>String(e.id)))];
+  if(!idsAyer.length){ toast("No publicaste nada ayer"); return; }
+  const prodsAyer = productos.filter(p=> idsAyer.includes(String(p.id)));
+  if(!prodsAyer.length){ toast("Los productos de ayer ya no tienen stock"); return; }
+  const m = crearModal("ayerModal", `
+    <h3>🔁 Re-publicar lo de ayer — ${prodsAyer.length} productos</h3>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:12px;">Publicaste ${idsAyer.length} ayer (${ayer.toLocaleDateString()}). Toca para re-publicar rápido con 1 click</div>
+    <div style="display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow-y:auto;">
+      ${prodsAyer.map(p=>`
+        <div class="filaop" style="cursor:pointer;" data-id="${p.id}">
+          <img src="${p.imagen}" style="width:44px;height:44px;border-radius:8px;object-fit:contain;background:#fff;">
+          <div class="d">${p.nombre.slice(0,42)}<small>$${p.precioActual} · ${p.categoria}</small></div>
+          <button class="btn orange" style="padding:6px 10px;font-size:11px;">⚡ Turbo</button>
+        </div>
+      `).join("")}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn blue" id="ayerZip" style="flex:1;justify-content:center;">📦 ZIP ayer (${prodsAyer.length})</button>
+      <button class="btn dark" id="ayerCerrar" style="flex:1;justify-content:center;">Cerrar</button>
+    </div>
+  `, 600);
+  m.querySelector("#ayerCerrar").onclick=()=>m.remove();
+  m.querySelector("#ayerZip").onclick=async()=>{ m.remove(); await generarZip(prodsAyer, "ayer"); };
+  m.querySelectorAll(".filaop").forEach(row=>{
+    row.onclick=async()=>{
+      const p = productos.find(x=>String(x.id)===row.dataset.id);
+      if(!p) return;
+      m.remove();
+      await seleccionar(p, true);
+      setTimeout(()=>document.getElementById("btnTurbo")?.click(), 600);
+    };
+  });
+}
+
+// === MEJORA TIEMPO: Historial portapapeles ===
+let clipboardHist = [];
+try{ clipboardHist = JSON.parse(localStorage.getItem("tm_clip_hist")||"[]"); }catch(e){}
+function pushClipboardHist(txt){
+  if(!txt) return;
+  clipboardHist = clipboardHist.filter(t=>t!==txt);
+  clipboardHist.unshift(txt);
+  if(clipboardHist.length>8) clipboardHist.pop();
+  localStorage.setItem("tm_clip_hist", JSON.stringify(clipboardHist));
+}
+function abrirClipboardHist(){
+  if(!clipboardHist.length){ toast("Sin historial de copiados aún"); return; }
+  const m = crearModal("clipHistModal", `
+    <h3>📋 Historial de captions copiados — últimos ${clipboardHist.length}</h3>
+    <div style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;">
+      ${clipboardHist.map((t,i)=>`
+        <div style="background:var(--panel2);border-radius:10px;padding:10px;">
+          <pre style="font-size:10px;white-space:pre-wrap;max-height:80px;overflow-y:auto;margin-bottom:6px;">${t.slice(0,300)}${t.length>300?"…":""}</pre>
+          <div style="display:flex;gap:6px;">
+            <button class="btn orange" data-copy="${i}" style="flex:1;padding:6px 10px;font-size:11px;">📋 Copiar</button>
+            <button class="btn dark" data-del="${i}" style="padding:6px 8px;font-size:11px;">🗑️</button>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+    <button class="btn dark" id="chCerrar" style="width:100%;justify-content:center;margin-top:12px;">Cerrar</button>
+  `, 560);
+  m.querySelector("#chCerrar").onclick=()=>m.remove();
+  m.querySelectorAll("[data-copy]").forEach(b=>b.onclick=async()=>{
+    try{ await navigator.clipboard.writeText(clipboardHist[Number(b.dataset.copy)]); toast("📋 Copiado"); }catch(e){}
+  });
+  m.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{
+    clipboardHist.splice(Number(b.dataset.del),1);
+    localStorage.setItem("tm_clip_hist", JSON.stringify(clipboardHist));
+    m.remove(); abrirClipboardHist();
+  });
+}
+// interceptar copiar caption para guardar en historial
+const _origCopy = navigator.clipboard.writeText;
+const originalCapBtn = null;
+
+// === MEJORA TIEMPO: Mejor hora para publicar ===
+function analizarMejorHora(){
+  const log = pubLog();
+  if(log.length<5) return null;
+  const horas = {};
+  for(const e of log){
+    const h = new Date(e.ts).getHours();
+    horas[h]=(horas[h]||0)+1;
+  }
+  const sorted = Object.entries(horas).sort((a,b)=>b[1]-a[1]);
+  return sorted.length? {hora:Number(sorted[0][0]), count:sorted[0][1], todas:sorted} : null;
+}
+function mostrarMejorHora(){
+  const mejor = analizarMejorHora();
+  if(!mejor){ return ""; }
+  return `⏰ Sueles publicar más a las <b>${mejor.hora}:00</b> (${mejor.count} veces) — ¿programamos para esa hora?`;
+}
+
+// === TURBO PUBLICAR: 1 click = imagen + caption + abrir WA ===
+
+document.getElementById("btnTurbo").onclick = async ()=>{
+  if(!sel && !(comboMode&&comboSel.length>=2)) { toast("Elige un producto"); return; }
+  const btn = document.getElementById("btnTurbo");
+  btn.disabled=true; btn.textContent="⚡ Turbo…";
+  try{
+    const blob = await canvasBlob();
+    const okImg = await copiarImagen(blob);
+    try{ await navigator.clipboard.writeText(caption(sel)); }catch(e){}
+    if(navigator.canShare && navigator.canShare({files:[new File([blob], "turbo.png", {type:formatoSalida()})]})){
+      try{
+        const f = new File([blob], nombreArchivo(sel), {type:formatoSalida()});
+        await navigator.share({files:[f], text:caption(sel)});
+        toast("⚡ Turbo: compartido — elige WhatsApp → Mi estado");
+      }catch(e){
+        // si cancela share, abrir WA web
+        window.open("https://web.whatsapp.com","_blank");
+        toast(okImg? "⚡ Imagen+caption copiados — pega en WA Web con Ctrl+V" : "⚡ Caption copiado — imagen descargada");
+        descargarBlob(blob, nombreArchivo(sel));
+      }
+    }else{
+      descargarBlob(blob, nombreArchivo(sel));
+      window.open("https://web.whatsapp.com","_blank");
+      toast(okImg? "⚡ Turbo listo: imagen copiada + caption — pega en WA Web Estados" : "⚡ Turbo: imagen descargada + caption copiado");
+    }
+    if(!comboMode) registrarPub(sel);
+  }catch(e){ toast("⚠️ Turbo falló: "+e.message); }
+  btn.disabled=false; btn.textContent="⚡ TURBO PUBLICAR";
+};
+
+// notas rápidas chips
+document.querySelectorAll("#notasRapidas .fchip").forEach(ch=>{
+  ch.onclick=()=>{
+    const inp=document.getElementById("inpNota");
+    if(inp){ inp.value=ch.dataset.nota; inp.dispatchEvent(new Event("input")); dibujar(); programarGuardado(); toast(`✏️ Nota: ${ch.dataset.nota}`); }
+  };
+});
+
+// auto-estilo por categoria al seleccionar
+const _selOriginal = seleccionar;
+seleccionar = async function(p, abrirPreview){
+  // aplicar estilo guardado por categoria si existe
+  const mapa = leerPref("estilo_por_cat", {});
+  if(mapa[p.categoria] && mapa[p.categoria]!==estilo){
+    estilo = mapa[p.categoria];
+    document.querySelectorAll(".stybtn").forEach(x=>x.classList.toggle("on", x.dataset.sty===estilo));
+    const upb=document.getElementById("uploadbox"); if(upb) upb.style.display = estilo==="flotante" ? "block" : "none";
+    const escb=document.getElementById("escenaBox"); if(escb) escb.style.display = estilo==="escena" ? "block" : "none";
+  }
+  return await _selOriginal(p, abrirPreview);
+};
+
+// atajos teclado para acortar tiempo
+document.addEventListener("keydown", e=>{
+  if(e.target && (e.target.tagName==="INPUT" || e.target.tagName==="TEXTAREA" || e.target.isContentEditable)) return;
+  if(e.ctrlKey||e.metaKey){
+    if(e.key.toLowerCase()==="s"){ e.preventDefault(); if(typeof guardarEdicionActual==="function") { guardarEdicionActual(); toast("💾 Guardado"); } }
+    if(e.key.toLowerCase()==="d"){ e.preventDefault(); document.getElementById("btnPng")?.click(); }
+    return;
+  }
+  // 1-9 estilos
+  const map = {"1":"vitrina","2":"oferta","3":"story","4":"flotante","5":"claro","6":"resena","7":"escena","8":"urgencia","9":"galeria"};
+  if(map[e.key]){
+    const b=document.querySelector(`[data-sty=${map[e.key]}]`);
+    if(b) b.click();
+  }
+  if(e.key==="t" || e.key==="T"){ document.getElementById("btnTurbo")?.click(); }
+  if(e.key==="g" || e.key==="G"){ document.getElementById("btnVerEdiciones")?.click(); }
+  if(e.key==="Escape"){
+    document.querySelectorAll(".modalfondo").forEach(m=>m.remove());
+    const ql=document.getElementById("quickList"); if(ql) ql.style.display="none";
+  }
+});
+
+// bulk texto masivo para guardados ya está en toolbar, añadir copiar captions
+let cacheGuardadosBlobs = new Map();
+async function precargarGuardadosFondo(){
+  if(!productos.length) return;
+  const todos = await edTodos();
+  const disp = todos.filter(ed=>{
+    const st = estadoProductoGuardado(ed.productoId||ed.id);
+    return st.prod && Number(st.prod.stock)>0;
+  }).slice(0,8); // max 8 para no saturar
+  if(!disp.length) return;
+  console.log(`⚡ Precargando ${disp.length} guardados en fondo...`);
+  const guardaSel = sel;
+  const guardaFoto = fotoSinFondo;
+  const guardaTextos = [...textos];
+  const guardaEstilo = estilo;
+  _loteEnCurso=true;
+  for(const ed of disp){
+    if(cacheGuardadosBlobs.has(ed.uid||ed.id)) continue;
+    try{
+      const pid = ed.productoId||getProductoIdDeUid(ed.uid);
+      const prod = productos.find(p=>String(p.id)===String(pid));
+      if(!prod) continue;
+      sel = prod;
+      await aplicarEdicionRegistro(ed);
+      await dibujar();
+      const blob = await canvasBlob();
+      cacheGuardadosBlobs.set(ed.uid||ed.id, blob);
+      await new Promise(r=>setTimeout(r, 300)); // respirar
+    }catch(e){}
+  }
+  _loteEnCurso=false;
+  sel=guardaSel; fotoSinFondo=guardaFoto; textos=guardaTextos; estilo=guardaEstilo;
+  try{ await dibujar(); }catch(e){}
+  console.log("✅ Precarga fondo lista");
+  // si guardados modal abierto, avisar
+  if(document.getElementById("edModal")){
+    toast(`⚡ ${cacheGuardadosBlobs.size} guardados pre-generados — ZIP será instantáneo`);
+  }
+}
+
+function copiarCaptionsSeleccionados(){
+  const uids=[...guardadosSel];
+  if(!uids.length){ toast("Selecciona guardados con ☑️"); return; }
+  edTodos().then(todos=>{
+    const sels = todos.filter(t=> uids.includes(String(t.uid)) || uids.includes(String(t.productoId)));
+    const textos = sels.map(ed=>{
+      const pid = ed.productoId||getProductoIdDeUid(ed.uid);
+      const prod = productos.find(p=>String(p.id)===String(pid));
+      if(!prod) return "";
+      return ed.captionPersonalizado || caption(prod);
+    }).filter(Boolean).join("\n\n---\n\n");
+    navigator.clipboard.writeText(textos).then(()=>toast(`📋 ${sels.length} captions copiados juntos`)).catch(()=>toast("No se pudo copiar"));
+  });
+}
+
 medirHeader();
 sincronizarHoja();
 aplicarTema();
@@ -9274,6 +9584,7 @@ edCargarIndice();
 revisarAgenda();
 setInterval(revisarAgenda, 60000);
 init();
+
 </script>
 </body>
 </html>

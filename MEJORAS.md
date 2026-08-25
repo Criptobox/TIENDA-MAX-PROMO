@@ -197,3 +197,82 @@
 14. Sugerir combos → arma combo desde guardados
 15. Foto clara → sugerencia Claro WA
 16. Nube → pon URL y sube/baja
+
+
+---
+
+## ⚡ NUEVO v6.1 — Acortar tiempo y facilitar publicación (lo que pediste ahora)
+
+### Objetivo: publicar en <15 segundos por producto
+
+**1. ⚡ Botón TURBO PUBLICAR (ahorra ~30s por producto)**
+- 1 click hace todo: genera PNG/WebP, copia imagen al portapapeles, copia caption, abre WhatsApp Web o menú compartir nativo
+- Si estás en PC: copia imagen (Clipboard API) + descarga + abre web.whatsapp.com → pegas con Ctrl+V en Estado
+- Si estás en móvil: usa Web Share API con archivos → elige WhatsApp → Mi estado
+- Registra publicación automáticamente
+- Atajo teclado: tecla `T`
+
+**2. 🏷️ Notas rápidas con 1 click**
+- Chips sobre el input de nota: 🚚 ENVÍO GRATIS, 💵 PAGO AL RECIBIR, ⚠️ ÚLTIMAS, 🔥 OFERTA, 🎁 2×1, 🛡️ GARANTÍA
+- Toca y se aplica al diseño + se guarda automáticamente
+- Evita escribir lo mismo 50 veces al día
+
+**3. 🎨 Auto-estilo por categoría**
+- Guarda en `estilo_por_cat` el último estilo que usaste para cada categoría
+- Al seleccionar un producto de la misma categoría, aplica automáticamente ese estilo
+- Ej: siempre usas Story para CELULARES → la próxima vez que toques un celular ya abre en Story
+- Ahorra 2 clicks por producto
+
+**4. ⌨️ Atajos de teclado (para PC, acorta 50% tiempo)**
+- `1-9`: cambia estilo (1=Vitrina,2=Oferta,3=Story,4=Flotante,5=Claro,6=Reseña,7=Escena,8=Urgencia,9=Galería)
+- `T`: Turbo publicar
+- `G`: Abrir guardados
+- `Ctrl+S`: Guardar edición
+- `Ctrl+D`: Descargar PNG
+- `Esc`: Cerrar modales
+- Ideal para publicar 20 productos seguidos sin tocar el ratón
+
+**5. ✏️ Texto masivo en guardados**
+- Selecciona N guardados con ☑️ → ✏️ Texto masivo → escribe "ENVÍO GRATIS HOY" + color → se añade a todos a la vez
+- Evita abrir uno por uno para poner mismo texto
+- Ahorra ~5 min si tienes 10 guardados
+
+**6. 📋 Copiar captions de seleccionados**
+- Selecciona varios guardados → 📋 Copiar captions → copia todos los captions (personalizados o inteligentes) separados por `---` en un solo copy
+- Pegas en bloc de notas o en programador
+
+**7. 🔁 Re-publicar lo de ayer**
+- Botón 🔁 Ayer en header: muestra lo que publicaste ayer (según pubLog)
+- Toca cualquier producto → abre con turbo listo
+- Botón ZIP ayer para re-generar todo lo de ayer en 1 ZIP
+- Ahorra buscar qué publicaste ayer
+
+**8. 📋 Historial de portapapeles**
+- Guarda últimos 8 captions copiados en `tm_clip_hist`
+- Botón 📋 Historial copy en header abre modal con todos, botón copiar y borrar
+- Si copiaste un caption y lo perdiste, lo recuperas en 2 clicks
+
+**9. ⏰ Mejor hora para publicar**
+- Analiza `pubLog` para encontrar hora más frecuente de publicación
+- `analizarMejorHora()` → `Sueles publicar más a las 19:00 (12 veces)`
+- Se puede usar para programar guardados a esa hora
+
+**10. ⚡ Precarga en segundo plano**
+- `precargarGuardadosFondo()` 4s después de cargar índice, pre-genera hasta 8 guardados disponibles en background con pausas
+- Guarda blobs en `cacheGuardadosBlobs` Map
+- Cuando das ZIP, usa cache si existe → ZIP instantáneo en lugar de 20-30s
+- Toast `⚡ X guardados pre-generados — ZIP será instantáneo`
+
+### Flujo ultra-rápido recomendado ahora:
+
+1. Abres app → banner "23 sin editar" → tocas Ver sin editar
+2. Tocas producto → auto-estilo por categoría ya aplicado
+3. Tocas chip "ENVÍO GRATIS HOY" (1 click)
+4. Tocas `T` o botón TURBO → imagen copiada + caption copiado + WA Web abierto
+5. En WA Web: Estados → ➕ → Ctrl+V → publicar (3s)
+6. Para 10 productos: vas a Guardados → ☑️ Seleccionar visibles (10) → 📤 Cola publicación → vas publicando uno tras otro sin volver al catálogo
+
+**Tiempo antes:** ~90s por producto (buscar, editar, descargar, copiar caption, abrir WA, pegar)
+**Tiempo ahora:** ~15s por producto con Turbo + notas rápidas + auto-estilo
+
+Ahorro: **75s por producto × 20 productos/día = 25 minutos diarios**
