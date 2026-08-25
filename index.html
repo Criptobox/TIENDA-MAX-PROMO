@@ -461,6 +461,9 @@ body.tema-claro .modalcaja{background:#fff;color:#17171c;}
 .edcard2 .edagotado-overlay b{font-size:22px;}
 .sync-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel2);border:1px solid rgba(255,255,255,.08);border-radius:12px;margin-bottom:12px;font-size:11px;color:var(--tx2);}
 .sync-bar b{color:#7ee8a5;}
+#btnSoloDisp.on{background:rgba(37,211,102,.15);border-color:rgba(37,211,102,.5);color:#7ee8a5;}
+#btnSoloDisp{transition:all .15s;}
+
 .modalfondo{
   position:fixed;inset:0;background:rgba(5,5,7,.82);z-index:140;display:flex;
   align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(6px);
@@ -543,6 +546,9 @@ body.tema-claro .modalcaja{background:#fff;color:#17171c;}
       <button class="btn blue" id="btnSemana">📅 Plan semanal (ZIP)</button>
       <button class="btn green" id="btnCampana">🎯 Campaña (ZIP)</button>
       <button class="btn dark" id="btnLoteFondo">🪄 Quitar fondos en lote</button>
+      <button class="btn dark" id="btnSoloDisp" title="Solo productos con stock">✅ Solo disponibles</button>
+      <button class="btn dark" id="btnPlantillas" title="Plantillas">🎨 Plantillas</button>
+      <button class="btn dark" id="btnComboSug" title="Sugerir combos desde guardados">🎁 Combos guardados</button>
     </div>
     <div class="chiprow" id="chipRow">
       <button class="fchip" data-f="oferta">🔥 Ofertas</button>
@@ -3405,19 +3411,39 @@ function captionCombo(){
 function caption(p){
   p = prodEfectivo(p);
   if(comboMode && comboSel.length>=2) return captionCombo();
+  // mejora 12: caption personalizado por guardado
+  try{
+    // buscar edición guardada para este producto (última)
+    const pid = String(p.id);
+    // si tenemos lista en memoria de guardados, usarla si existe variable _ultimaListaGuardados
+    if(window._ultimaListaGuardados){
+      const ed = window._ultimaListaGuardados.find(x=> String(x.productoId||x.id)===pid && x.captionPersonalizado);
+      if(ed && ed.captionPersonalizado) return ed.captionPersonalizado;
+    }
+  }catch(e){}
   if(estilo==="resena" && resenas[String(p.id)]){
     const rv = resenas[String(p.id)];
     const stars = "⭐".repeat(rv.estrellas);
     return `${stars} OPINIÓN REAL DE CLIENTE\n\n"${rv.texto}"\n— ${rv.autor||"Cliente"}, ${rv.fecha||""}\n\n🛒 Compró: ${p.nombre} — $${p.precioActual} USD\n💵 Pago al recibir · 🚚 Domicilio · 🛡️ Garantía\n\n📲 Escribe "${keyword(p)}" al WhatsApp: https://wa.me/${WHATSAPP}\n🌐 ${linkProducto(p)}\n\n#TiendaMax #Cuba #OpinionesReales #${p.categoria.replace(/\s+/g,"")}`;
   }
-  const sel = document.getElementById("selPlantilla");
-  const pl = PLANTILLAS.find(x=>x.id===(sel?sel.value:"fb")) || PLANTILLAS[0];
+  const selEl = document.getElementById("selPlantilla");
+  const pl = PLANTILLAS.find(x=>x.id===(selEl?selEl.value:"fb")) || PLANTILLAS[0];
   const v = varsProducto(p);
-  return pl.texto
+  let txt = pl.texto
     .replace(/\{(\w+)\}/g,(m,k)=>Object.prototype.hasOwnProperty.call(v,k)?v[k]:m)
     .replace(/[ \t]+$/gm,"")
     .replace(/\n{3,}/g,"\n\n")
     .trim();
+  // mejora 13: hashtags inteligentes si no hay custom
+  try{
+    const customHashtags = leerPref("hashtags", {})[p.categoria];
+    if(!customHashtags){
+      const inteligentes = sugerirHashtagsInteligentes(p);
+      // reemplazar última línea de hashtags si existe
+      txt = txt.replace(/#TiendaMax.*$/m, inteligentes);
+    }
+  }catch(e){}
+  return txt;
 }
 function loadImage(url){
   return new Promise((res,rej)=>{
@@ -3490,10 +3516,12 @@ async function init(){
         if(sug) toast(`⏰ Aún no has publicado hoy — te sugiero: ${sug.nombre.slice(0,30)}`);
       }
     }, 2200);
+    registrarHistorialPrecios(productos);
     render();
     actualizarBarraEdiciones();
     iniciarAutoSync();
-    if(productos.length){ seleccionar(productos[0]); }
+    verificarSinEdicion();
+    if(productos.length){ seleccionar(productos[0]); setTimeout(()=>sugerirEstiloPorBrillo(), 800); }
     setTimeout(precargarEscenas, 1500);
     /* accesos directos del ícono de la app */
     const acc = new URLSearchParams(location.search).get("accion");
@@ -3682,6 +3710,8 @@ async function seleccionar(p, abrirPreview){
   if(typeof actualizarCajasEstilo==="function") actualizarCajasEstilo();
   if(typeof actualizarHojaRapida==="function") actualizarHojaRapida();
   if(abrirPreview) modoPreview(true);
+  setTimeout(()=>sugerirEstiloPorBrillo(), 400);
+
   else renderPicked();
 }
 
@@ -5583,13 +5613,34 @@ function mostrarPreviewLote(files, etiqueta, modo){
   m.id = "loteModal";
   m.style.cssText = "position:fixed;inset:0;z-index:170;background:rgba(0,0,0,.92);overflow-y:auto;padding:20px;";
   const urls = files.map(f=>URL.createObjectURL(new Blob([f.data],{type:"image/png"})));
+  // construir tabla de precios vivos si tenemos productos
+  let tablaPrecios = "";
+  try{
+    // intentar mapear files a productos actuales para mostrar stock
+    const mapeo = files.map(f=>{
+      // nombre archivo contiene slug o id
+      const match = f.name.match(/tiendamax-(.*?)(?:-|\.)/);
+      const id = match? match[1] : "";
+      const prod = productos.find(p=> String(p.id)===id || p.slug===id || f.name.includes(String(p.id)) || f.name.includes(p.slug));
+      return prod? {file:f.name, prod} : null;
+    }).filter(Boolean);
+    if(mapeo.length){
+      tablaPrecios = `<div style="background:var(--panel);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:800;margin-bottom:8px;">📊 Precios y stock en vivo (antes de descargar)</div>
+        <div style="max-height:140px;overflow-y:auto;font-size:11px;line-height:1.6;">
+          ${mapeo.map(m=>`<div style="display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.08);"><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.prod.nombre.slice(0,36)}</span><span style="color:var(--naranja);font-weight:800;">$${m.prod.precioActual}</span><span style="font-size:10px;color:${Number(m.prod.stock)<=3?"#f5a623":"#7ee8a5"};">📦 ${m.prod.stock}u</span>${Number(m.prod.stock)<=3?`<span style="font-size:9px;padding:2px 6px;border-radius:10px;background:rgba(245,166,35,.15);color:#f5a623;">⚠️ últimas</span>`:""}</div>`).join("")}
+        </div>
+      </div>`;
+    }
+  }catch(e){}
   let inner = `<div style="max-width:900px;margin:0 auto;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
       <h2 style="font-size:19px;flex:1;">👀 Vista previa — ${files.length} imágenes</h2>
       <button class="btn green" id="ltOk" style="padding:10px 18px;font-size:13px;">${modo==="pack"?"📲 Compartir pack":"⬇️ Descargar ZIP"}</button>
       <button class="btn dark" id="ltCancel" style="padding:10px 14px;font-size:13px;">✕ Cancelar</button>
     </div>
-    <div style="font-size:11.5px;color:var(--tx2);margin-bottom:14px;">Toca una imagen para verla grande · ✕ quita la que no te guste</div>
+    ${tablaPrecios}
+    <div style="font-size:11.5px;color:var(--tx2);margin-bottom:14px;">Toca una imagen para verla grande · ✕ quita la que no te guste · Revisa stock arriba</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;">`;
   files.forEach((f,i)=>{
     inner += `<div class="ltItem" data-i="${i}" style="position:relative;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.14);background:#000;">
@@ -5994,7 +6045,7 @@ $("#btnBackup").onclick = ()=>{
   const m = document.createElement("div");
   m.id = "bkModal";
   m.style.cssText = "position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;padding:20px;";
-  const claves = ["publog","plan_semana","ids_vistos","estilo","qr","plantilla","rmbg_key","fb_grupos","hashtags"];
+  const claves = ["publog","plan_semana","ids_vistos","estilo","qr","plantilla","rmbg_key","fb_grupos","hashtags","solo_disponibles","auto_borrar_dias","tm_plantillas","tm_historial_precios","cloud_sync_url","tm_alertados","ocultar_sin_editar"];
   m.innerHTML = `<div style="background:var(--panel);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:24px;max-width:420px;width:100%;">
     <h2 style="font-size:17px;margin-bottom:6px;">💾 Respaldo de datos</h2>
     <div style="font-size:12px;color:var(--tx2);line-height:1.6;margin-bottom:16px;">Tu historial de publicaciones, plan semanal y preferencias viven en este dispositivo. Exporta un respaldo para no perderlos o para pasarlos a otro teléfono/PC.</div>
@@ -6941,58 +6992,230 @@ var txSel = null;
 var fotosExtra = [];
 var _cajasTx = [];
 const EDB = {db:null, listo:false};
-const edIds = new Set();
+const edIds = new Set(); // productoIds (para chip ya editados)
+const edUidMap = new Map(); // uid -> productoId
+let plantillas = [];
+let historialPrecios = {};
+let etiquetasGlobal = new Set();
+
 function edAbrir(){
   return new Promise(res=>{
     if(EDB.db) return res(EDB.db);
     let req;
-    try{ req = indexedDB.open("tmgen-ediciones", 1); }catch(e){ return res(null); }
+    try{ req = indexedDB.open("tmgen-ediciones", 2); }catch(e){ return res(null); }
     req.onupgradeneeded = e=>{
       const db=e.target.result;
-      if(!db.objectStoreNames.contains("ed")) db.createObjectStore("ed",{keyPath:"id"});
+      // v1 store
+      if(!db.objectStoreNames.contains("ed")){
+        db.createObjectStore("ed",{keyPath:"id"});
+      }
+      // v2 store for multiple editions per product
+      if(!db.objectStoreNames.contains("ed_v2")){
+        const s = db.createObjectStore("ed_v2",{keyPath:"uid"});
+        s.createIndex("productoId","productoId",{unique:false});
+        s.createIndex("ts","ts",{unique:false});
+      }
+      // historial precios store
+      if(!db.objectStoreNames.contains("historial")){
+        db.createObjectStore("historial",{keyPath:"productoId"});
+      }
     };
-    req.onsuccess = e=>{ EDB.db=e.target.result; res(EDB.db); };
+    req.onsuccess = async e=>{
+      EDB.db=e.target.result;
+      // migración si existe ed viejo y ed_v2 vacío
+      try{
+        const tx = EDB.db.transaction(["ed","ed_v2"],"readwrite");
+        const oldStore = tx.objectStore("ed");
+        const newStore = tx.objectStore("ed_v2");
+        const countReq = newStore.count();
+        countReq.onsuccess = ()=>{
+          if(countReq.result===0){
+            const getAll = oldStore.getAll();
+            getAll.onsuccess = ()=>{
+              const arr = getAll.result||[];
+              for(const r of arr){
+                if(!r.uid){
+                  r.uid = String(r.id);
+                  r.productoId = String(r.id);
+                  r.etiquetas = r.etiquetas||[];
+                  r.captionPersonalizado = r.captionPersonalizado||"";
+                  r.marcaAgua = r.marcaAgua!=null? r.marcaAgua : null; // null = global
+                }
+                try{ newStore.put(r); }catch(e){}
+              }
+            };
+          }
+        };
+      }catch(e){}
+      res(EDB.db);
+    };
     req.onerror = ()=>res(null);
   });
 }
+function edTxV2(modo){
+  return edAbrir().then(db=> {
+    if(!db) return null;
+    try{
+      if(db.objectStoreNames.contains("ed_v2")){
+        return db.transaction("ed_v2",modo).objectStore("ed_v2");
+      }else{
+        return db.transaction("ed",modo).objectStore("ed");
+      }
+    }catch(e){ return null; }
+  });
+}
 function edTx(modo){
-  return edAbrir().then(db=> db ? db.transaction("ed",modo).objectStore("ed") : null);
+  return edTxV2(modo);
 }
 async function edGuardar(reg){
-  const st = await edTx("readwrite"); if(!st) return;
+  // asegurar uid y productoId
+  if(!reg.uid) reg.uid = String(reg.id);
+  if(!reg.productoId) reg.productoId = String(reg.id).split("__dup__")[0].split("_")[0];
+  if(!reg.etiquetas) reg.etiquetas = [];
+  const st = await edTxV2("readwrite"); if(!st) return;
   return new Promise(r=>{ const q=st.put(reg); q.onsuccess=()=>r(true); q.onerror=()=>r(false); });
 }
 async function edLeer(id){
-  const st = await edTx("readonly"); if(!st) return null;
-  return new Promise(r=>{ const q=st.get(String(id)); q.onsuccess=()=>r(q.result||null); q.onerror=()=>r(null); });
+  // id puede ser uid o productoId, buscar primero por uid exacto, luego por productoId
+  const st = await edTxV2("readonly"); if(!st) return null;
+  return new Promise(r=>{
+    const q=st.get(String(id));
+    q.onsuccess=()=>{
+      if(q.result) r(q.result);
+      else{
+        // intentar por indice productoId
+        try{
+          const idx = st.index("productoId");
+          const q2 = idx.getAll(String(id));
+          q2.onsuccess=()=> r((q2.result||[])[0]||null);
+          q2.onerror=()=> r(null);
+        }catch(e){
+          // fallback buscar todos
+          const qa = st.getAll();
+          qa.onsuccess=()=>{
+            const arr = qa.result||[];
+            const found = arr.find(x=> String(x.productoId)===String(id) || String(x.id)===String(id));
+            r(found||null);
+          };
+          qa.onerror=()=> r(null);
+        }
+      }
+    };
+    q.onerror=()=>r(null);
+  });
+}
+async function edLeerPorUid(uid){
+  const st = await edTxV2("readonly"); if(!st) return null;
+  return new Promise(r=>{ const q=st.get(String(uid)); q.onsuccess=()=>r(q.result||null); q.onerror=()=>r(null); });
 }
 async function edBorrar(id){
-  const st = await edTx("readwrite"); if(!st) return;
-  edIds.delete(String(id));
-  return new Promise(r=>{ const q=st.delete(String(id)); q.onsuccess=()=>r(true); q.onerror=()=>r(false); });
+  const st = await edTxV2("readwrite"); if(!st) return;
+  // borrar por uid, pero si es productoId borrar todos los que tengan ese productoId
+  return new Promise(r=>{
+    const q=st.get(String(id));
+    q.onsuccess=()=>{
+      if(q.result){
+        const del = st.delete(String(id));
+        del.onsuccess=()=>{
+          // recalcular edIds
+          edUidMap.delete(String(id));
+          // si era el último con ese productoId, borrar de edIds
+          const check = st.index ? st.index("productoId").getAll(q.result.productoId) : null;
+          if(check){
+            check.onsuccess=()=>{
+              const remaining = (check.result||[]).filter(x=> String(x.uid)!==String(id));
+              if(!remaining.length) edIds.delete(String(q.result.productoId));
+              r(true);
+            };
+          }else{
+            r(true);
+          }
+        };
+      }else{
+        // intentar borrar todos con productoId = id
+        try{
+          const idx = st.index("productoId");
+          const getAll = idx.getAll(String(id));
+          getAll.onsuccess=()=>{
+            const arr = getAll.result||[];
+            let pending = arr.length;
+            if(!pending){ r(true); return; }
+            for(const it of arr){
+              edUidMap.delete(String(it.uid));
+              st.delete(String(it.uid));
+            }
+            edIds.delete(String(id));
+            // esperar un poco
+            setTimeout(()=>r(true), 100);
+          };
+        }catch(e){
+          r(false);
+        }
+      }
+    };
+  });
 }
 async function edTodos(){
-  const st = await edTx("readonly"); if(!st) return [];
+  const st = await edTxV2("readonly"); if(!st) return [];
   return new Promise(r=>{ const q=st.getAll(); q.onsuccess=()=>r((q.result||[]).sort((a,b)=>b.ts-a.ts)); q.onerror=()=>r([]); });
 }
+async function edTodosPorProducto(productoId){
+  const st = await edTxV2("readonly"); if(!st) return [];
+  return new Promise(r=>{
+    try{
+      const idx = st.index("productoId");
+      const q=idx.getAll(String(productoId));
+      q.onsuccess=()=>r((q.result||[]).sort((a,b)=>b.ts-a.ts));
+      q.onerror=()=>r([]);
+    }catch(e){
+      // fallback
+      const q=st.getAll();
+      q.onsuccess=()=>{
+        const arr = (q.result||[]).filter(x=> String(x.productoId)===String(productoId) || String(x.id)===String(productoId));
+        r(arr.sort((a,b)=>b.ts-a.ts));
+      };
+    }
+  });
+}
+
 let guardadosSel = new Set();
 let ultimaSync = Date.now();
 let _autoSyncTimer = null;
 
-function estadoProductoGuardado(id){
-  const prod = productos.find(p=>String(p.id)===String(id));
-  if(!prod) return {estado:"eliminado", prod:null, stock:0, label:"Eliminado de la tienda", badge:"stock-del"};
-  const st = Number(prod.stock);
-  if(st<=0) return {estado:"agotado", prod, stock:st, label:"⛔ Agotado", badge:"stock-bad"};
-  if(st<=3) return {estado:"poco", prod, stock:st, label:`⚠️ Quedan ${st}`, badge:"stock-poco"};
-  return {estado:"disponible", prod, stock:st, label:`✅ ${st} disponibles`, badge:"stock-ok"};
+function getProductoIdDeUid(uid){
+  if(!uid) return "";
+  const s = String(uid);
+  if(s.includes("__dup__")) return s.split("__dup__")[0];
+  if(s.includes("_") && s.match(/_\d{13}$/)) return s.split("_")[0];
+  return s;
 }
+function estadoProductoGuardado(id){
+  const pid = getProductoIdDeUid(id);
+  const prod = productos.find(p=>String(p.id)===String(pid) || String(p.id)===String(id));
+  if(!prod) return {estado:"eliminado", prod:null, stock:0, label:"Eliminado de la tienda", badge:"stock-del", productoId:pid};
+  const st = Number(prod.stock);
+  if(st<=0) return {estado:"agotado", prod, stock:st, label:"⛔ Agotado", badge:"stock-bad", productoId:pid};
+  if(st<=3) return {estado:"poco", prod, stock:st, label:`⚠️ Quedan ${st}`, badge:"stock-poco", productoId:pid};
+  return {estado:"disponible", prod, stock:st, label:`✅ ${st} disponibles`, badge:"stock-ok", productoId:pid};
+}
+
 
 async function edCargarIndice(){
   const t = await edTodos();
   edIds.clear();
-  for(const e of t) edIds.add(String(e.id));
+  edUidMap.clear();
+  etiquetasGlobal.clear();
+  for(const e of t){
+    const pid = e.productoId || getProductoIdDeUid(e.uid||e.id);
+    edIds.add(String(pid));
+    edUidMap.set(String(e.uid||e.id), String(pid));
+    if(Array.isArray(e.etiquetas)) e.etiquetas.forEach(et=> etiquetasGlobal.add(et));
+  }
   actualizarBarraEdiciones();
+  verificarSinEdicion();
+  aplicarAutoBorrado();
+  cargarPlantillas();
+  cargarHistorialPrecios();
   if(document.getElementById("edModal")) abrirEdiciones();
 }
 function actualizarBarraEdiciones(){
@@ -7029,25 +7252,33 @@ function iniciarAutoSync(){
     try{
       const prods = await fetch(BASE+"/productos.json?_="+Date.now()).then(r=>r.json());
       const nuevos = prods.filter(p=>p && p.nombre && Number(p.stock)>0);
-      const antes = productos.length;
+      // detectar agotados nuevos
+      const antesIds = new Set(productos.map(p=>String(p.id)));
+      const nuevosIdsSet = new Set(nuevos.map(p=>String(p.id)));
+      const agotadosRecientes = [];
+      for(const id of edIds){
+        if(antesIds.has(String(id)) && !nuevosIdsSet.has(String(id))){
+          agotadosRecientes.push(String(id));
+        }
+      }
       productos = nuevos;
       ultimaSync = Date.now();
+      registrarHistorialPrecios(nuevos);
       actualizarBarraEdiciones();
       render();
+      verificarSinEdicion();
+      if(agotadosRecientes.length) alertaAgotados(agotadosRecientes);
       // si el modal de guardados está abierto, refrescarlo
       if(document.getElementById("edModal")){
-        // no recrear todo, solo actualizar badges
         const modal = document.getElementById("edModal");
         const listaEl = modal.querySelector("#edGrid2");
         if(listaEl){
-          // reabrir para simplificar y mantener selección
           const selTemp = new Set(guardadosSel);
           await abrirEdiciones();
           guardadosSel = selTemp;
-          actualizarChecksGuardados();
+          if(typeof actualizarChecksGuardados==="function") actualizarChecksGuardados();
         }
       }
-      // avisar si algún guardado se agotó
       let agotadosAhora = 0;
       for(const id of edIds){
         const es = estadoProductoGuardado(id);
@@ -7059,6 +7290,623 @@ function iniciarAutoSync(){
       }
     }catch(e){}
   }, 90000);
+}
+
+
+// === MEJORA 1: Alerta push de agotados ===
+let _alertadosAgotados = new Set(JSON.parse(localStorage.getItem("tm_alertados")||"[]"));
+function alertaAgotados(nuevosAgotados){
+  if(!nuevosAgotados.length) return;
+  const noAlertados = nuevosAgotados.filter(id=> !_alertadosAgotados.has(String(id)));
+  if(!noAlertados.length) return;
+  for(const id of noAlertados) _alertadosAgotados.add(String(id));
+  localStorage.setItem("tm_alertados", JSON.stringify([..._alertadosAgotados]));
+  const nombres = noAlertados.map(id=>{
+    const ed = {id};
+    const prod = productos.find(p=>String(p.id)===String(id)) || {nombre:id};
+    return prod.nombre||id;
+  }).slice(0,3).join(", ");
+  const msg = `⛔ ${noAlertados.length} de tus guardados se agotaron: ${nombres}${noAlertados.length>3?"…":""}`;
+  if("Notification" in window && Notification.permission==="granted"){
+    try{ new Notification("TiendaMax — guardados agotados", {body:msg, icon:"icon-192.png"}); }catch(e){ toast(msg); }
+  }else{
+    toast(msg);
+  }
+}
+
+// === MEJORA 3: Modo solo disponibles global ===
+function soloDisponiblesActivo(){ return leerPref("solo_disponibles", false); }
+function toggleSoloDisponibles(){
+  const nuevo = !soloDisponiblesActivo();
+  guardarPref("solo_disponibles", nuevo);
+  const btn = document.getElementById("btnSoloDisp");
+  if(btn) btn.classList.toggle("on", nuevo);
+  render();
+  actualizarBarraEdiciones();
+  toast(nuevo? "✅ Solo disponibles activado — ocultando agotados" : "👁️ Mostrando todo");
+}
+
+// === MEJORA 4: Historial de precios ===
+function cargarHistorialPrecios(){
+  try{ historialPrecios = JSON.parse(localStorage.getItem("tm_historial_precios")||"{}"); }catch(e){ historialPrecios={}; }
+}
+function guardarHistorialPrecios(){
+  localStorage.setItem("tm_historial_precios", JSON.stringify(historialPrecios));
+}
+function registrarHistorialPrecios(listaProductos){
+  cargarHistorialPrecios();
+  let cambios=0;
+  for(const p of listaProductos){
+    const pid = String(p.id);
+    if(!historialPrecios[pid]) historialPrecios[pid]=[];
+    const hist = historialPrecios[pid];
+    const ultimo = hist[hist.length-1];
+    if(!ultimo || Number(ultimo.precio)!==Number(p.precioActual)){
+      hist.push({precio:Number(p.precioActual), stock:Number(p.stock), ts:Date.now()});
+      if(hist.length>20) hist.shift();
+      cambios++;
+    }
+  }
+  if(cambios) guardarHistorialPrecios();
+}
+function obtenerHistorial(pid){
+  cargarHistorialPrecios();
+  return historialPrecios[String(pid)]||[];
+}
+function abrirHistorialPrecio(productoId){
+  const hist = obtenerHistorial(productoId);
+  const prod = productos.find(p=>String(p.id)===String(productoId)) || {nombre:productoId};
+  if(!hist.length){ toast("Sin historial de precios para este producto"); return; }
+  const line = hist.map(h=> `$${h.precio} (${new Date(h.ts).toLocaleDateString()})`).join(" → ");
+  const m = crearModal("histPrecioModal", `
+    <h3>📈 Historial de precios — ${prod.nombre.slice(0,40)}</h3>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:12px;">Evolución del precio en la tienda desde que lo guardaste</div>
+    <div style="background:var(--panel2);border-radius:12px;padding:12px;font-size:12px;line-height:1.8;max-height:200px;overflow-y:auto;">
+      ${hist.map((h,i)=>`<div style="display:flex;gap:8px;align-items:center;"><span style="color:var(--tx2);font-size:10px;">${new Date(h.ts).toLocaleDateString()} ${new Date(h.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><span style="font-weight:800;color:var(--naranja);">$${h.precio}</span><span style="font-size:10px;color:var(--tx2);">stock ${h.stock}</span>${i>0 && hist[i-1].precio!==h.precio?`<span style="font-size:9px;padding:2px 6px;border-radius:10px;background:${h.precio>hist[i-1].precio?'rgba(239,68,68,.2)':'rgba(37,211,102,.2)'};color:${h.precio>hist[i-1].precio?'#ff9a9a':'#7ee8a5'};">${h.precio>hist[i-1].precio?'↗ subió':'↘ bajó'} $${Math.abs(h.precio-hist[i-1].precio)}</span>`:""}</div>`).join("")}
+    </div>
+    <div style="font-size:11px;margin-top:10px;">Actual: <b style="color:var(--naranja);">$${prod.precioActual||hist[hist.length-1].precio}</b> · Guardado: $${(obtenerEdicionGuardada(productoId)?.precioGuardado)||"—"}</div>
+    <button class="btn orange" id="hpCerrar" style="width:100%;justify-content:center;margin-top:14px;">Cerrar</button>
+  `, 560);
+  m.querySelector("#hpCerrar").onclick=()=>m.remove();
+}
+function obtenerEdicionGuardada(pid){
+  // helper síncrono no, usar async pero para historial basta buscar en memoria si tenemos lista
+  return null;
+}
+
+// === MEJORA 5: Auto-borrado inteligente ===
+function autoBorrarDias(){ return leerPref("auto_borrar_dias", 0); }
+async function aplicarAutoBorrado(){
+  const dias = autoBorrarDias();
+  if(!dias) return;
+  const limite = Date.now() - dias*86400000;
+  const todos = await edTodos();
+  let borrados=0;
+  for(const ed of todos){
+    const st = estadoProductoGuardado(ed.productoId||ed.id);
+    if((st.estado==="agotado"||st.estado==="eliminado") && ed.ts < limite){
+      await edBorrar(ed.uid||ed.id);
+      borrados++;
+    }
+  }
+  if(borrados){
+    await edCargarIndice();
+    toast(`🧹 Auto-borrado: ${borrados} guardados agotados de hace >${dias} días eliminados`);
+  }
+}
+
+// === MEJORA 6: Etiquetas ===
+function guardarEtiquetasEnEdicion(uid, etiquetas){
+  edLeerPorUid(uid).then(reg=>{
+    if(!reg) return;
+    reg.etiquetas = etiquetas;
+    edGuardar(reg).then(()=> edCargarIndice());
+  });
+}
+
+// === MEJORA 7: Duplicar edición ===
+async function duplicarEdicion(uid){
+  const reg = await edLeerPorUid(uid);
+  if(!reg){ toast("No se encontró la edición"); return; }
+  const nuevoUid = `${reg.productoId||reg.id}__dup__${Date.now()}`;
+  const copia = {...reg, uid:nuevoUid, id:nuevoUid, ts:Date.now(), nombre: reg.nombre + " (copia)"};
+  // si quieres cambiar estilo, preguntar
+  const estilos = Object.keys(ESTILO_NOMBRE);
+  const nuevoEstilo = prompt(`Duplicar con estilo?\n${estilos.join(", ")}\nDeja vacío para mismo estilo (${reg.estilo})`, "");
+  if(nuevoEstilo && ESTILO_NOMBRE[nuevoEstilo]) copia.estilo = nuevoEstilo;
+  await edGuardar(copia);
+  await edCargarIndice();
+  toast("📋 Edición duplicada — ahora puedes editarla con otro estilo");
+  abrirEdiciones();
+}
+
+// === MEJORA 8: Plantillas ===
+function cargarPlantillas(){
+  try{ plantillas = JSON.parse(localStorage.getItem("tm_plantillas")||"[]"); }catch(e){ plantillas=[]; }
+}
+function guardarPlantillas(){
+  localStorage.setItem("tm_plantillas", JSON.stringify(plantillas));
+}
+function guardarPlantillaActual(){
+  const nombre = prompt("Nombre de la plantilla (ej: Oferta Black Friday)");
+  if(!nombre) return;
+  cargarPlantillas();
+  const tpl = {
+    id:"tpl_"+Date.now(),
+    nombre,
+    ts:Date.now(),
+    estilo,
+    escalaProducto, brilloFoto, escEscala, escOffX, escOffY,
+    campana,
+    sombra:{...sombraCfg},
+    textos:JSON.parse(JSON.stringify(textos)),
+    escena:escenaActual, escenaAuto
+  };
+  plantillas.push(tpl);
+  guardarPlantillas();
+  toast(`🎨 Plantilla "${nombre}" guardada`);
+}
+function aplicarPlantilla(tplId){
+  cargarPlantillas();
+  const tpl = plantillas.find(t=>t.id===tplId);
+  if(!tpl){ toast("Plantilla no encontrada"); return; }
+  _restaurando=true;
+  try{
+    escalaProducto=tpl.escalaProducto??1;
+    brilloFoto=tpl.brilloFoto??1;
+    escEscala=tpl.escEscala??1;
+    escOffX=tpl.escOffX??0;
+    escOffY=tpl.escOffY??0;
+    campana=tpl.campana||"auto";
+    sombraCfg={...tpl.sombra};
+    textos=JSON.parse(JSON.stringify(tpl.textos||[]));
+    escenaActual=tpl.escena||escenaActual;
+    escenaAuto=tpl.escenaAuto!==false;
+    if(tpl.estilo){
+      estilo=tpl.estilo;
+      document.querySelectorAll(".stybtn").forEach(x=>x.classList.toggle("on", x.dataset.sty===estilo));
+    }
+    // actualizar UI sliders
+    const pon=(r,v,suf)=>{ const a=document.getElementById(r); if(a){ a.value=Math.round(v*100); const b=document.getElementById(suf); if(b) b.textContent=Math.round(v*100)+"%"; } };
+    pon("rngEscala", escalaProducto, "escalaVal");
+    pon("rngBrillo", brilloFoto, "brilloVal");
+    pon("rngEscEscala", escEscala, "escEscalaVal");
+    const rs=document.getElementById("rngSombra");
+    if(rs){ rs.value=Math.round(sombraCfg.fuerza*100); const sv=document.getElementById("sombraVal"); if(sv) sv.textContent=rs.value+"%"; }
+    const cs=document.getElementById("chkSombra"); if(cs) cs.checked=sombraCfg.on;
+    document.querySelectorAll("#campRow .campchip").forEach(b=>b.classList.toggle("on", b.dataset.c===campana));
+    renderTextos();
+    actualizarCajasEstilo();
+    dibujar(); renderPreviews();
+    toast(`✨ Plantilla "${tpl.nombre}" aplicada`);
+    programarGuardado();
+  }finally{ _restaurando=false; }
+}
+function abrirPlantillas(){
+  cargarPlantillas();
+  const m = crearModal("tplModal", `
+    <h3>🎨 Plantillas de edición</h3>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:12px;">Guarda tu configuración actual (sombra, textos, color, estilo) y aplícala a cualquier producto con 1 click</div>
+    <button class="btn green" id="tplGuardar" style="width:100%;justify-content:center;margin-bottom:12px;">💾 Guardar configuración actual como plantilla</button>
+    <div id="tplLista">${plantillas.length? plantillas.map(t=>`
+      <div class="stat" style="flex-direction:column;align-items:stretch;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="flex:1;font-weight:800;">${t.nombre}</span>
+          <span style="font-size:10px;color:var(--tx2);">${new Date(t.ts).toLocaleDateString()}</span>
+          <button class="btn orange" data-apply="${t.id}" style="padding:6px 10px;font-size:11px;">Aplicar</button>
+          <button class="btn dark" data-del="${t.id}" style="padding:6px 8px;font-size:11px;">🗑️</button>
+        </div>
+        <div style="font-size:10px;color:var(--tx2);margin-top:4px;">${ESTILO_NOMBRE[t.estilo]||t.estilo} · ${t.textos?.length||0} textos · ${t.campana!=="auto"? "Campaña "+t.campana:""}</div>
+      </div>
+    `).join("") : `<div style="text-align:center;color:var(--tx2);padding:20px;">Sin plantillas aún</div>`}</div>
+    <button class="btn dark" id="tplCerrar" style="width:100%;justify-content:center;margin-top:12px;">Cerrar</button>
+  `, 560);
+  m.querySelector("#tplCerrar").onclick=()=>m.remove();
+  m.querySelector("#tplGuardar").onclick=()=>{ guardarPlantillaActual(); m.remove(); abrirPlantillas(); };
+  m.querySelectorAll("[data-apply]").forEach(b=>b.onclick=()=>{ aplicarPlantilla(b.dataset.apply); m.remove(); });
+  m.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{ plantillas = plantillas.filter(t=>t.id!==b.dataset.del); guardarPlantillas(); m.remove(); abrirPlantillas(); });
+}
+
+// === MEJORA 9: Comparador ===
+async function compararEdicion(uid){
+  const reg = await edLeerPorUid(uid);
+  if(!reg){ toast("Edición no encontrada"); return; }
+  const pid = reg.productoId||getProductoIdDeUid(uid);
+  const prodActual = productos.find(p=>String(p.id)===String(pid));
+  if(!prodActual){ toast("Producto ya no existe"); return; }
+  const m = crearModal("cmpModal", `
+    <h3>🔍 Comparar — ${reg.nombre.slice(0,40)}</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div><div style="font-size:11px;font-weight:800;margin-bottom:6px;">💾 Guardado (${new Date(reg.ts).toLocaleDateString()})</div><img src="${reg.miniatura}" style="width:100%;border-radius:12px;background:#000;"><div style="font-size:11px;margin-top:6px;">Precio guardado: <b>$${reg.precioGuardado||"—"}</b> · Estilo: ${ESTILO_NOMBRE[reg.estilo]||reg.estilo}</div></div>
+      <div><div style="font-size:11px;font-weight:800;margin-bottom:6px;">🏪 Actual en tienda (vivo)</div><div style="background:var(--panel2);border-radius:12px;padding:8px;text-align:center;"><img src="${prodActual.imagen}" style="width:100%;max-height:220px;object-fit:contain;background:#fff;border-radius:8px;"><div style="font-size:12px;margin-top:6px;font-weight:800;color:var(--naranja);">$${prodActual.precioActual} ${prodActual.precioOriginal>prodActual.precioActual?`<s style="color:var(--tx2);font-size:10px;">$${prodActual.precioOriginal}</s>`:""}</div><div style="font-size:10px;color:var(--tx2);">Stock: ${prodActual.stock} · ${prodActual.categoria}</div></div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button class="btn orange" id="cmpActualizar" style="flex:1;justify-content:center;">🔄 Actualizar miniatura con precio actual</button>
+      <button class="btn dark" id="cmpCerrar" style="flex:1;justify-content:center;">Cerrar</button>
+    </div>
+  `, 720);
+  m.querySelector("#cmpCerrar").onclick=()=>m.remove();
+  m.querySelector("#cmpActualizar").onclick=async()=>{
+    // regenerar miniatura con precio actual pero misma edición
+    const guardaSel = sel;
+    sel = prodActual;
+    await aplicarEdicionRegistro(reg);
+    await dibujar();
+    let mini="";
+    try{ const cv=document.getElementById("cv"); const mm=document.createElement("canvas"); const r=Math.min(220/cv.width,220/cv.height); mm.width=Math.max(1,Math.round(cv.width*r)); mm.height=Math.max(1,Math.round(cv.height*r)); mm.getContext("2d").drawImage(cv,0,0,mm.width,mm.height); mini=mm.toDataURL("image/jpeg",0.72); }catch(e){}
+    reg.miniatura=mini;
+    reg.precioGuardado=prodActual.precioActual;
+    await edGuardar(reg);
+    await edCargarIndice();
+    toast("✅ Miniatura actualizada con precio vivo");
+    m.remove();
+    abrirEdiciones();
+    sel=guardaSel;
+    await dibujar();
+  };
+}
+
+// === MEJORA 10: Exportar guardados JSON ===
+async function exportarGuardadosJSON(){
+  const todos = await edTodos();
+  const data = {
+    app:"tiendamax-guardados",
+    fecha:new Date().toISOString(),
+    total:todos.length,
+    guardados:todos
+  };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`tiendamax-guardados-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast(`💾 ${todos.length} guardados exportados en JSON`);
+}
+async function importarGuardadosJSON(file){
+  try{
+    const txt = await file.text();
+    const data = JSON.parse(txt);
+    const arr = data.guardados||data.datos||[];
+    if(!Array.isArray(arr)) throw new Error("Formato inválido");
+    let ok=0;
+    for(const reg of arr){
+      if(!reg.uid && !reg.id) continue;
+      if(!reg.uid) reg.uid=String(reg.id);
+      if(!reg.productoId) reg.productoId=getProductoIdDeUid(reg.uid||reg.id);
+      await edGuardar(reg);
+      ok++;
+    }
+    await edCargarIndice();
+    toast(`✅ ${ok} guardados importados`);
+  }catch(e){ toast("⚠️ Error importando: "+e.message); }
+}
+
+// === MEJORA 11: Cola de publicación ===
+let colaPublicacion = [];
+let colaIdx = 0;
+async function iniciarColaPublicacion(uids){
+  const todos = await edTodos();
+  colaPublicacion = uids.map(uid=> todos.find(t=> String(t.uid)===String(uid) || String(t.productoId)===String(uid) )).filter(Boolean);
+  // filtrar solo disponibles
+  colaPublicacion = colaPublicacion.filter(ed=>{
+    const st = estadoProductoGuardado(ed.productoId||ed.id);
+    return st.prod && Number(st.prod.stock)>0;
+  });
+  if(!colaPublicacion.length){ toast("Nada disponible para la cola"); return; }
+  colaIdx=0;
+  mostrarPasoCola();
+}
+function mostrarPasoCola(){
+  const old=document.getElementById("colaModal");
+  if(old) old.remove();
+  if(colaIdx>=colaPublicacion.length){
+    toast(`✅ Cola completada: ${colaPublicacion.length} productos publicados`);
+    colaPublicacion=[]; colaIdx=0;
+    return;
+  }
+  const ed = colaPublicacion[colaIdx];
+  const pid = ed.productoId||getProductoIdDeUid(ed.uid);
+  const prod = productos.find(p=>String(p.id)===String(pid));
+  if(!prod){ colaIdx++; mostrarPasoCola(); return; }
+  const cap = ed.captionPersonalizado || caption(prod);
+  const m=document.createElement("div");
+  m.id="colaModal";
+  m.style.cssText="position:fixed;bottom:0;left:0;right:0;z-index:160;background:rgba(11,11,13,.98);backdrop-filter:blur(12px);border-top:2px solid var(--naranja);padding:14px 16px calc(14px + env(safe-area-inset-bottom));";
+  m.innerHTML=`
+    <div style="max-width:720px;margin:0 auto;">
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px;">
+        <img src="${ed.miniatura||prod.imagen}" style="width:56px;height:56px;border-radius:10px;object-fit:contain;background:#fff;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:800;">📤 Cola ${colaIdx+1}/${colaPublicacion.length}: ${prod.nombre.slice(0,44)}</div>
+          <div style="font-size:11px;color:var(--tx2);">$${prod.precioActual} · ${prod.categoria} · Stock ${prod.stock}</div>
+        </div>
+        <span style="font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.4);color:#ffb28f;">${ESTILO_NOMBRE[ed.estilo]||ed.estilo}</span>
+      </div>
+      <pre style="background:#0B0B0D;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;font-size:11px;max-height:120px;overflow-y:auto;white-space:pre-wrap;margin-bottom:10px;">${cap}</pre>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn orange" id="colaAbrir" style="flex:1;justify-content:center;">📂 Abrir diseño</button>
+        <button class="btn dark" id="colaCopiar" style="flex:1;justify-content:center;">📋 Copiar caption</button>
+        <button class="btn green" id="colaHecho" style="flex:1;justify-content:center;">✅ Publicado, siguiente</button>
+        <button class="btn dark" id="colaSaltar" style="padding:10px 12px;">⏭️ Saltar</button>
+        <button class="btn dark" id="colaCerrar" style="padding:10px 10px;">✕</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(m);
+  m.querySelector("#colaAbrir").onclick=async()=>{
+    // abrir edición
+    m.remove();
+    const modalGuardados=document.getElementById("edModal");
+    if(modalGuardados) modalGuardados.remove();
+    sel = prod;
+    await aplicarEdicionRegistro(ed);
+    await dibujar(); renderPreviews(); updCapPrev(); modoPreview(true);
+    // re-mostrar cola después de 1s
+    setTimeout(()=>mostrarPasoCola(), 1200);
+  };
+  m.querySelector("#colaCopiar").onclick=async()=>{
+    try{ await navigator.clipboard.writeText(cap); toast("📋 Caption copiado"); }catch(e){}
+  };
+  m.querySelector("#colaHecho").onclick=()=>{
+    registrarPub(prod);
+    colaIdx++;
+    m.remove();
+    mostrarPasoCola();
+  };
+  m.querySelector("#colaSaltar").onclick=()=>{ colaIdx++; m.remove(); mostrarPasoCola(); };
+  m.querySelector("#colaCerrar").onclick=()=>{ m.remove(); colaPublicacion=[]; toast("Cola cerrada"); };
+}
+
+// === MEJORA 12: Caption personalizado ===
+async function editarCaptionPersonalizado(uid){
+  const reg = await edLeerPorUid(uid);
+  if(!reg) return;
+  const actual = reg.captionPersonalizado||"";
+  const nuevo = prompt("Caption personalizado para este guardado (vacío = usar plantilla global):", actual);
+  if(nuevo===null) return;
+  reg.captionPersonalizado = nuevo.trim();
+  await edGuardar(reg);
+  toast(nuevo.trim()? "✏️ Caption personalizado guardado" : "↩️ Volviendo a caption global");
+  abrirEdiciones();
+}
+
+// === MEJORA 13: Hashtags inteligentes ===
+function sugerirHashtagsInteligentes(prod){
+  const base = leerPref("hashtags", {})[prod.categoria] || `#TiendaMax #Cuba #${prod.categoria.replace(/\s+/g,"")}`;
+  // extraer palabras clave del nombre
+  const palabras = prod.nombre.split(" ").filter(w=>w.length>3).slice(0,3).map(w=>"#"+w.replace(/[^A-Za-z0-9]/g,"")).join(" ");
+  const vendidosCount = (typeof vendidos!=="undefined" && vendidos[String(prod.id)]) || 0;
+  const extra = vendidosCount>5? "#MasVendido #Tendencia" : "#Nuevo #Oferta";
+  const stock = Number(prod.stock)<=3? "#UltimasUnidades #CorreQueSeAcaba" : "#Disponible #PagoAlRecibir";
+  return `${base} ${palabras} ${extra} ${stock}`.replace(/\s+/g," ").trim();
+}
+
+// === MEJORA 14: Programar guardados ===
+async function programarGuardadosSeleccionados(){
+  const uids = [...guardadosSel];
+  if(!uids.length){ toast("Selecciona guardados con ☑️ primero"); return; }
+  const todos = await edTodos();
+  const seleccionados = todos.filter(t=> uids.includes(String(t.uid)) || uids.includes(String(t.productoId)));
+  const m = crearModal("progGuardModal", `
+    <h3>⏰ Programar ${seleccionados.length} guardados</h3>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:12px;">Se programarán uno por día a las 10:00 AM, o elige fecha de inicio</div>
+    <input type="datetime-local" id="pgInicio" style="width:100%;margin-bottom:10px;background:var(--panel2);border:1px solid rgba(255,255,255,.12);color:var(--tx);padding:9px 12px;border-radius:10px;">
+    <button class="btn orange" id="pgProgBtn" style="width:100%;justify-content:center;">📅 Programar cola</button>
+    <button class="btn dark" id="pgCerrar" style="width:100%;justify-content:center;margin-top:8px;">Cerrar</button>
+  `, 480);
+  const ahora = new Date();
+  ahora.setHours(10,0,0,0);
+  if(ahora < new Date()) ahora.setDate(ahora.getDate()+1);
+  m.querySelector("#pgInicio").value = ahora.toISOString().slice(0,16);
+  m.querySelector("#pgCerrar").onclick=()=>m.remove();
+  m.querySelector("#pgProgBtn").onclick=async()=>{
+    const inicio = new Date(m.querySelector("#pgInicio").value).getTime();
+    if(!isFinite(inicio)){ toast("Fecha inválida"); return; }
+    await pedirPermisoAvisos();
+    for(let i=0;i<seleccionados.length;i++){
+      const ed = seleccionados[i];
+      const pid = ed.productoId||getProductoIdDeUid(ed.uid);
+      const prod = productos.find(p=>String(p.id)===String(pid));
+      if(!prod) continue;
+      programarPublicacion(prod, inicio + i*86400000, `Guardado: ${ed.nombre.slice(0,30)} · ${ESTILO_NOMBRE[ed.estilo]||ed.estilo}`);
+    }
+    m.remove();
+    toast(`⏰ ${seleccionados.length} guardados programados, 1 por día desde ${new Date(inicio).toLocaleDateString()}`);
+  };
+}
+
+// === MEJORA 15: Marca de agua por guardado ===
+async function toggleMarcaAguaGuardado(uid){
+  const reg = await edLeerPorUid(uid);
+  if(!reg) return;
+  if(reg.marcaAgua===null || reg.marcaAgua===undefined) reg.marcaAgua=true;
+  else if(reg.marcaAgua===true) reg.marcaAgua=false;
+  else reg.marcaAgua=null;
+  await edGuardar(reg);
+  const txt = reg.marcaAgua===null? "↩️ Marca global" : reg.marcaAgua? "✅ Con marca" : "❌ Sin marca";
+  toast(txt);
+  abrirEdiciones();
+}
+
+// === MEJORA 16: Más vendidos en guardados ===
+function ventasDe(pid){
+  try{ return (typeof vendidos!=="undefined" && vendidos[String(pid)]) || 0; }catch(e){ return 0; }
+}
+
+// === MEJORA 17: Detector sin edición ===
+function verificarSinEdicion(){
+  if(!productos.length) return;
+  const sinEditar = productos.filter(p=> !edIds.has(String(p.id)) );
+  const banner = document.getElementById("sinEditarBar");
+  if(sinEditar.length>10){
+    let el = banner;
+    if(!el){
+      el=document.createElement("div");
+      el.id="sinEditarBar";
+      el.style.cssText="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:10px 14px;background:linear-gradient(135deg,rgba(77,163,255,.14),rgba(168,85,247,.12));border:1px solid rgba(77,163,255,.4);border-radius:14px;font-size:12px;font-weight:700;";
+      const edBar = document.getElementById("edBar");
+      if(edBar && edBar.parentElement) edBar.parentElement.insertBefore(el, edBar.nextSibling);
+    }
+    el.innerHTML=`<span>🆕 Tienes <b>${sinEditar.length}</b> productos nuevos sin editar</span><button class="btn blue" id="btnVerSinEditar" style="padding:6px 12px;font-size:11px;">👀 Ver sin editar</button><button class="btn dark" id="btnCerrarSinEditar" style="padding:6px 10px;font-size:11px;">✕</button>`;
+    el.style.display="flex";
+    const b = el.querySelector("#btnVerSinEditar");
+    if(b) b.onclick=()=>{
+      filtroChip=""; document.querySelectorAll(".fchip").forEach(x=>x.classList.remove("on"));
+      // filtrar: sin editar
+      document.getElementById("selCat").value="";
+      document.getElementById("txtBuscar").value="";
+      // truco: usar chip sinpub? no, crear filtro temporal
+      window._filtroSinEditar=true;
+      render();
+      toast(`📦 Mostrando ${sinEditar.length} sin editar`);
+    };
+    const c = el.querySelector("#btnCerrarSinEditar");
+    if(c) c.onclick=()=>{ el.style.display="none"; guardarPref("ocultar_sin_editar", Date.now()); };
+    // si se ocultó hace menos de 1 día, no mostrar
+    const oculto = leerPref("ocultar_sin_editar",0);
+    if(Date.now()-oculto < 86400000) el.style.display="none";
+  }else if(banner){
+    banner.style.display="none";
+  }
+}
+
+// === MEJORA 18: Sugerencia combos desde guardados ===
+async function sugerirCombosGuardados(){
+  const todos = await edTodos();
+  const disponibles = todos.filter(ed=>{
+    const st = estadoProductoGuardado(ed.productoId||ed.id);
+    return st.prod && Number(st.prod.stock)>0;
+  }).slice(0,12);
+  if(disponibles.length<2){ toast("Necesitas al menos 2 guardados disponibles para sugerir combos"); return; }
+  // agrupar por categoría
+  const porCat={};
+  for(const ed of disponibles){
+    const cat = ed.categoria||ed._prod?.categoria||"Otros";
+    if(!porCat[cat]) porCat[cat]=[];
+    porCat[cat].push(ed);
+  }
+  const sugerencias=[];
+  // combos misma categoría
+  for(const cat in porCat){
+    if(porCat[cat].length>=2){
+      sugerencias.push({tipo:"Misma categoría", cat, items:porCat[cat].slice(0,3)});
+    }
+  }
+  // combos variados (diferentes categorías)
+  if(disponibles.length>=3){
+    const variado = [];
+    const usadas=new Set();
+    for(const ed of disponibles){
+      const cat=ed.categoria||"";
+      if(!usadas.has(cat)){ variado.push(ed); usadas.add(cat); }
+      if(variado.length>=3) break;
+    }
+    if(variado.length>=2) sugerencias.push({tipo:"Mix variado", cat:"Varias", items:variado});
+  }
+
+  const m = crearModal("comboSugModal", `
+    <h3>🎁 Combos sugeridos desde tus guardados</h3>
+    <div style="font-size:11px;color:var(--tx2);margin-bottom:12px;">Basado en tus productos ya editados disponibles — toca para armar el combo</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      ${sugerencias.map((s,i)=>`
+        <div class="filaop" style="flex-direction:column;align-items:stretch;">
+          <div style="display:flex;align-items:center;gap:8px;font-weight:800;font-size:12px;"><span>${s.tipo}: ${s.cat}</span><span style="margin-left:auto;color:var(--naranja);">${s.items.length} productos</span></div>
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">${s.items.map(ed=>`<span style="display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:4px 10px 4px 4px;font-size:11px;"><img src="${ed.miniatura||''}" style="width:24px;height:24px;border-radius:50%;object-fit:contain;background:#fff;">${ed.nombre.slice(0,22)}</span>`).join("")}</div>
+          <button class="btn orange" data-combo="${i}" style="margin-top:8px;justify-content:center;">🎁 Armar este combo</button>
+        </div>
+      `).join("")}
+    </div>
+    <button class="btn dark" id="csCerrar" style="width:100%;justify-content:center;margin-top:12px;">Cerrar</button>
+  `, 600);
+  m.querySelector("#csCerrar").onclick=()=>m.remove();
+  m.querySelectorAll("[data-combo]").forEach(b=>b.onclick=()=>{
+    const s = sugerencias[Number(b.dataset.combo)];
+    if(!s) return;
+    comboMode=false; document.getElementById("btnComboMode").click(); // activar modo combo
+    comboSel=[];
+    for(const ed of s.items){
+      const pid = ed.productoId||getProductoIdDeUid(ed.uid);
+      const prod = productos.find(p=>String(p.id)===String(pid));
+      if(prod) comboSel.push(prod);
+    }
+    renderComboList(); render(); dibujar(); actualizarComboBar();
+    m.remove();
+    modoPreview(true);
+    toast(`🎁 Combo de ${s.items.length} productos armado desde guardados`);
+  });
+}
+
+// === MEJORA 19: Modo oscuro para fotos (detectar foto clara) ===
+async function analizarBrilloImagen(url){
+  try{
+    const img = await loadImage(url);
+    const c=document.createElement("canvas"); c.width=32; c.height=32;
+    const ctx=c.getContext("2d"); ctx.drawImage(img,0,0,32,32);
+    const d=ctx.getImageData(0,0,32,32).data;
+    let suma=0;
+    for(let i=0;i<d.length;i+=4){
+      // luminancia
+      suma += 0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
+    }
+    return suma/(32*32);
+  }catch(e){ return 128; }
+}
+let _ultimoBrilloDetectado=null;
+async function sugerirEstiloPorBrillo(){
+  if(!sel) return;
+  const brillo = await analizarBrilloImagen(sel.imagen);
+  _ultimoBrilloDetectado=brillo;
+  if(brillo>200 && estilo!=="claro" && estilo!=="flotante"){
+    // foto muy clara, sugerir claro
+    const hint = document.getElementById("brilloSug");
+    if(!hint){
+      const sr=document.getElementById("panelEstilo");
+      if(sr){
+        const div=document.createElement("div");
+        div.id="brilloSug";
+        div.style.cssText="margin-top:8px;padding:8px 12px;background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.4);border-radius:10px;font-size:11px;color:#f5a623;";
+        div.innerHTML=`💡 Foto muy clara detectada (brillo ${Math.round(brillo)}). Te recomiendo <b>🌅 Claro WA</b> o <b>✨ Flotante</b> para mejor contraste <button class="btn orange" id="btnUsarClaro" style="padding:4px 10px;font-size:10px;margin-left:8px;">Usar Claro</button>`;
+        sr.appendChild(div);
+        div.querySelector("#btnUsarClaro").onclick=()=>{
+          const b=document.querySelector('[data-sty=claro]');
+          if(b) b.click();
+          div.remove();
+        };
+      }
+    }
+  }else{
+    const h=document.getElementById("brilloSug");
+    if(h) h.remove();
+  }
+}
+
+// === MEJORA 20: Sync nube opcional ===
+function cloudSyncUrl(){ return leerPref("cloud_sync_url",""); }
+async function cloudExport(){
+  const url = cloudSyncUrl();
+  if(!url){ toast("Configura primero la URL de sincronización en ⚙️ Ajustes"); return; }
+  try{
+    const todos = await edTodos();
+    const payload = {app:"tiendamax-guardados", fecha:new Date().toISOString(), guardados:todos};
+    const r = await fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    toast("☁️ Guardados subidos a la nube");
+  }catch(e){ toast("⚠️ Error nube: "+e.message); }
+}
+async function cloudImport(){
+  const url = cloudSyncUrl();
+  if(!url){ toast("Configura URL en ⚙️"); return; }
+  try{
+    const r = await fetch(url+"?t="+Date.now());
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const data = await r.json();
+    const arr = data.guardados||[];
+    let ok=0;
+    for(const reg of arr){ await edGuardar(reg); ok++; }
+    await edCargarIndice();
+    toast(`☁️ ${ok} guardados bajados de la nube`);
+  }catch(e){ toast("⚠️ Error nube: "+e.message); }
 }
 
 /* ¿el producto actual tiene algo que merezca guardarse? */
@@ -7088,8 +7936,15 @@ async function guardarEdicionActual(){
   }catch(e){}
   let recorte="";
   try{ if(fotoSinFondo) recorte = fotoSinFondo.src && fotoSinFondo.src.startsWith("data:") ? fotoSinFondo.src : ""; }catch(e){}
+  // cargar etiquetas existentes si ya existe
+  const existente = await edLeer(id);
+  const etiquetasPrevias = existente?.etiquetas||[];
+  const captionPrev = existente?.captionPersonalizado||"";
+  const marcaPrev = existente?.marcaAgua??null;
   const reg = {
-    id, nombre:sel.nombre, categoria:sel.categoria, ts:Date.now(), miniatura, recorte,
+    uid: existente?.uid || id,
+    id, productoId:id,
+    nombre:sel.nombre, categoria:sel.categoria, ts:Date.now(), miniatura, recorte,
     estilo, escalaProducto, brilloFoto, escEscala, escOffX, escOffY,
     nota:notaTexto(), ovNombre, ovPrecio, campana,
     escena:escenaActual, escenaAuto,
@@ -7098,7 +7953,10 @@ async function guardarEdicionActual(){
     fechaFin: (document.getElementById("inpFechaFin")||{}).value || "",
     precioGuardado: sel.precioActual,
     precioOrigGuardado: sel.precioOriginal,
-    imagenOriginal: sel.imagen
+    imagenOriginal: sel.imagen,
+    etiquetas: etiquetasPrevias,
+    captionPersonalizado: captionPrev,
+    marcaAgua: marcaPrev
   };
   await edGuardar(reg);
   edIds.add(id);
@@ -7242,6 +8100,7 @@ async function abrirEdiciones(){
   const orden = {disponible:0, poco:1, agotado:2, eliminado:3};
   lista.sort((a,b)=>(orden[a._estado]??9)-(orden[b._estado]??9) || b.ts-a.ts);
 
+  window._ultimaListaGuardados = lista;
   const total = lista.length;
   const disp = lista.filter(x=>x._estado==="disponible"||x._estado==="poco").length;
   const agot = lista.filter(x=>x._estado==="agotado"||x._estado==="eliminado").length;
@@ -7268,11 +8127,22 @@ async function abrirEdiciones(){
       </div>
     </div>
     <div class="guardados-toolbar">
-      <button class="btn dark" id="edSelAll">☑️ Seleccionar disponibles (${disp})</button>
-      <button class="btn dark" id="edDesel">◻️ Quitar selección</button>
-      <button class="btn orange" id="edZipSel" style="display:${disp? "inline-flex":"none"};">⚡ ZIP de seleccionados (<span id="edZipCount">0</span>)</button>
-      <button class="btn blue" id="edZipAll" style="display:${disp? "inline-flex":"none"};">📦 ZIP todos los disponibles (${disp})</button>
+      <button class="btn dark" id="edSelAll">☑️ Seleccionar visibles (${disp})</button>
+      <button class="btn dark" id="edDesel">◻️ Quitar</button>
+      <button class="btn orange" id="edZipSel" style="display:${disp? "inline-flex":"none"};">⚡ ZIP sel (<span id="edZipCount">0</span>)</button>
+      <button class="btn blue" id="edZipAll" style="display:${disp? "inline-flex":"none"};">📦 ZIP todos (${disp})</button>
+      <button class="btn green" id="edCola" style="display:${disp? "inline-flex":"none"};">📤 Cola publicación</button>
+      <button class="btn blue" id="edProg" style="display:${disp? "inline-flex":"none"};">⏰ Programar</button>
       ${agot?`<button class="btn dark" id="edBorrarAgot">🗑️ Borrar agotados (${agot})</button>`:""}
+      <button class="btn dark" id="edExportJson">💾 Export JSON</button>
+      <button class="btn dark" id="edImportJson">⬆️ Import JSON</button>
+      <input type="file" id="edFileImport" accept="application/json" style="display:none;">
+    </div>
+    <div class="guardados-toolbar">
+      <button class="btn dark" id="edPlantillasBtn" style="padding:6px 12px;font-size:11px;">🎨 Plantillas</button>
+      <button class="btn dark" id="edComboSugBtn" style="padding:6px 12px;font-size:11px;">🎁 Sugerir combos</button>
+      <button class="btn dark" id="edCloudExp" style="padding:6px 12px;font-size:11px;">☁️ Subir nube</button>
+      <button class="btn dark" id="edCloudImp" style="padding:6px 12px;font-size:11px;">☁️ Bajar nube</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
       <input type="text" id="edBuscar" placeholder="🔍 Buscar en guardados…" style="flex:1;min-width:160px;">
@@ -7316,9 +8186,26 @@ async function abrirEdiciones(){
             <span style="margin-left:auto;color:var(--tx2);">${new Date(ed.ts).toLocaleDateString()}</span>
           </div>
         </div>
+        <div style="padding:0 8px 4px;display:flex;gap:4px;flex-wrap:wrap;">
+          ${ed.etiquetas && ed.etiquetas.length ? ed.etiquetas.map(et=>`<span style="font-size:8px;padding:2px 6px;border-radius:10px;background:rgba(168,85,247,.18);border:1px solid rgba(168,85,247,.4);color:#d8b4fe;">#${et}</span>`).join("") : `<span style="font-size:8px;color:var(--tx2);">sin etiquetas</span>`}
+          ${ventasDe(ed.productoId||ed.id) ? `<span style="font-size:8px;padding:2px 6px;border-radius:10px;background:rgba(255,107,53,.15);border:1px solid rgba(255,107,53,.4);color:#ffb28f;">🏆 ${ventasDe(ed.productoId||ed.id)} ventas</span>` : ""}
+          ${ed.captionPersonalizado ? `<span style="font-size:8px;padding:2px 6px;border-radius:10px;background:rgba(37,211,102,.15);border:1px solid rgba(37,211,102,.4);color:#7ee8a5;" title="${ed.captionPersonalizado.replace(/"/g,'&quot;')}">✏️ caption custom</span>` : ""}
+          ${ed.marcaAgua!==null ? `<span style="font-size:8px;padding:2px 6px;border-radius:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--tx2);">${ed.marcaAgua?"💧 con marca":"🚫 sin marca"}</span>` : ""}
+        </div>
         <div class="edactions">
-          <button class="btn ${esDisp?"green":"dark"}" data-open="${ed.id}" ${!esDisp?"disabled title='No disponible para publicar'":""}>${esDisp?"📂 Abrir":"⛔ No disponible"}</button>
-          <button class="btn dark" data-del="${ed.id}" title="Borrar guardado">🗑️</button>
+          <button class="btn ${esDisp?"green":"dark"}" data-open="${ed.uid||ed.id}" ${!esDisp?"disabled title='No disponible para publicar'":""}>${esDisp?"📂 Abrir":"⛔ No disponible"}</button>
+          <button class="btn dark" data-del="${ed.uid||ed.id}" title="Borrar guardado">🗑️</button>
+        </div>
+        <div class="edactions" style="padding-top:0;">
+          <button class="btn dark" data-dup="${ed.uid||ed.id}" style="font-size:9px;padding:5px 4px;" title="Duplicar edición">📋 Duplicar</button>
+          <button class="btn dark" data-cmp="${ed.uid||ed.id}" style="font-size:9px;padding:5px 4px;" title="Comparar guardado vs vivo">🔍 Comparar</button>
+          <button class="btn dark" data-hist="${ed.productoId||ed.id}" style="font-size:9px;padding:5px 4px;" title="Historial precios">📈 Precios</button>
+          <button class="btn dark" data-cap="${ed.uid||ed.id}" style="font-size:9px;padding:5px 4px;" title="Caption personalizado">✏️ Caption</button>
+        </div>
+        <div class="edactions" style="padding-top:0;">
+          <button class="btn dark" data-etq="${ed.uid||ed.id}" style="font-size:9px;padding:5px 4px;" title="Etiquetas">🏷️ Etiqueta</button>
+          <button class="btn dark" data-marca="${ed.uid||ed.id}" style="font-size:9px;padding:5px 4px;" title="Marca de agua por guardado">💧 Marca</button>
+          <button class="btn dark" data-hash="${ed.productoId||ed.id}" style="font-size:9px;padding:5px 4px;" title="Hashtags inteligentes"> #️⃣ Tags</button>
         </div>
       </div>`;
     }).join("") + `</div>`;
@@ -7524,6 +8411,63 @@ async function abrirEdiciones(){
   if(zipSelBtn) zipSelBtn.onclick = ()=>generarZipGuardados(false, m);
   const zipAllBtn = m.querySelector("#edZipAll");
   if(zipAllBtn) zipAllBtn.onclick = ()=>generarZipGuardados(true, m);
+  const colaBtn = m.querySelector("#edCola");
+  if(colaBtn) colaBtn.onclick = ()=>{ const uids=[...guardadosSel]; if(!uids.length){ toast("Selecciona con ☑️"); return; } m.remove(); iniciarColaPublicacion(uids); };
+  const progBtn = m.querySelector("#edProg");
+  if(progBtn) progBtn.onclick = ()=>programarGuardadosSeleccionados();
+  const expJson = m.querySelector("#edExportJson");
+  if(expJson) expJson.onclick = exportarGuardadosJSON;
+  const impJson = m.querySelector("#edImportJson");
+  const fileImp = m.querySelector("#edFileImport");
+  if(impJson && fileImp){
+    impJson.onclick=()=>fileImp.click();
+    fileImp.onchange=e=>{ const f=e.target.files[0]; if(f) importarGuardadosJSON(f).then(()=>{ m.remove(); abrirEdiciones(); }); };
+  }
+  const tplBtn = m.querySelector("#edPlantillasBtn");
+  if(tplBtn) tplBtn.onclick=()=>{ m.remove(); abrirPlantillas(); };
+  const comboSugBtn = m.querySelector("#edComboSugBtn");
+  if(comboSugBtn) comboSugBtn.onclick=()=>{ m.remove(); sugerirCombosGuardados(); };
+  const cloudExp = m.querySelector("#edCloudExp");
+  if(cloudExp) cloudExp.onclick=cloudExport;
+  const cloudImp = m.querySelector("#edCloudImp");
+  if(cloudImp) cloudImp.onclick=()=>cloudImport().then(()=>{ m.remove(); abrirEdiciones(); });
+
+  // nuevos botones por tarjeta
+  m.querySelectorAll("[data-dup]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); duplicarEdicion(b.dataset.dup); });
+  m.querySelectorAll("[data-cmp]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); compararEdicion(b.dataset.cmp); });
+  m.querySelectorAll("[data-hist]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); abrirHistorialPrecio(b.dataset.hist); });
+  m.querySelectorAll("[data-cap]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); editarCaptionPersonalizado(b.dataset.cap); });
+  m.querySelectorAll("[data-etq]").forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const uid=b.dataset.etq;
+    const actual = lista.find(x=>String(x.uid)===String(uid) || String(x.id)===String(uid));
+    const etqs = actual?.etiquetas||[];
+    const nuevo = prompt(`Etiquetas separadas por coma (actual: ${etqs.join(", ")})`, etqs.join(", "));
+    if(nuevo===null) return;
+    const arr = nuevo.split(",").map(s=>s.trim()).filter(Boolean);
+    guardarEtiquetasEnEdicion(uid, arr);
+    toast(`🏷️ Etiquetas guardadas: ${arr.join(", ")}`);
+    setTimeout(()=>{ m.remove(); abrirEdiciones(); }, 400);
+  });
+  m.querySelectorAll("[data-marca]").forEach(b=>b.onclick=e=>{ e.stopPropagation(); toggleMarcaAguaGuardado(b.dataset.marca); });
+  m.querySelectorAll("[data-hash]").forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    const pid=b.dataset.hash;
+    const prod = productos.find(p=>String(p.id)===String(pid));
+    if(!prod){ toast("Producto no encontrado"); return; }
+    const tags = sugerirHashtagsInteligentes(prod);
+    const mm = crearModal("hashModal", `
+      <h3>#️⃣ Hashtags inteligentes — ${prod.nombre.slice(0,30)}</h3>
+      <div style="background:var(--panel2);border-radius:12px;padding:12px;font-size:12px;line-height:1.6;margin-bottom:10px;">${tags}</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn orange" id="hashCopy" style="flex:1;justify-content:center;">📋 Copiar</button>
+        <button class="btn dark" id="hashClose" style="flex:1;justify-content:center;">Cerrar</button>
+      </div>
+    `, 480);
+    mm.querySelector("#hashClose").onclick=()=>mm.remove();
+    mm.querySelector("#hashCopy").onclick=async()=>{ try{ await navigator.clipboard.writeText(tags); toast("📋 Hashtags copiados"); }catch(e){} };
+  });
+
 
   actualizarChecksGuardados();
 }
@@ -7629,7 +8573,20 @@ function sombraPiso(ctx, cx, baseY, ancho){
   ctx.restore();
 }
 function marcaAgua(ctx,W,H){
-  if(!leerPref("marca_agua",false)) return;
+  // mejora 15: marca de agua por guardado
+  let activa = leerPref("marca_agua",false);
+  try{
+    if(sel){
+      const pid = String(sel.id);
+      if(window._ultimaListaGuardados){
+        const ed = window._ultimaListaGuardados.find(x=> String(x.productoId||x.id)===pid);
+        if(ed && ed.marcaAgua!==null && ed.marcaAgua!==undefined){
+          activa = !!ed.marcaAgua;
+        }
+      }
+    }
+  }catch(e){}
+  if(!activa) return;
   const num = leerPref("wa_num", WHATSAPP);
   const t = `📲 ${num.replace(/^53/,"+53 ")}`;
   ctx.save();
@@ -8143,23 +9100,53 @@ function abrirProgramador(){
 /* --- modal de ajustes y herramientas --- */
 function abrirAjustes(){
   const m=crearModal("cfgModal", `
-    <h3>⚙️ Ajustes y herramientas</h3>
+    <h3>⚙️ Ajustes y herramientas — v6 con todas las mejoras</h3>
     <div class="filaop">
-      <div class="d">🎨 Mis ediciones<small>${edIds.size} diseño(s) guardado(s)</small></div>
+      <div class="d">🎨 Mis ediciones guardadas v2<small>${edIds.size} diseño(s) · ${[...etiquetasGlobal].length} etiquetas · sync en vivo</small></div>
       <button class="btn dark" id="cfgEd" style="padding:8px 14px;font-size:12px;">Abrir</button>
     </div>
     <div class="filaop">
-      <div class="d">📊 Estadísticas<small>Qué publicas, racha y olvidados</small></div>
+      <div class="d">📊 Estadísticas + ventas<small>Qué publicas, racha, olvidados y más vendidos</small></div>
       <button class="btn dark" id="cfgSt" style="padding:8px 14px;font-size:12px;">Ver</button>
     </div>
     <div class="filaop">
-      <div class="d">⏰ Programador<small>Recordatorios de publicación</small></div>
+      <div class="d">⏰ Programador + cola<small>Recordatorios y cola de publicación de guardados</small></div>
       <button class="btn dark" id="cfgPg" style="padding:8px 14px;font-size:12px;">Abrir</button>
     </div>
     <div class="filaop">
-      <div class="d">💾 Respaldo de datos<small>Exportar / importar tu historial</small></div>
+      <div class="d">🎨 Plantillas<small>${plantillas.length} plantillas guardadas</small></div>
+      <button class="btn dark" id="cfgTpl" style="padding:8px 14px;font-size:12px;">Abrir</button>
+    </div>
+    <div class="filaop">
+      <div class="d">💾 Respaldo + JSON guardados<small>Exportar / importar historial y guardados</small></div>
       <button class="btn dark" id="cfgBk" style="padding:8px 14px;font-size:12px;">Abrir</button>
     </div>
+    <h4>Guardados y stock</h4>
+    <div class="filaop">
+      <div class="d">✅ Solo disponibles (global)<small>Oculta agotados en catálogo y guardados</small></div>
+      <label class="sw"><input type="checkbox" id="cfgSoloDisp" ${soloDisponiblesActivo()?"checked":""}><i></i></label>
+    </div>
+    <div class="filaop">
+      <div class="d">🧹 Auto-borrar agotados<small>Borra automáticamente guardados agotados tras X días</small></div>
+      <select id="cfgAutoBorrar" style="flex:none;width:120px;">
+        <option value="0" ${autoBorrarDias()==0?"selected":""}>Nunca</option>
+        <option value="7" ${autoBorrarDias()==7?"selected":""}>7 días</option>
+        <option value="15" ${autoBorrarDias()==15?"selected":""}>15 días</option>
+        <option value="30" ${autoBorrarDias()==30?"selected":""}>30 días</option>
+      </select>
+    </div>
+    <div class="filaop">
+      <div class="d">💾 Exportar guardados JSON<small>Todos tus diseños en un archivo</small></div>
+      <button class="btn dark" id="cfgExpGuard" style="padding:8px 14px;font-size:12px;">Exportar</button>
+    </div>
+    <h4>☁️ Nube (opcional)</h4>
+    <div class="filaop">
+      <div class="d">☁️ URL sync nube<small>Ej: Cloudflare Worker KV para sync teléfono-PC</small></div>
+      <button class="btn dark" id="cfgCloudExp" style="padding:6px 10px;font-size:11px;">⬆️</button>
+      <button class="btn dark" id="cfgCloudImp" style="padding:6px 10px;font-size:11px;">⬇️</button>
+    </div>
+    <input type="text" id="cfgCloudUrl" value="${cloudSyncUrl()}" placeholder="https://tu-worker.workers.dev/sync" style="width:100%;font-size:11px;">
+
     <h4>Apariencia y datos</h4>
     <div class="filaop">
       <div class="d">☀️ Modo claro<small>Se ve mejor con sol directo en la calle</small></div>
@@ -8193,7 +9180,15 @@ function abrirAjustes(){
   m.querySelector("#cfgEd").onclick=()=>{ m.remove(); abrirEdiciones(); };
   m.querySelector("#cfgSt").onclick=()=>{ m.remove(); abrirEstadisticas(); };
   m.querySelector("#cfgPg").onclick=()=>{ m.remove(); abrirProgramador(); };
+  m.querySelector("#cfgTpl").onclick=()=>{ m.remove(); abrirPlantillas(); };
   m.querySelector("#cfgBk").onclick=()=>{ m.remove(); document.getElementById("btnBackup").click(); };
+  m.querySelector("#cfgSoloDisp").onchange=e=>{ guardarPref("solo_disponibles", e.target.checked); render(); actualizarBarraEdiciones(); toast(e.target.checked?"✅ Solo disponibles activado":"👁️ Mostrando todo"); };
+  m.querySelector("#cfgAutoBorrar").onchange=e=>{ guardarPref("auto_borrar_dias", Number(e.target.value)); toast(`🧹 Auto-borrado: ${e.target.value==0?"desactivado":"cada "+e.target.value+" días"}`); if(Number(e.target.value)>0) aplicarAutoBorrado(); };
+  m.querySelector("#cfgExpGuard").onclick=()=>{ exportarGuardadosJSON(); };
+  m.querySelector("#cfgCloudExp").onclick=()=>{ const url=m.querySelector("#cfgCloudUrl").value.trim(); if(url) guardarPref("cloud_sync_url", url); cloudExport(); };
+  m.querySelector("#cfgCloudImp").onclick=()=>{ const url=m.querySelector("#cfgCloudUrl").value.trim(); if(url) guardarPref("cloud_sync_url", url); cloudImport().then(()=>m.remove()); };
+  m.querySelector("#cfgCloudUrl").onchange=e=>{ guardarPref("cloud_sync_url", e.target.value.trim()); };
+
   m.querySelector("#cfgTema").onchange=e=>{ guardarPref("tema", e.target.checked?"claro":"oscuro"); aplicarTema(); };
   m.querySelector("#cfgAhorro").onchange=e=>{ guardarPref("ahorro", e.target.checked); toast(e.target.checked?"📉 Ahorro de datos activado":"📶 Ahorro desactivado"); };
   m.querySelector("#cfgFormato").onchange=e=>{ guardarPref("formato", e.target.value); toast("🖼️ Se descargará en "+extSalida().toUpperCase()); };
@@ -8205,6 +9200,13 @@ function abrirAjustes(){
   };
 }
 document.getElementById("btnAjustes").onclick = abrirAjustes;
+document.getElementById("btnSoloDisp").onclick = toggleSoloDisponibles;
+document.getElementById("btnPlantillas").onclick = abrirPlantillas;
+document.getElementById("btnComboSug").onclick = sugerirCombosGuardados;
+// inicializar estado botón solo disp
+const bsd = document.getElementById("btnSoloDisp");
+if(bsd) bsd.classList.toggle("on", soloDisponiblesActivo());
+
 
 /* =====================================================================
    14) VIDEO CARRUSEL DE VARIOS PRODUCTOS
