@@ -3528,12 +3528,15 @@ async function init(){
         if(sug) toast(`⏰ Aún no has publicado hoy — te sugiero: ${sug.nombre.slice(0,30)}`);
       }
     }, 2200);
-    registrarHistorialPrecios(productos);
-    render();
-    actualizarBarraEdiciones();
-    iniciarAutoSync();
-    verificarSinEdicion();
-    if(productos.length){ seleccionar(productos[0]); setTimeout(()=>sugerirEstiloPorBrillo(), 800); }
+    try{ registrarHistorialPrecios(productos); }catch(e){ console.warn("historial fail", e); }
+    try{ render(); }catch(e){ console.error("render fail", e); document.getElementById("grid").innerHTML=`<div class="empty" style="grid-column:1/-1;">Error render: ${e.message}</div>`; }
+    try{ actualizarBarraEdiciones(); }catch(e){ console.warn(e); }
+    try{ iniciarAutoSync(); }catch(e){ console.warn(e); }
+    try{ verificarSinEdicion(); }catch(e){ console.warn(e); }
+    if(productos.length){
+      try{ seleccionar(productos[0]); }catch(e){ console.error(e); }
+      setTimeout(()=>{ try{ sugerirEstiloPorBrillo(); }catch(e){} }, 800);
+    }
     setTimeout(precargarEscenas, 1500);
     /* accesos directos del ícono de la app */
     const acc = new URLSearchParams(location.search).get("accion");
@@ -3722,9 +3725,8 @@ async function seleccionar(p, abrirPreview){
   if(typeof actualizarCajasEstilo==="function") actualizarCajasEstilo();
   if(typeof actualizarHojaRapida==="function") actualizarHojaRapida();
   if(abrirPreview) modoPreview(true);
-  setTimeout(()=>sugerirEstiloPorBrillo(), 400);
-
   else renderPicked();
+  setTimeout(()=>sugerirEstiloPorBrillo(), 400);
 }
 
 /* ================= HELPERS CANVAS ================= */
@@ -7224,23 +7226,27 @@ function estadoProductoGuardado(id){
 
 
 async function edCargarIndice(){
-  const t = await edTodos();
-  edIds.clear();
-  edUidMap.clear();
-  etiquetasGlobal.clear();
-  for(const e of t){
-    const pid = e.productoId || getProductoIdDeUid(e.uid||e.id);
-    edIds.add(String(pid));
-    edUidMap.set(String(e.uid||e.id), String(pid));
-    if(Array.isArray(e.etiquetas)) e.etiquetas.forEach(et=> etiquetasGlobal.add(et));
-  }
-  actualizarBarraEdiciones();
-  verificarSinEdicion();
-  aplicarAutoBorrado();
-  cargarPlantillas();
-  cargarHistorialPrecios();
-  setTimeout(()=>precargarGuardadosFondo(), 4000);
-  if(document.getElementById("edModal")) abrirEdiciones();
+  try{
+    const t = await edTodos();
+    edIds.clear();
+    edUidMap.clear();
+    etiquetasGlobal.clear();
+    for(const e of t){
+      const pid = e.productoId || getProductoIdDeUid(e.uid||e.id);
+      if(pid) edIds.add(String(pid));
+      edUidMap.set(String(e.uid||e.id), String(pid));
+      if(Array.isArray(e.etiquetas)) e.etiquetas.forEach(et=> etiquetasGlobal.add(et));
+    }
+    try{ actualizarBarraEdiciones(); }catch(e){}
+    try{ verificarSinEdicion(); }catch(e){}
+    try{ aplicarAutoBorrado(); }catch(e){}
+    try{ cargarPlantillas(); }catch(e){}
+    try{ cargarHistorialPrecios(); }catch(e){}
+    try{ setTimeout(()=>{ try{ precargarGuardadosFondo(); }catch(e){} }, 4000); }catch(e){}
+    if(document.getElementById("edModal")){
+      try{ abrirEdiciones(); }catch(e){}
+    }
+  }catch(e){ console.error("edCargarIndice fail", e); }
 }
 function actualizarBarraEdiciones(){
   const b=document.getElementById("edBar"), t=document.getElementById("edBarTxt");
