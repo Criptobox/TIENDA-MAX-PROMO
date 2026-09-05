@@ -512,6 +512,25 @@ body.tema-claro .modalcaja{background:#fff;color:#17171c;}
 .txitem.on{outline:1.5px solid var(--naranja);}
 #rbCmp{position:absolute;inset:0;pointer-events:none;display:none;}
 #rbCmp.on{display:block;}
+/* ===== Tarjetas del diseño (interruptores) ===== */
+.tarjchip{
+  display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);
+  color:var(--tx2);font-size:11.5px;font-weight:700;cursor:pointer;transition:all .15s;line-height:1;
+  font-family:inherit;
+}
+.tarjchip.on{background:rgba(255,107,53,.16);border-color:rgba(255,107,53,.55);color:#fff;}
+.tarjchip:not(.on){opacity:.5;text-decoration:line-through;}
+/* ===== Guías de zona segura (solo vista previa, nunca en la exportación) ===== */
+.canvaswrap{position:relative;}
+#guiasZona{position:absolute;inset:0;pointer-events:none;display:none;z-index:5;}
+#guiasZona .gz{position:absolute;left:0;right:0;background:rgba(255,60,60,.08);}
+#guiasZona .gz-top{top:0;height:12%;border-bottom:2px dashed rgba(255,90,90,.9);}
+#guiasZona .gz-bot{bottom:0;height:15%;border-top:2px dashed rgba(255,90,90,.9);}
+#guiasZona span{position:absolute;left:8px;font-size:10px;font-weight:800;color:#ff8a8a;
+  background:rgba(0,0,0,.55);padding:2px 8px;border-radius:8px;line-height:1.4;}
+#guiasZona .gz-top span{top:6px;}
+#guiasZona .gz-bot span{bottom:6px;}
 </style>
 </head>
 <body>
@@ -740,7 +759,39 @@ body.tema-claro .modalcaja{background:#fff;color:#17171c;}
       </div>
     </div>
 
-    <div class="canvaswrap"><canvas id="cv" width="1080" height="1080"></canvas></div>
+    <div class="panel" id="panelTarjetas">
+      <h3>🧩 Tarjetas del diseño</h3>
+      <div style="font-size:10.5px;color:var(--tx2);line-height:1.5;margin-bottom:9px;">Enciende o apaga cada tarjeta de la foto. Lo que apagues desaparece y el resto se reacomoda solo.</div>
+      <div id="tarjetasGrid" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      <div style="margin-top:10px;">
+        <select id="selTarjAlcance" style="width:100%;">
+          <option value="todos">Cambios para: todos los estilos</option>
+          <option value="estilo">Cambios para: solo este estilo</option>
+          <option value="prod">Cambios para: solo este producto</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <button class="btn dark" id="btnTarjTodas" style="flex:1;justify-content:center;font-size:11.5px;">✅ Activar todas</button>
+        <button class="btn dark" id="btnTarjNinguna" style="flex:1;justify-content:center;font-size:11.5px;">⬜ Quitar todas</button>
+      </div>
+      <h4 style="margin-top:14px;">🎯 Presets por plataforma <span style="text-transform:none;letter-spacing:0;font-weight:600;">(1 click)</span></h4>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn dark" data-preset="revolico" style="flex:1;justify-content:center;font-size:11.5px;">🏠 Revolico</button>
+        <button class="btn dark" data-preset="facebook" style="flex:1;justify-content:center;font-size:11.5px;">📘 Facebook</button>
+        <button class="btn dark" data-preset="wa_estado" style="flex:1;justify-content:center;font-size:11.5px;">🟢 WA Estado</button>
+        <button class="btn dark" data-preset="wa_grupo" style="flex:1;justify-content:center;font-size:11.5px;">👥 WA Grupos</button>
+      </div>
+      <button class="btn green" id="btnZipPlat" style="width:100%;justify-content:center;margin-top:9px;">📦 Generar ZIP para las 3 plataformas</button>
+      <div class="hint">ZIP con carpetas <b>revolico/</b>, <b>facebook/</b> y <b>whatsapp/</b> — cada foto con su mejor configuración y el caption listo para pegar. JPG liviano (≤300 KB).</div>
+      <div class="filaop" style="margin-top:10px;">
+        <div class="d">📐 Guías de zona segura<small>Muestra lo que WhatsApp tapa en los estados</small></div>
+        <label class="sw"><input type="checkbox" id="chkGuias"><i></i></label>
+      </div>
+    </div>
+
+    <div class="canvaswrap"><canvas id="cv" width="1080" height="1080"></canvas>
+      <div id="guiasZona"><div class="gz gz-top"><span>🔒 WhatsApp tapa esta franja</span></div><div class="gz gz-bot"><span>🔒 Zona de fecha y respuestas</span></div></div>
+    </div>
 
     <div class="panel">
       <h3>📤 Compartir / Descargar</h3>
@@ -754,9 +805,17 @@ body.tema-claro .modalcaja{background:#fff;color:#17171c;}
         <button class="btn dark" id="btnHashtags" style="padding:9px 14px;font-size:12px;flex:none;" title="Hashtags por categoría">#️⃣</button>
       </div>
       <label class="qrtoggle"><input type="checkbox" id="chkQR" checked> 🔳 Incluir QR del producto en la imagen</label>
+      <div style="display:flex;gap:8px;align-items:center;margin:7px 0 2px;">
+        <span style="font-size:11px;color:var(--tx2);font-weight:700;flex:none;">🔳 QR apunta a:</span>
+        <select id="selQrModo" style="flex:1;min-width:0;">
+          <option value="web">🌐 Ficha del producto en tiendamax.org</option>
+          <option value="wa">💬 WhatsApp directo con el texto ya escrito</option>
+        </select>
+      </div>
       <pre id="capPrev" style="background:#0B0B0D;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:12px 14px;font-size:11px;line-height:1.65;color:#c9c9cf;white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;max-height:180px;overflow-y:auto;margin-bottom:10px;"></pre>
       <div class="sharerow">
         <button class="btn orange" id="btnPng">⬇️ PNG</button>
+        <button class="btn orange" id="btnJpg" title="JPEG comprimido a menos de 300 KB — ideal para Revolico">⬇️ JPG liviano</button>
         <button class="btn green" id="btnShare">📲 Compartir</button>
         <button class="btn green" id="btnTurbo" style="flex:2;background:linear-gradient(135deg,#FF6B35,#E8501E);box-shadow:0 6px 18px rgba(232,80,30,.4);" title="Genera, copia imagen+caption y abre WhatsApp en 1 click">⚡ TURBO PUBLICAR</button>
       </div>
@@ -3971,10 +4030,242 @@ function dibujarQR(ctx, url, x, y, size){
     ctx.fillText("Escanéame", x+size/2, y+size+size*0.16);
   }catch(e){}
 }
-function qrOn(){const c=document.getElementById("chkQR");return c && c.checked;}
+function qrOn(){
+  if(typeof tarjetaOn==="function" && !tarjetaOn("qr")) return false;
+  const c=document.getElementById("chkQR");
+  return c && c.checked;
+}
+
+/* ================= TARJETAS DEL DISEÑO — interruptores por tarjeta ================= */
+const TARJETAS_DEFS = [
+  {id:"logo",      label:"🏷️ Logo"},
+  {id:"categoria", label:"📁 Categoría"},
+  {id:"badge",     label:"🎖️ Cinta superior"},
+  {id:"precio",    label:"💰 Precio"},
+  {id:"tachado",   label:"💵 Precio anterior"},
+  {id:"descuento", label:"🔥 Ahorro/−%"},
+  {id:"ultimas",   label:"⏳ Quedan pocas"},
+  {id:"specs",     label:"📋 Specs"},
+  {id:"confianza", label:"✅ Sellos"},
+  {id:"cta",       label:"🟢 Botón WhatsApp"},
+  {id:"footer",    label:"🌐 Pie web"},
+  {id:"nota",      label:"🟡 Nota"},
+  {id:"mn",        label:"🇨🇺 Equiv. MN"},
+  {id:"qr",        label:"🔳 QR"},
+  {id:"agua",      label:"💧 Marca de agua"},
+  {id:"marco",     label:"🖼️ Marco"}
+];
+const TARJETAS_ALL_ON = {};
+TARJETAS_DEFS.forEach(t=>TARJETAS_ALL_ON[t.id]=true);
+let _estiloCtx = null;   /* estilo de contexto (miniaturas): evita tocar el estilo real */
+function tarjetasEfectivas(){
+  const est = _estiloCtx || estilo;
+  const base = Object.assign({}, TARJETAS_ALL_ON, leerPref("tarjetas_global", {}));
+  const porEst = (leerPref("tarjetas_estilos", {})[est]) || {};
+  const porProd = (sel && leerPref("tarjetas_prod", {})[String(sel.id)]) || {};
+  return Object.assign({}, base, porEst, porProd);
+}
+function tarjetaOn(id){ return tarjetasEfectivas()[id] !== false; }
+function ponerTarjeta(id, val){
+  const selEl = document.getElementById("selTarjAlcance");
+  const scope = selEl ? selEl.value : "todos";
+  if(scope==="prod"){
+    if(!sel){ toast("Elige un producto primero"); return false; }
+    const m = leerPref("tarjetas_prod", {}); const k = String(sel.id);
+    m[k] = Object.assign({}, m[k]||{}); m[k][id]=val; guardarPref("tarjetas_prod", m);
+  }else if(scope==="estilo"){
+    const m = leerPref("tarjetas_estilos", {});
+    m[estilo] = Object.assign({}, m[estilo]||{}); m[estilo][id]=val; guardarPref("tarjetas_estilos", m);
+  }else{
+    const g = leerPref("tarjetas_global", {}); g[id]=val; guardarPref("tarjetas_global", g);
+    /* "todos" manda de verdad: limpia excepciones sueltas del mismo interruptor */
+    const me = leerPref("tarjetas_estilos", {});
+    Object.keys(me).forEach(k=>{ if(me[k] && (id in me[k])){ delete me[k][id]; if(!Object.keys(me[k]).length) delete me[k]; } });
+    guardarPref("tarjetas_estilos", me);
+    const mp = leerPref("tarjetas_prod", {});
+    Object.keys(mp).forEach(k=>{ if(mp[k] && (id in mp[k])){ delete mp[k][id]; if(!Object.keys(mp[k]).length) delete mp[k]; } });
+    guardarPref("tarjetas_prod", mp);
+  }
+  return true;
+}
+function ponerVariasTarjetas(val){
+  TARJETAS_DEFS.forEach(t=>ponerTarjeta(t.id, val));
+  renderTarjetas(); dibujar(); renderPreviews();
+}
+function renderTarjetas(){
+  const g = document.getElementById("tarjetasGrid");
+  if(!g) return;
+  const ef = tarjetasEfectivas();
+  g.innerHTML = TARJETAS_DEFS.map(t=>
+    `<button type="button" class="tarjchip ${ef[t.id]!==false?"on":""}" data-tj="${t.id}">${t.label}</button>`).join("");
+  g.querySelectorAll("[data-tj]").forEach(b=>{
+    b.onclick = ()=>{
+      const id=b.dataset.tj;
+      if(ponerTarjeta(id, ef[id]===false)){ renderTarjetas(); dibujar(); renderPreviews(); }
+    };
+  });
+}
+
+/* ================= PRESETS POR PLATAFORMA ================= */
+const PRESETS_PLAT = {
+  revolico: {
+    nombre:"Revolico", icono:"🏠", estilo:"vitrina", agua:true, qr:false,
+    cards:{logo:true,categoria:true,badge:false,precio:false,tachado:false,descuento:false,ultimas:true,specs:true,confianza:false,cta:true,footer:false,nota:true,mn:false,marco:true},
+    msg:"🏠 Listo para Revolico: foto sin precio (el anuncio ya lo muestra), texto grande y sin QR."
+  },
+  facebook: {
+    nombre:"Facebook", icono:"📘", estilo:null, agua:null, qr:true,
+    cards:{logo:true,categoria:true,badge:true,precio:true,tachado:true,descuento:true,ultimas:true,specs:true,confianza:true,cta:true,footer:true,nota:true,mn:true,marco:true},
+    msg:"📘 Facebook: diseño completo con todas las tarjetas activadas."
+  },
+  wa_estado: {
+    nombre:"WA Estado", icono:"🟢", estilo:"claro", agua:true, qr:false,
+    cards:{logo:true,categoria:true,badge:true,precio:true,tachado:true,descuento:true,ultimas:true,specs:true,confianza:true,cta:true,footer:true,nota:false,mn:true,marco:true},
+    msg:"🟢 Estado de WhatsApp: estilo Claro 1080×1920 + tu número como marca de agua."
+  },
+  wa_grupo: {
+    nombre:"WA Grupos", icono:"👥", estilo:"vitrina", agua:true, qr:false,
+    cards:{logo:true,categoria:true,badge:true,precio:true,tachado:true,descuento:true,ultimas:true,specs:true,confianza:true,cta:true,footer:true,nota:false,mn:false,marco:true},
+    msg:"👥 Grupos de WhatsApp: cuadrado 1080×1080, todo visible y sin QR."
+  }
+};
+function aplicarPreset(plKey, silencioso){
+  const pr = PRESETS_PLAT[plKey];
+  if(!pr) return;
+  guardarPref("tarjetas_global", Object.assign({}, TARJETAS_ALL_ON, pr.cards));
+  guardarPref("tarjetas_estilos", {});
+  guardarPref("tarjetas_prod", {});
+  if(pr.agua!=null) guardarPref("marca_agua", pr.agua);
+  const qc=document.getElementById("chkQR");
+  if(qc) qc.checked=!!pr.qr;
+  guardarPref("qr", !!pr.qr);
+  if(pr.estilo){
+    const b=document.querySelector(`.stybtn[data-sty=${pr.estilo}]`);
+    if(b) b.click(); else estilo=pr.estilo;
+  }
+  renderTarjetas();
+  dibujar(); renderPreviews();
+  if(!silencioso) toast(pr.msg);
+}
+
+/* ================= JPG LIVIANO (≤300 KB, listo para Revolico) ================= */
+function jpgLiviano(cv, limite){
+  return new Promise(res=>{
+    const qs=[0.92,0.85,0.78,0.70,0.60,0.50];
+    let pend=qs.length, cabe=null, menor=null;
+    qs.forEach(q=>cv.toBlob(b=>{
+      if(b){
+        if(!menor || b.size<menor.size) menor=b;
+        if(b.size<=limite && (!cabe || b.size>cabe.size)) cabe=b;
+      }
+      if(--pend===0) res(cabe||menor);
+    }, "image/jpeg", q));
+  });
+}
+function captionPara(p, clave){
+  const sEl=document.getElementById("selPlantilla");
+  const prev = sEl ? sEl.value : null;
+  if(sEl) sEl.value=clave;
+  let t="";
+  try{ t = caption(p); }catch(e){ t=""; }
+  if(sEl) sEl.value = prev!=null ? prev : leerPref("plantilla","fb");
+  return t;
+}
+
+/* ================= QR CON DESTINO CONFIGURABLE ================= */
+function qrUrl(p){
+  try{
+    if(leerPref("qr_modo","web")==="wa"){
+      const num = leerPref("wa_num", WHATSAPP);
+      return `https://wa.me/${num}?text=${encodeURIComponent("Hola, quiero: "+(p.nombre||"")+" ("+keyword(p)+")")}`;
+    }
+  }catch(e){}
+  return linkProducto(p);
+}
+
+/* ================= ZIP POR PLATAFORMAS (revolico/ facebook/ whatsapp/) ================= */
+async function generarZipPlataformas(){
+  if(!sel){ toast("Elige un producto primero"); return; }
+  if(comboMode){ toast("Funciona con un producto individual, no en combo"); return; }
+  const p = sel;
+  const qc=document.getElementById("chkQR");
+  const guarda = {
+    estilo,
+    estiloPref: leerPref("estilo","vitrina"),
+    glob: leerPref("tarjetas_global",{}),
+    est: leerPref("tarjetas_estilos",{}),
+    prod: leerPref("tarjetas_prod",{}),
+    agua: leerPref("marca_agua",false),
+    qr: qc ? qc.checked : true
+  };
+  const progreso=$("#prog");
+  const ponProg=(t,pct)=>{ if(!progreso) return; progreso.style.display="block";
+    const tx=document.getElementById("progTxt"); if(tx) tx.textContent=t;
+    const bar=document.getElementById("progBar"); if(bar) bar.style.width=pct+"%"; };
+  const files=[];
+  let ok=true;
+  ponProg("📦 Generando ZIP por plataformas…",5);
+  try{
+    const pasos=[["revolico","revolico","revolico"],["facebook","facebook","fb"],["whatsapp","wa_estado","wa"]];
+    for(let i=0;i<pasos.length;i++){
+      const [dir, prKey, capClave]=pasos[i];
+      const pr=PRESETS_PLAT[prKey];
+      /* aplicar configuración del preset sin tocar la UI */
+      guardarPref("tarjetas_global", Object.assign({}, TARJETAS_ALL_ON, pr.cards));
+      guardarPref("tarjetas_estilos", {});
+      guardarPref("tarjetas_prod", {});
+      guardarPref("marca_agua", pr.agua!=null ? pr.agua : guarda.agua);
+      guardarPref("qr", !!pr.qr);
+      if(qc) qc.checked=!!pr.qr;
+      estilo = pr.estilo || guarda.estilo;
+      await dibujar();
+      const cv=document.getElementById("cv");
+      const blob = await jpgLiviano(cv, 300*1024);
+      if(blob){
+        const u8 = new Uint8Array(await blob.arrayBuffer());
+        files.push({name:`${dir}/tiendamax-${p.slug||p.id}-${dir}.jpg`, data:u8});
+      }else ok=false;
+      try{
+        const cap = captionPara(p, capClave);
+        if(cap) files.push({name:`${dir}/caption.txt`, data:new TextEncoder().encode(cap)});
+      }catch(e){}
+      ponProg(`📦 ${pr.icono} ${pr.nombre} listo (${i+1}/3)…`, Math.round((i+1)/3*88));
+    }
+  }catch(err){ ok=false; toast("⚠️ Error al generar el ZIP: "+err.message); }
+  finally{
+    /* restaurar todo tal como estaba */
+    guardarPref("tarjetas_global", guarda.glob);
+    guardarPref("tarjetas_estilos", guarda.est);
+    guardarPref("tarjetas_prod", guarda.prod);
+    guardarPref("marca_agua", guarda.agua);
+    guardarPref("qr", guarda.qr);
+    guardarPref("estilo", guarda.estiloPref);
+    if(qc) qc.checked=guarda.qr;
+    estilo=guarda.estilo;
+    document.querySelectorAll(".stybtn").forEach(x=>x.classList.toggle("on", x.dataset.sty===estilo));
+    renderTarjetas();
+    await dibujar(); renderPreviews();
+    if(progreso) progreso.style.display="none";
+  }
+  if(ok && files.length){
+    const zip=zipStore(files);
+    descargarBlob(zip, `tiendamax-${p.slug||p.id}-plataformas.zip`);
+    registrarPub(p);
+    toast("📦 ZIP listo: revolico/ facebook/ whatsapp/ con caption incluido");
+  }
+}
+
+/* ================= GUÍAS DE ZONA SEGURA (solo pantalla, jamás en la exportación) ================= */
+function actualizarGuias(){
+  const g=document.getElementById("guiasZona");
+  if(!g) return;
+  const cv=document.getElementById("cv");
+  const on = leerPref("guias_zona", false) && cv && cv.height>=1900;
+  g.style.display = on ? "block" : "none";
+}
 
 /* ================= DISEÑOS ================= */
-const VERSION = "v6.1 TURBO • Guardados v2 • Sync Real";
+const VERSION = "v6.2 TARJETAS • Interruptores + Presets por plataforma";
 async function dibujar(){
   const cv = $("#cv");
   try{
@@ -4017,39 +4308,42 @@ async function dibujar(){
   else dFlotante(ctx,pe,img);
   marcaAgua(ctx, cv.width, cv.height);
   dibujarTextos(ctx, cv.width, cv.height);
+  actualizarGuias();
   programarGuardado();
   }catch(err){ toast("⚠️ Error al dibujar: "+err.message); }
 }
 
 function dVitrina(ctx,p,img){
-  const W=1080,H=1080, ac=acento(p.categoria);
+  const W=1080,H=1080, ac=acento(p.categoria), C=tarjetaOn;
   fondoOscuro(ctx,W,H,ac);
-  chipMarca(ctx,56,50);
-  pillCat(ctx,W-56,58,p.categoria);
-  /* ---- layout de abajo hacia arriba: nada se puede pisar ---- */
-  const ctaH=96, ctaY=H-88-ctaH;                 /* botón: 896..992 */
-  const trustH=86, trustY=ctaY-16-trustH;        /* sellos: 794..880 */
-  const priceBase=trustY-34;                     /* precio baseline: 760 */
-  const hasSpecs = !!(p.specs && p.specs.length);
-  const specsTop = priceBase-84-20-46;           /* chips specs: 610..656 */
+  if(C("logo")) chipMarca(ctx,56,50);
+  if(C("categoria")) pillCat(ctx,W-56,58,p.categoria);
+  /* ---- apilado de abajo hacia arriba: cada tarjeta apagada libera su sitio ---- */
+  const ctaH=96, trustH=86;
+  let bottom=H-88, ctaY=0, trustY=0;
+  if(C("cta")){ ctaY=bottom-ctaH; bottom=ctaY-16; }
+  if(C("confianza")){ trustY=bottom-trustH; bottom=trustY-34; }
+  const precioOn=C("precio"), specsOn=C("specs")&&!!(p.specs&&p.specs.length);
+  const priceBase=bottom;
+  const specsTop=specsOn ? (precioOn?priceBase-150:priceBase-66) : 0;
   ctx.font=`800 46px ${SANS}`;
   const lines = calcLines(ctx,p.nombre,W-112,2);
-  const lastBase = (hasSpecs?specsTop:priceBase-84-20) - 26;
+  const lastBase = specsOn ? specsTop-26 : priceBase-(precioOn?130:26);
   const firstBase = lastBase-(lines.length-1)*56;
   const fy=170, fx=110, fw=W-220;
   const fh = Math.max(260, firstBase-46-26-fy);
   /* foto */
   vitrina(ctx,fx,fy,fw,fh,img,ac);
   const disc = p.precioOriginal>p.precioActual?Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100):0;
-  if(disc) badgeDesc(ctx,fx+fw-16,fy+8,disc);
+  if(C("descuento") && disc) badgeDesc(ctx,fx+fw-16,fy+8,disc);
   const st = Number(p.stock);
-  if(st>0 && st<=3) badgeUltimas(ctx,fx+18,fy+fh-70,st);
-  if(qrOn()) dibujarQR(ctx, linkProducto(p), fx+fw-120-18, fy+fh-120-40, 120);
+  if(C("ultimas") && st>0 && st<=3) badgeUltimas(ctx,fx+18,fy+fh-70,st);
+  if(qrOn()) dibujarQR(ctx, qrUrl(p), fx+fw-120-18, fy+fh-120-40, 120);
   /* nombre */
   ctx.fillStyle="#fff";ctx.font=`800 46px ${SANS}`;ctx.textAlign="left";ctx.textBaseline="alphabetic";
   lines.forEach((l,i)=>ctx.fillText(l,56,firstBase+i*56));
   /* chips de specs */
-  if(hasSpecs){
+  if(specsOn){
     ctx.font=`700 24px ${SANS}`;
     let sx=56;
     for(const s of p.specs.slice(0,3)){
@@ -4065,29 +4359,31 @@ function dVitrina(ctx,p,img){
     ctx.textBaseline="alphabetic";ctx.textAlign="left";
   }
   /* precio */
-  let px=56;
-  if(p.precioOriginal>p.precioActual){
-    ctx.font=`700 52px ${SANS}`;ctx.fillStyle="#9a9aa2";ctx.textAlign="left";
-    const ot=`$${p.precioOriginal}`;
-    const ow = ctx.measureText(ot).width;
-    ctx.fillText(ot,px,priceBase);
-    ctx.strokeStyle="#ff3d00";ctx.lineWidth=6;ctx.lineCap="round";
-    ctx.beginPath();ctx.moveTo(px-6,priceBase-16);ctx.lineTo(px+ow+6,priceBase-16);ctx.stroke();
-    ctx.lineCap="butt";
-    px += ow+34;
+  if(precioOn){
+    let px=56;
+    if(C("tachado") && p.precioOriginal>p.precioActual){
+      ctx.font=`700 52px ${SANS}`;ctx.fillStyle="#9a9aa2";ctx.textAlign="left";
+      const ot=`$${p.precioOriginal}`;
+      const ow = ctx.measureText(ot).width;
+      ctx.fillText(ot,px,priceBase);
+      ctx.strokeStyle="#ff3d00";ctx.lineWidth=6;ctx.lineCap="round";
+      ctx.beginPath();ctx.moveTo(px-6,priceBase-16);ctx.lineTo(px+ow+6,priceBase-16);ctx.stroke();
+      ctx.lineCap="butt";
+      px += ow+34;
+    }
+    const pw = precioGrad(ctx,px,priceBase,84,`$${p.precioActual}`);
+    ctx.font=`800 34px ${SANS}`;ctx.fillStyle="#FF6B35";ctx.textAlign="left";ctx.fillText("USD",px+pw+14,priceBase-2);
   }
-  const pw = precioGrad(ctx,px,priceBase,84,`$${p.precioActual}`);
-  ctx.font=`800 34px ${SANS}`;ctx.fillStyle="#FF6B35";ctx.textAlign="left";ctx.fillText("USD",px+pw+14,priceBase-2);
   /* sellos + botón + footer */
-  chipsConfianza(ctx,56,trustY,W-112,[["💵","Pago al recibir"],["🚚","Entrega a domicilio"],["✅","Garantía real"]]);
-  ctaVerde(ctx,56,ctaY,W-112,ctaH,`📲 Escribe "${keyword(p)}" al WhatsApp`,"Respuesta en menos de 5 min");
-  footerUrl(ctx,W,H-24);
-  cintaNota(ctx,W,H,true);
-  marcoLuz(ctx,W,H);
+  if(C("confianza")) chipsConfianza(ctx,56,trustY,W-112,[["💵","Pago al recibir"],["🚚","Entrega a domicilio"],["✅","Garantía real"]]);
+  if(C("cta")) ctaVerde(ctx,56,ctaY,W-112,ctaH,`📲 Escribe "${keyword(p)}" al WhatsApp`,"Respuesta en menos de 5 min");
+  if(C("footer")) footerUrl(ctx,W,H-24);
+  if(C("nota")) cintaNota(ctx,W,H,true);
+  if(C("marco")) marcoLuz(ctx,W,H);
 }
 
 function dOferta(ctx,p,img){
-  const W=1080,H=1080;
+  const W=1080,H=1080, C=tarjetaOn;
   let g = ctx.createLinearGradient(0,0,W*.5,H);
   g.addColorStop(0,"#ff3d00");g.addColorStop(.48,"#E8501E");g.addColorStop(1,"#7a2202");
   ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
@@ -4097,11 +4393,13 @@ function dOferta(ctx,p,img){
   ctx.beginPath();ctx.arc(W+40,-40,340,0,7);ctx.fillStyle="rgba(255,255,255,.08)";ctx.fill();
   dither(ctx,0,0,W,H);
   // flash
-  ctx.font=`900 34px ${SANS}`;
-  const ft="🔥 OFERTA DEL DÍA 🔥", fw=ctx.measureText(ft).width+80;
-  rr(ctx,(W-fw)/2,54,fw,72,36);ctx.fillStyle="#0B0B0D";ctx.fill();
-  ctx.strokeStyle="rgba(255,200,120,.4)";ctx.lineWidth=2;ctx.stroke();
-  ctx.fillStyle="#f5a623";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(ft,W/2,92);
+  if(C("badge")){
+    ctx.font=`900 34px ${SANS}`;
+    const ft="🔥 OFERTA DEL DÍA 🔥", fw=ctx.measureText(ft).width+80;
+    rr(ctx,(W-fw)/2,54,fw,72,36);ctx.fillStyle="#0B0B0D";ctx.fill();
+    ctx.strokeStyle="rgba(255,200,120,.4)";ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle="#f5a623";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(ft,W/2,92);
+  }
   // nombre
   ctx.fillStyle="#fff";ctx.font=`900 56px ${SANS}`;ctx.textBaseline="alphabetic";
   ctx.save();ctx.shadowColor="rgba(0,0,0,.35)";ctx.shadowBlur=16;
@@ -4110,32 +4408,34 @@ function dOferta(ctx,p,img){
   // foto
   vitrina(ctx,W/2-210,300,420,360,img,"#ffffff",22);
   const stOf = Number(p.stock);
-  if(stOf>0 && stOf<=3) badgeUltimas(ctx,W/2-210+14,300+360-66,stOf);
+  if(C("ultimas") && stOf>0 && stOf<=3) badgeUltimas(ctx,W/2-210+14,300+360-66,stOf);
   // precio
   const disc = p.precioOriginal>p.precioActual?Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100):0;
   let y=770;
   ctx.textAlign="center";
-  if(p.precioOriginal>p.precioActual){
-    ctx.font=`600 40px ${SANS}`;ctx.fillStyle="rgba(255,255,255,.75)";
-    const t=`$${p.precioOriginal}`;
-    ctx.fillText(t,W/2-170,y);
-    const tw=ctx.measureText(t).width;
-    ctx.strokeStyle="rgba(255,255,255,.75)";ctx.lineWidth=4;
-    ctx.beginPath();ctx.moveTo(W/2-170-tw/2,y-14);ctx.lineTo(W/2-170+tw/2,y-14);ctx.stroke();
+  if(C("precio")){
+    if(C("tachado") && p.precioOriginal>p.precioActual){
+      ctx.font=`600 40px ${SANS}`;ctx.fillStyle="rgba(255,255,255,.75)";
+      const t=`$${p.precioOriginal}`;
+      ctx.fillText(t,W/2-170,y);
+      const tw=ctx.measureText(t).width;
+      ctx.strokeStyle="rgba(255,255,255,.75)";ctx.lineWidth=4;
+      ctx.beginPath();ctx.moveTo(W/2-170-tw/2,y-14);ctx.lineTo(W/2-170+tw/2,y-14);ctx.stroke();
+    }
+    const pcx = W/2+((C("tachado") && p.precioOriginal>p.precioActual)?40:0);
+    ctx.font=`900 120px ${SANS}`;
+    const pTxt = `$${p.precioActual}`;
+    const pW = ctx.measureText(pTxt).width;
+    ctx.save();ctx.shadowColor="rgba(0,0,0,.4)";ctx.shadowBlur=24;
+    ctx.fillStyle="#fff";ctx.textAlign="center";
+    ctx.fillText(pTxt,pcx,y+30);
+    ctx.restore();
+    ctx.font=`800 36px ${SANS}`;ctx.fillStyle="#fff";ctx.textAlign="left";
+    ctx.fillText("USD", pcx+pW/2+22, y+24);
+    ctx.textAlign="center";
   }
-  const pcx = W/2+(p.precioOriginal>p.precioActual?40:0);
-  ctx.font=`900 120px ${SANS}`;
-  const pTxt = `$${p.precioActual}`;
-  const pW = ctx.measureText(pTxt).width;
-  ctx.save();ctx.shadowColor="rgba(0,0,0,.4)";ctx.shadowBlur=24;
-  ctx.fillStyle="#fff";ctx.textAlign="center";
-  ctx.fillText(pTxt,pcx,y+30);
-  ctx.restore();
-  ctx.font=`800 36px ${SANS}`;ctx.fillStyle="#fff";ctx.textAlign="left";
-  ctx.fillText("USD", pcx+pW/2+22, y+24);
-  ctx.textAlign="center";
   // ahorro
-  if(disc){
+  if(C("descuento") && disc){
     const ah=`🎉 Ahorras $${p.precioOriginal-p.precioActual} USD · −${disc}%`;
     ctx.font=`800 30px ${SANS}`;
     const aw=ctx.measureText(ah).width+70;
@@ -4145,21 +4445,27 @@ function dOferta(ctx,p,img){
     ctx.fillStyle="#fff";ctx.textBaseline="middle";ctx.fillText(ah,W/2,y+102);
   }
   ctx.textBaseline="alphabetic";
-  if(qrOn()) dibujarQR(ctx, linkProducto(p), W-70-124, 316, 124);
+  if(qrOn()) dibujarQR(ctx, qrUrl(p), W-70-124, 316, 124);
   // footer
-  ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillRect(0,H-92,W,92);
-  ctx.strokeStyle="rgba(255,255,255,.18)";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,H-92);ctx.lineTo(W,H-92);ctx.stroke();
-  ctx.textAlign="left";ctx.font=`bold 30px ${SERIF}`;ctx.fillStyle="#fff";
-  ctx.fillText("Tienda",56,H-36);
-  ctx.fillStyle="#ffd9a8";ctx.fillText("Max",56+ctx.measureText("Tienda").width+8,H-36);
-  ctx.textAlign="right";ctx.font=`700 26px ${SANS}`;ctx.fillStyle="#fff";
-  ctx.fillText(`📲 Escribe "${keyword(p)}" al WhatsApp`,W-56,H-36);
-  cintaNota(ctx,W,H,true);
-  marcoLuz(ctx,W,H);
+  if(C("footer")||C("cta")){
+    ctx.fillStyle="rgba(0,0,0,.4)";ctx.fillRect(0,H-92,W,92);
+    ctx.strokeStyle="rgba(255,255,255,.18)";ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,H-92);ctx.lineTo(W,H-92);ctx.stroke();
+    if(C("footer")){
+      ctx.textAlign="left";ctx.font=`bold 30px ${SERIF}`;ctx.fillStyle="#fff";
+      ctx.fillText("Tienda",56,H-36);
+      ctx.fillStyle="#ffd9a8";ctx.fillText("Max",56+ctx.measureText("Tienda").width+8,H-36);
+    }
+    if(C("cta")){
+      ctx.textAlign="right";ctx.font=`700 26px ${SANS}`;ctx.fillStyle="#fff";
+      ctx.fillText(`📲 Escribe "${keyword(p)}" al WhatsApp`,W-56,H-36);
+    }
+  }
+  if(C("nota")) cintaNota(ctx,W,H,true);
+  if(C("marco")) marcoLuz(ctx,W,H);
 }
 
 function dStory(ctx,p,img){
-  const W=1080,H=1920, ac=acento(p.categoria);
+  const W=1080,H=1920, ac=acento(p.categoria), C=tarjetaOn;
   fondoOscuro(ctx,W,H,ac);
   // barras
   const bw=(W-100-20)/3;
@@ -4168,54 +4474,72 @@ function dStory(ctx,p,img){
     ctx.fillStyle = i===0 ? "#FF6B35" : "rgba(255,255,255,.28)";ctx.fill();
   }
   // header cuenta
-  if(logoImg){
-    ctx.save();ctx.beginPath();ctx.arc(96,140,42,0,7);ctx.clip();ctx.drawImage(logoImg,54,98,84,84);ctx.restore();
-    ctx.beginPath();ctx.arc(96,140,46,0,7);ctx.strokeStyle="#FF6B35";ctx.lineWidth=5;ctx.stroke();
+  if(C("logo")){
+    if(logoImg){
+      ctx.save();ctx.beginPath();ctx.arc(96,140,42,0,7);ctx.clip();ctx.drawImage(logoImg,54,98,84,84);ctx.restore();
+      ctx.beginPath();ctx.arc(96,140,46,0,7);ctx.strokeStyle="#FF6B35";ctx.lineWidth=5;ctx.stroke();
+    }
+    ctx.textAlign="left";ctx.textBaseline="middle";
+    ctx.font=`800 34px ${SANS}`;ctx.fillStyle="#fff";ctx.fillText("tiendamax.org",166,126);
+    ctx.font=`600 24px ${SANS}`;ctx.fillStyle="#8e8e95";ctx.fillText("Catálogo online · Pedido por WhatsApp",166,164);
   }
-  ctx.textAlign="left";ctx.textBaseline="middle";
-  ctx.font=`800 34px ${SANS}`;ctx.fillStyle="#fff";ctx.fillText("tiendamax.org",166,126);
-  ctx.font=`600 24px ${SANS}`;ctx.fillStyle="#8e8e95";ctx.fillText("Catálogo online · Pedido por WhatsApp",166,164);
   // badge dinámico según el producto (atemporal, se puede republicar)
-  const bt=badgeTexto(p);
-  ctx.font=`800 30px ${SANS}`;
-  const btw=ctx.measureText(bt).width+80;
-  const g2=ctx.createLinearGradient((W-btw)/2,0,(W+btw)/2,0);
-  g2.addColorStop(0,"#FF6B35");g2.addColorStop(1,"#E8501E");
-  rr(ctx,(W-btw)/2,230,btw,68,34);ctx.fillStyle=g2;
-  ctx.save();ctx.shadowColor="rgba(232,80,30,.55)";ctx.shadowBlur=30;ctx.fill();ctx.restore();
-  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText(bt,W/2,266);
+  if(C("badge")){
+    const bt=badgeTexto(p);
+    ctx.font=`800 30px ${SANS}`;
+    const btw=ctx.measureText(bt).width+80;
+    const g2=ctx.createLinearGradient((W-btw)/2,0,(W+btw)/2,0);
+    g2.addColorStop(0,"#FF6B35");g2.addColorStop(1,"#E8501E");
+    rr(ctx,(W-btw)/2,230,btw,68,34);ctx.fillStyle=g2;
+    ctx.save();ctx.shadowColor="rgba(232,80,30,.55)";ctx.shadowBlur=30;ctx.fill();ctx.restore();
+    ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText(bt,W/2,266);
+  }
   // foto
   vitrina(ctx,90,370,W-180,760,img,ac);
   // nombre
   ctx.fillStyle="#fff";ctx.font=`800 54px ${SANS}`;ctx.textBaseline="alphabetic";
   const nl=wrap(ctx,p.nombre,W/2,1240,W-160,66,2,"center");
-  // precio centrado
+  /* ---- bloque inferior: se sube solo cuando apagas una tarjeta ---- */
+  const precioOn=C("precio"), confOn=C("confianza"), ctaOn=C("cta");
   let py=1240+nl*66+50;
-  ctx.font=`900 100px ${SANS}`;
-  const pt=`$${p.precioActual} USD`;
-  const ptw=ctx.measureText(pt).width;
-  const g3=ctx.createLinearGradient((W-ptw)/2,0,(W+ptw)/2,0);
-  g3.addColorStop(0,"#FF6B35");g3.addColorStop(1,"#f5a623");
-  ctx.save();ctx.shadowColor="rgba(255,107,53,.45)";ctx.shadowBlur=34;
-  ctx.fillStyle=g3;ctx.textAlign="center";ctx.fillText(pt,W/2,py);
-  ctx.restore();
-  ctx.font=`700 30px ${SANS}`;ctx.fillStyle="#9a9aa2";
-  ctx.fillText(`PAGO AL RECIBIR  ·  ENTREGA A DOMICILIO  ·  GARANTÍA`,W/2,py+58);
-  // cta
-  ctx.font=`600 28px ${SANS}`;ctx.fillStyle="#b9b9c0";
-  ctx.fillText("⬆ Desliza hacia arriba",W/2,py+150);
-  ctaVerde(ctx,120,py+190,W-240,110,`💬 Escribe "${keyword(p)}"`,"y te respondemos en menos de 5 min");
-  if(qrOn()) dibujarQR(ctx, linkProducto(p), W-90-150, 390, 150);
-  footerUrl(ctx,W,H-40,1.1);
-  cintaNota(ctx,W,H,true);
-  marcoLuz(ctx,W,H);
+  if(precioOn){
+    ctx.font=`900 100px ${SANS}`;
+    const pt=`$${p.precioActual} USD`;
+    const ptw=ctx.measureText(pt).width;
+    const g3=ctx.createLinearGradient((W-ptw)/2,0,(W+ptw)/2,0);
+    g3.addColorStop(0,"#FF6B35");g3.addColorStop(1,"#f5a623");
+    ctx.save();ctx.shadowColor="rgba(255,107,53,.45)";ctx.shadowBlur=34;
+    ctx.fillStyle=g3;ctx.textAlign="center";ctx.fillText(pt,W/2,py);
+    ctx.restore();
+  }
+  let yCta = py+8;
+  if(precioOn && confOn){
+    ctx.font=`700 30px ${SANS}`;ctx.fillStyle="#9a9aa2";
+    ctx.fillText(`PAGO AL RECIBIR  ·  ENTREGA A DOMICILIO  ·  GARANTÍA`,W/2,py+58);
+    yCta = py+150;
+  }else if(precioOn || confOn){
+    if(confOn && !precioOn){
+      ctx.font=`700 30px ${SANS}`;ctx.fillStyle="#9a9aa2";
+      ctx.fillText(`PAGO AL RECIBIR  ·  ENTREGA A DOMICILIO  ·  GARANTÍA`,W/2,py+8);
+    }
+    yCta = py+92;
+  }
+  if(ctaOn){
+    ctx.font=`600 28px ${SANS}`;ctx.fillStyle="#b9b9c0";ctx.textAlign="center";
+    ctx.fillText("⬆ Desliza hacia arriba",W/2,yCta);
+    ctaVerde(ctx,120,yCta+40,W-240,110,`💬 Escribe "${keyword(p)}"`,"y te respondemos en menos de 5 min");
+  }
+  if(qrOn()) dibujarQR(ctx, qrUrl(p), W-90-150, 390, 150);
+  if(C("footer")) footerUrl(ctx,W,H-40,1.1);
+  if(C("nota")) cintaNota(ctx,W,H,true);
+  if(C("marco")) marcoLuz(ctx,W,H);
 }
 
 function dFlotante(ctx,p,img){
-  const W=1080,H=1350, ac=acento(p.categoria);
+  const W=1080,H=1350, ac=acento(p.categoria), C=tarjetaOn;
   fondoOscuro(ctx,W,H,ac);
-  chipMarca(ctx,56,50);
-  pillCat(ctx,W-56,58,p.categoria);
+  if(C("logo")) chipMarca(ctx,56,50);
+  if(C("categoria")) pillCat(ctx,W-56,58,p.categoria);
   /* ---- escenario: halo grande + producto protagonista ---- */
   const cx=W/2, cy=470, floorY=800;
   let halo=ctx.createRadialGradient(cx,cy,0,cx,cy,520);
@@ -4243,16 +4567,17 @@ function dFlotante(ctx,p,img){
     ctx.fillText("⚠️ Sube la foto PNG sin fondo para el efecto flotante perfecto",cx,148);
   }
   /* ---- bloque inferior primero (define el espacio libre) ---- */
+  const ctaOn=C("cta"), precioOn=C("precio"), specsOn=C("specs");
   const ctaH=116, ctaY=H-84-ctaH;
-  const priceBase=ctaY-42;
+  const priceBase = ctaOn ? ctaY-42 : H-84-20;
   ctx.font=`800 58px ${SANS}`;
   const nameMaxW = qrOn()? W-112-190 : W-112;
   const lines=calcLines(ctx,p.nombre,nameMaxW,2);
-  const lastBase=priceBase-104-26;
+  const lastBase = priceBase-(precioOn?130:26);
   const firstBase=lastBase-(lines.length-1)*72;
   const nameTop=firstBase-58;              /* borde superior del nombre */
   /* ---- chips de specs SOLO si caben entre el piso y el nombre ---- */
-  if(p.specs && p.specs.length){
+  if(p.specs && p.specs.length && specsOn){
     const chipH=62;
     const yv=Math.round((floorY+34+nameTop-chipH)/2);   /* centrados en el hueco */
     if(yv>=floorY+26 && yv+chipH<=nameTop-16){
@@ -4284,44 +4609,48 @@ function dFlotante(ctx,p,img){
   ctx.fillStyle="#fff";ctx.textAlign="left";
   lines.forEach((l,i)=>ctx.fillText(l,56,firstBase+i*72));
   /* precio */
-  const pw=precioGrad(ctx,56,priceBase,96,`$${p.precioActual}`);
-  ctx.font=`800 40px ${SANS}`;ctx.fillStyle="#FF6B35";ctx.textAlign="left";
-  ctx.fillText("USD",56+pw+18,priceBase-4);
-  /* tachado si hay rebaja */
-  if(p.precioOriginal>p.precioActual){
-    ctx.font=`700 44px ${SANS}`;ctx.fillStyle="#9a9aa2";
-    const ot=`$${p.precioOriginal}`;
-    const ox=56+pw+18+ctx.measureText("USD").width+70;
-    const ow=ctx.measureText(ot).width;
-    ctx.fillText(ot,ox,priceBase-14);
-    ctx.strokeStyle="#ff3d00";ctx.lineWidth=5;ctx.lineCap="round";
-    ctx.beginPath();ctx.moveTo(ox-6,priceBase-28);ctx.lineTo(ox+ow+6,priceBase-28);ctx.stroke();
-    ctx.lineCap="butt";
+  if(precioOn){
+    const pw=precioGrad(ctx,56,priceBase,96,`$${p.precioActual}`);
+    ctx.font=`800 40px ${SANS}`;ctx.fillStyle="#FF6B35";ctx.textAlign="left";
+    ctx.fillText("USD",56+pw+18,priceBase-4);
+    /* tachado si hay rebaja */
+    if(C("tachado") && p.precioOriginal>p.precioActual){
+      ctx.font=`700 44px ${SANS}`;ctx.fillStyle="#9a9aa2";
+      const ot=`$${p.precioOriginal}`;
+      const ox=56+pw+18+ctx.measureText("USD").width+70;
+      const ow=ctx.measureText(ot).width;
+      ctx.fillText(ot,ox,priceBase-14);
+      ctx.strokeStyle="#ff3d00";ctx.lineWidth=5;ctx.lineCap="round";
+      ctx.beginPath();ctx.moveTo(ox-6,priceBase-28);ctx.lineTo(ox+ow+6,priceBase-28);ctx.stroke();
+      ctx.lineCap="butt";
+    }
   }
   /* QR a la derecha, centrado en el bloque nombre+precio */
   if(qrOn()){
     const qs=150, blockTop=nameTop, blockBot=priceBase;
     const qy=Math.round((blockTop+blockBot)/2 - qs/2 - 14);
-    dibujarQR(ctx, linkProducto(p), W-56-qs, qy, qs);
+    dibujarQR(ctx, qrUrl(p), W-56-qs, qy, qs);
   }
   /* CTA verde grande */
-  ctaVerde(ctx,56,ctaY,W-112,ctaH,`📲 Escribe "${keyword(p)}" al WhatsApp`,"Respuesta en menos de 5 min");
+  if(ctaOn) ctaVerde(ctx,56,ctaY,W-112,ctaH,`📲 Escribe "${keyword(p)}" al WhatsApp`,"Respuesta en menos de 5 min");
   /* footer espaciado como la plantilla */
-  ctx.textAlign="center";
-  ctx.font=`600 24px ${SANS}`;ctx.fillStyle="#6b6b72";
-  const ft1="p í d e l o   e n   ", ft2="t i e n d a m a x . o r g";
-  const fw1=ctx.measureText(ft1).width, fw2=ctx.measureText(ft2).width;
-  ctx.textAlign="left";
-  const fsx=(W-fw1-fw2)/2;
-  ctx.fillText(ft1,fsx,H-28);
-  ctx.fillStyle="#FF6B35";ctx.font=`800 24px ${SANS}`;
-  ctx.fillText(ft2,fsx+fw1,H-28);
-  cintaNota(ctx,W,H,true);
-  marcoLuz(ctx,W,H);
+  if(C("footer")){
+    ctx.textAlign="center";
+    ctx.font=`600 24px ${SANS}`;ctx.fillStyle="#6b6b72";
+    const ft1="p í d e l o   e n   ", ft2="t i e n d a m a x . o r g";
+    const fw1=ctx.measureText(ft1).width, fw2=ctx.measureText(ft2).width;
+    ctx.textAlign="left";
+    const fsx=(W-fw1-fw2)/2;
+    ctx.fillText(ft1,fsx,H-28);
+    ctx.fillStyle="#FF6B35";ctx.font=`800 24px ${SANS}`;
+    ctx.fillText(ft2,fsx+fw1,H-28);
+  }
+  if(C("nota")) cintaNota(ctx,W,H,true);
+  if(C("marco")) marcoLuz(ctx,W,H);
 }
 
 function dClaro(ctx,p,img){
-  const W=1080,H=1920, ac=acento(p.categoria);
+  const W=1080,H=1920, ac=acento(p.categoria), C=tarjetaOn;
   /* fondo crema con degradado suave */
   const g = ctx.createLinearGradient(0,0,0,H);
   g.addColorStop(0,"#FDFCFA");
@@ -4335,24 +4664,28 @@ function dClaro(ctx,p,img){
   ctx.fillStyle=r;ctx.fillRect(0,0,W,H);
   dither(ctx,0,0,W,H);
   /* header negro con logo */
-  ctx.fillStyle="#141416";ctx.fillRect(0,0,W,150);
-  ctx.fillStyle="#FF6B35";ctx.fillRect(0,146,W,4);
-  chipMarca(ctx,56,42,0.95);
-  ctx.font=`800 24px ${SANS}`;ctx.fillStyle="#25D366";ctx.textAlign="right";ctx.textBaseline="middle";
-  ctx.beginPath();ctx.arc(W-260,75,8,0,7);ctx.fillStyle="#25D366";ctx.fill();
-  ctx.fillStyle="#25D366";ctx.fillText("disponible",W-56,75);
-  ctx.textBaseline="alphabetic";
+  if(C("logo")){
+    ctx.fillStyle="#141416";ctx.fillRect(0,0,W,150);
+    ctx.fillStyle="#FF6B35";ctx.fillRect(0,146,W,4);
+    chipMarca(ctx,56,42,0.95);
+    ctx.font=`800 24px ${SANS}`;ctx.fillStyle="#25D366";ctx.textAlign="right";ctx.textBaseline="middle";
+    ctx.beginPath();ctx.arc(W-260,75,8,0,7);ctx.fillStyle="#25D366";ctx.fill();
+    ctx.fillStyle="#25D366";ctx.fillText("disponible",W-56,75);
+    ctx.textBaseline="alphabetic";
+  }
   /* badge llegó */
-  const bt = badgeTexto(p);
-  ctx.font=`900 32px ${SANS}`;
-  const btw = ctx.measureText(bt).width+90;
-  const gb = ctx.createLinearGradient((W-btw)/2,0,(W+btw)/2,0);
-  gb.addColorStop(0,"#FF6B35");gb.addColorStop(1,"#E8501E");
-  rr(ctx,(W-btw)/2,210,btw,74,37);ctx.fillStyle=gb;
-  ctx.save();ctx.shadowColor="rgba(232,80,30,.4)";ctx.shadowBlur=28;ctx.fill();ctx.restore();
-  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";
-  ctx.fillText(bt,W/2,249);
-  ctx.textBaseline="alphabetic";
+  if(C("badge")){
+    const bt = badgeTexto(p);
+    ctx.font=`900 32px ${SANS}`;
+    const btw = ctx.measureText(bt).width+90;
+    const gb = ctx.createLinearGradient((W-btw)/2,0,(W+btw)/2,0);
+    gb.addColorStop(0,"#FF6B35");gb.addColorStop(1,"#E8501E");
+    rr(ctx,(W-btw)/2,210,btw,74,37);ctx.fillStyle=gb;
+    ctx.save();ctx.shadowColor="rgba(232,80,30,.4)";ctx.shadowBlur=28;ctx.fill();ctx.restore();
+    ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(bt,W/2,249);
+    ctx.textBaseline="alphabetic";
+  }
   /* foto en tarjeta blanca */
   const fx=90, fy=340, fw=W-180, fh=760;
   ctx.save();
@@ -4374,56 +4707,65 @@ function dClaro(ctx,p,img){
     ctx.restore();
   }
   const disc = p.precioOriginal>p.precioActual?Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100):0;
-  if(disc) badgeDesc(ctx,fx+fw-16,fy+8,disc);
-  if(qrOn()) dibujarQR(ctx, linkProducto(p), fx+fw-140-24, fy+fh-140-50, 140);
+  if(C("descuento") && disc) badgeDesc(ctx,fx+fw-16,fy+8,disc);
+  if(qrOn()) dibujarQR(ctx, qrUrl(p), fx+fw-140-24, fy+fh-140-50, 140);
   /* nombre centrado */
   ctx.font=`800 52px ${SANS}`;ctx.fillStyle="#141416";
   const lines=calcLines(ctx,p.nombre,W-160,2);
   let ny=1210;
   ctx.textAlign="center";
   lines.forEach((l,i)=>ctx.fillText(l,W/2,ny+i*64));
-  /* precio centrado naranja */
-  const py=ny+lines.length*64+66;
-  ctx.font=`900 96px ${SANS}`;
-  const pt=`$${p.precioActual} USD`;
-  const ptw=ctx.measureText(pt).width;
-  const gp2=ctx.createLinearGradient((W-ptw)/2,0,(W+ptw)/2,0);
-  gp2.addColorStop(0,"#E8501E");gp2.addColorStop(1,"#FF6B35");
-  ctx.save();ctx.shadowColor="rgba(232,80,30,.25)";ctx.shadowBlur=24;
-  ctx.fillStyle=gp2;ctx.fillText(pt,W/2,py);
-  ctx.restore();
-  /* chips confianza claros */
-  const chips=[["💵","Pago al recibir"],["🚚","Domicilio"],["✅","Garantía"]];
-  ctx.font=`700 26px ${SANS}`;
-  const cws=chips.map(c=>ctx.measureText(c[0]+" "+c[1]).width+56);
-  const ctot=cws.reduce((a,b)=>a+b,0)+2*16;
-  let cx2=(W-ctot)/2, cy2=py+60;
-  chips.forEach((c,i)=>{
-    rr(ctx,cx2,cy2,cws[i],58,29);
-    ctx.fillStyle="#fff";ctx.fill();
-    ctx.strokeStyle="#eadfce";ctx.lineWidth=2;ctx.stroke();
-    ctx.fillStyle="#5a544b";ctx.textAlign="center";ctx.textBaseline="middle";
-    ctx.fillText(c[0]+" "+c[1],cx2+cws[i]/2,cy2+30);
-    cx2+=cws[i]+16;
-  });
-  ctx.textBaseline="alphabetic";
-  /* CTA verde */
-  ctaVerde(ctx,110,cy2+110,W-220,112,"Responde este estado para pedirlo 👇","o escribe \""+keyword(p)+"\" al WhatsApp");
+  /* ---- precio, chips y botón se suben si apagas una tarjeta ---- */
+  const precioOn=C("precio"), confOn=C("confianza"), ctaOn=C("cta");
+  let cur = ny+lines.length*64+20;
+  if(precioOn){
+    const py=cur+46;
+    ctx.font=`900 96px ${SANS}`;
+    const pt=`$${p.precioActual} USD`;
+    const ptw=ctx.measureText(pt).width;
+    const gp2=ctx.createLinearGradient((W-ptw)/2,0,(W+ptw)/2,0);
+    gp2.addColorStop(0,"#E8501E");gp2.addColorStop(1,"#FF6B35");
+    ctx.save();ctx.shadowColor="rgba(232,80,30,.25)";ctx.shadowBlur=24;
+    ctx.fillStyle=gp2;ctx.fillText(pt,W/2,py);
+    ctx.restore();
+    cur = py+60;
+  }
+  if(confOn){
+    /* chips confianza claros */
+    const chips=[["💵","Pago al recibir"],["🚚","Domicilio"],["✅","Garantía"]];
+    ctx.font=`700 26px ${SANS}`;
+    const cws=chips.map(c=>ctx.measureText(c[0]+" "+c[1]).width+56);
+    const ctot=cws.reduce((a,b)=>a+b,0)+2*16;
+    let cx2=(W-ctot)/2, cy2=cur;
+    chips.forEach((c,i)=>{
+      rr(ctx,cx2,cy2,cws[i],58,29);
+      ctx.fillStyle="#fff";ctx.fill();
+      ctx.strokeStyle="#eadfce";ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle="#5a544b";ctx.textAlign="center";ctx.textBaseline="middle";
+      ctx.fillText(c[0]+" "+c[1],cx2+cws[i]/2,cy2+30);
+      cx2+=cws[i]+16;
+    });
+    ctx.textBaseline="alphabetic";
+    cur = cy2+110;
+  }
+  if(ctaOn) ctaVerde(ctx,110,cur,W-220,112,"Responde este estado para pedirlo 👇","o escribe \""+keyword(p)+"\" al WhatsApp");
   /* footer */
-  ctx.textAlign="center";
-  ctx.font=`600 26px ${SANS}`;ctx.fillStyle="#a39a8d";
-  const f1="catálogo completo en  ", f2="tiendamax.org";
-  const w1=ctx.measureText(f1).width, w2=ctx.measureText(f2).width;
-  ctx.textAlign="left";
-  const sx2=(W-w1-w2)/2;
-  ctx.fillText(f1,sx2,H-46);
-  ctx.fillStyle="#E8501E";ctx.font=`800 26px ${SANS}`;
-  ctx.fillText(f2,sx2+w1,H-46);
-  cintaNota(ctx,W,H,false);
+  if(C("footer")){
+    ctx.textAlign="center";
+    ctx.font=`600 26px ${SANS}`;ctx.fillStyle="#a39a8d";
+    const f1="catálogo completo en  ", f2="tiendamax.org";
+    const w1=ctx.measureText(f1).width, w2=ctx.measureText(f2).width;
+    ctx.textAlign="left";
+    const sx2=(W-w1-w2)/2;
+    ctx.fillText(f1,sx2,H-46);
+    ctx.fillStyle="#E8501E";ctx.font=`800 26px ${SANS}`;
+    ctx.fillText(f2,sx2+w1,H-46);
+  }
+  if(C("nota")) cintaNota(ctx,W,H,false);
 }
 
 function dResena(ctx,p,img){
-  const W=1080,H=1080;
+  const W=1080,H=1080, C=tarjetaOn;
   const rv = resenas[String(p.id)];
   /* fondo crema */
   const g = ctx.createLinearGradient(0,0,W*.4,H);
@@ -4438,26 +4780,30 @@ function dResena(ctx,p,img){
   ctx.fillStyle="rgba(232,80,30,.12)";ctx.textAlign="right";
   ctx.fillText('\u201C',W-40,260);
   /* chip marca (oscuro sobre claro) */
-  if(logoImg){
-    ctx.save();rr(ctx,56,50,64,64,16);ctx.clip();ctx.drawImage(logoImg,56,50,64,64);ctx.restore();
+  if(C("logo")){
+    if(logoImg){
+      ctx.save();rr(ctx,56,50,64,64,16);ctx.clip();ctx.drawImage(logoImg,56,50,64,64);ctx.restore();
+    }
+    ctx.textBaseline="middle";ctx.textAlign="left";
+    ctx.font=`bold 40px ${SERIF}`;
+    ctx.fillStyle="#141416";ctx.fillText("Tienda",138,84);
+    const w1=ctx.measureText("Tienda").width;
+    ctx.fillStyle="#F98127";ctx.fillText("Max",138+w1+10,84);
+    ctx.textBaseline="alphabetic";
   }
-  ctx.textBaseline="middle";ctx.textAlign="left";
-  ctx.font=`bold 40px ${SERIF}`;
-  ctx.fillStyle="#141416";ctx.fillText("Tienda",138,84);
-  const w1=ctx.measureText("Tienda").width;
-  ctx.fillStyle="#F98127";ctx.fillText("Max",138+w1+10,84);
-  ctx.textBaseline="alphabetic";
   /* sello verificado */
-  const vt="✔ COMPRA VERIFICADA";
-  ctx.font=`800 22px ${SANS}`;
-  const vw=ctx.measureText(vt).width+50;
-  const gv=ctx.createLinearGradient(W-56-vw,0,W-56,0);
-  gv.addColorStop(0,"#2ee578");gv.addColorStop(1,"#1eb257");
-  rr(ctx,W-56-vw,62,vw,48,24);ctx.fillStyle=gv;
-  ctx.save();ctx.shadowColor="rgba(37,211,102,.35)";ctx.shadowBlur=18;ctx.fill();ctx.restore();
-  ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";
-  ctx.fillText(vt,W-56-vw/2,87);
-  ctx.textBaseline="alphabetic";
+  if(C("confianza")){
+    const vt="✔ COMPRA VERIFICADA";
+    ctx.font=`800 22px ${SANS}`;
+    const vw=ctx.measureText(vt).width+50;
+    const gv=ctx.createLinearGradient(W-56-vw,0,W-56,0);
+    gv.addColorStop(0,"#2ee578");gv.addColorStop(1,"#1eb257");
+    rr(ctx,W-56-vw,62,vw,48,24);ctx.fillStyle=gv;
+    ctx.save();ctx.shadowColor="rgba(37,211,102,.35)";ctx.shadowBlur=18;ctx.fill();ctx.restore();
+    ctx.fillStyle="#fff";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(vt,W-56-vw/2,87);
+    ctx.textBaseline="alphabetic";
+  }
   if(!rv){
     ctx.fillStyle="#8b8378";ctx.font=`600 36px ${SANS}`;ctx.textAlign="center";
     ctx.fillText("Este producto aún no tiene reseñas",W/2,H/2-20);
@@ -4516,16 +4862,20 @@ function dResena(ctx,p,img){
   ctx.font=`800 30px ${SANS}`;ctx.fillStyle="#141416";
   const nm=calcLines(ctx,p.nombre,cw2-chh-220,1)[0];
   ctx.fillText(nm,cx3+chh+10,cy3+88);
-  ctx.font=`900 34px ${SANS}`;
-  const gpr=ctx.createLinearGradient(cw2+cx3-160,0,cw2+cx3-20,0);
-  gpr.addColorStop(0,"#E8501E");gpr.addColorStop(1,"#FF6B35");
-  ctx.fillStyle=gpr;ctx.textAlign="right";
-  ctx.fillText(`$${p.precioActual} USD`,cx3+cw2-24,cy3+92);
+  if(C("precio")){
+    ctx.font=`900 34px ${SANS}`;
+    const gpr=ctx.createLinearGradient(cw2+cx3-160,0,cw2+cx3-20,0);
+    gpr.addColorStop(0,"#E8501E");gpr.addColorStop(1,"#FF6B35");
+    ctx.fillStyle=gpr;ctx.textAlign="right";
+    ctx.fillText(`$${p.precioActual} USD`,cx3+cw2-24,cy3+92);
+  }
   /* CTA */
-  ctaVerde(ctx,120,H-140,W-240,86,`📲 Escribe "${keyword(p)}" y estrena el tuyo`,"");
+  if(C("cta")) ctaVerde(ctx,120,H-140,W-240,86,`📲 Escribe "${keyword(p)}" y estrena el tuyo`,"");
   /* footer */
-  ctx.textAlign="center";ctx.font=`600 22px ${SANS}`;ctx.fillStyle="#a39a8d";
-  ctx.fillText("⭐ 4.7 de calificación · opiniones reales en tiendamax.org",W/2,H-24);
+  if(C("footer")){
+    ctx.textAlign="center";ctx.font=`600 22px ${SANS}`;ctx.fillStyle="#a39a8d";
+    ctx.fillText("⭐ 4.7 de calificación · opiniones reales en tiendamax.org",W/2,H-24);
+  }
 }
 
 const ESCENAS_GEN = ["estudio","podio","degradado"];
@@ -4596,12 +4946,15 @@ function dEscena(ctx,p,img){
   return dEscenaResto(ctx,p,img,W,H);
 }
 function dEscenaResto(ctx,p,img,W,H){
+  const C=tarjetaOn;
   /* velo superior sutil para el logo */
-  let gt = ctx.createLinearGradient(0,0,0,300);
-  gt.addColorStop(0,"rgba(0,0,0,.55)");gt.addColorStop(1,"rgba(0,0,0,0)");
-  ctx.fillStyle=gt;ctx.fillRect(0,0,W,300);
-  chipMarca(ctx,56,50);
-  pillCat(ctx,W-56,58,p.categoria);
+  if(C("logo")){
+    let gt = ctx.createLinearGradient(0,0,0,300);
+    gt.addColorStop(0,"rgba(0,0,0,.55)");gt.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=gt;ctx.fillRect(0,0,W,300);
+    chipMarca(ctx,56,50);
+  }
+  if(C("categoria")) pillCat(ctx,W-56,58,p.categoria);
   /* producto integrado en la escena (movible y escalable) */
   const cx=W/2+escOffX, baseY=1130+escOffY;
   if(img){
@@ -4634,45 +4987,50 @@ function dEscenaResto(ctx,p,img,W,H){
   let gb = ctx.createLinearGradient(0,H-660,0,H);
   gb.addColorStop(0,"rgba(0,0,0,0)");gb.addColorStop(.35,"rgba(8,8,10,.82)");gb.addColorStop(1,"rgba(8,8,10,.96)");
   ctx.fillStyle=gb;ctx.fillRect(0,H-660,W,660);
-  /* nombre + precio + cta */
+  /* nombre + precio + cta (se suben si apagas una tarjeta) */
   ctx.font=`800 56px ${SANS}`;
   const lines=calcLines(ctx,p.nombre,W-160,2);
   let ny=H-400-(lines.length-1)*68;
   ctx.fillStyle="#fff";ctx.textAlign="center";
   lines.forEach((l,i)=>ctx.fillText(l,W/2,ny+i*68));
-  const py=ny+lines.length*68+50;
-  ctx.font=`900 92px ${SANS}`;
-  const pt=`$${p.precioActual} USD`;
-  const ptw=ctx.measureText(pt).width;
-  const gp2=ctx.createLinearGradient((W-ptw)/2,0,(W+ptw)/2,0);
-  gp2.addColorStop(0,"#FF6B35");gp2.addColorStop(1,"#f5a623");
-  ctx.save();ctx.shadowColor="rgba(255,107,53,.55)";ctx.shadowBlur=34;
-  ctx.fillStyle=gp2;ctx.fillText(pt,W/2,py);
-  ctx.restore();
-  ctaVerde(ctx,120,py+50,W-240,108,`📲 Escribe "${keyword(p)}" al WhatsApp`,"Pago al recibir · Entrega a domicilio");
-  if(qrOn()) dibujarQR(ctx, linkProducto(p), W-56-140, H-660-160, 140);
-  footerUrl(ctx,W,H-36,1.05);
-  cintaNota(ctx,W,H,true);
-  marcoLuz(ctx,W,H);
+  let cur=ny+lines.length*68+50;
+  if(C("precio")){
+    ctx.font=`900 92px ${SANS}`;
+    const pt=`$${p.precioActual} USD`;
+    const ptw=ctx.measureText(pt).width;
+    const gp2=ctx.createLinearGradient((W-ptw)/2,0,(W+ptw)/2,0);
+    gp2.addColorStop(0,"#FF6B35");gp2.addColorStop(1,"#f5a623");
+    ctx.save();ctx.shadowColor="rgba(255,107,53,.55)";ctx.shadowBlur=34;
+    ctx.fillStyle=gp2;ctx.fillText(pt,W/2,cur);
+    ctx.restore();
+    cur+=50;
+  }
+  if(C("cta")) ctaVerde(ctx,120,cur,W-240,108,`📲 Escribe "${keyword(p)}" al WhatsApp`,"Pago al recibir · Entrega a domicilio");
+  if(qrOn()) dibujarQR(ctx, qrUrl(p), W-56-140, H-660-160, 140);
+  if(C("footer")) footerUrl(ctx,W,H-36,1.05);
+  if(C("nota")) cintaNota(ctx,W,H,true);
+  if(C("marco")) marcoLuz(ctx,W,H);
 }
 
 /* ================= COMBO ================= */
 function dCombo(ctx, items, precioCombo){
-  const W=1080,H=1080;
+  const W=1080,H=1080, C=tarjetaOn;
   const ac = "#f5a623";
   fondoOscuro(ctx,W,H,"#FF6B35");
-  chipMarca(ctx,56,50);
+  if(C("logo")) chipMarca(ctx,56,50);
   // pill COMBO dorada
-  const ct="🎁 COMBO";
-  ctx.font=`900 30px ${SANS}`;
-  const cw2=ctx.measureText(ct).width+64;
-  const gp=ctx.createLinearGradient(W-56-cw2,0,W-56,0);
-  gp.addColorStop(0,"#f5a623");gp.addColorStop(1,"#FF6B35");
-  rr(ctx,W-56-cw2,58,cw2,58,29);ctx.fillStyle=gp;
-  ctx.save();ctx.shadowColor="rgba(245,166,35,.5)";ctx.shadowBlur=24;ctx.fill();ctx.restore();
-  ctx.fillStyle="#141416";ctx.textAlign="center";ctx.textBaseline="middle";
-  ctx.fillText(ct,W-56-cw2/2,88);
-  ctx.textBaseline="alphabetic";
+  if(C("badge")){
+    const ct="🎁 COMBO";
+    ctx.font=`900 30px ${SANS}`;
+    const cw2=ctx.measureText(ct).width+64;
+    const gp=ctx.createLinearGradient(W-56-cw2,0,W-56,0);
+    gp.addColorStop(0,"#f5a623");gp.addColorStop(1,"#FF6B35");
+    rr(ctx,W-56-cw2,58,cw2,58,29);ctx.fillStyle=gp;
+    ctx.save();ctx.shadowColor="rgba(245,166,35,.5)";ctx.shadowBlur=24;ctx.fill();ctx.restore();
+    ctx.fillStyle="#141416";ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillText(ct,W-56-cw2/2,88);
+    ctx.textBaseline="alphabetic";
+  }
   // título
   ctx.fillStyle="#fff";ctx.font=`900 52px ${SANS}`;ctx.textAlign="center";
   ctx.fillText("Llévate más por menos",W/2,205);
@@ -4731,37 +5089,46 @@ function dCombo(ctx, items, precioCombo){
   const pc = precioCombo && precioCombo>0 && precioCombo<suma ? precioCombo : suma;
   const ahorro = suma-pc;
   let py2 = 760;
+  let ctaY = 880;
   ctx.textAlign="center";
-  if(ahorro>0){
-    ctx.font=`700 26px ${SANS}`;ctx.fillStyle="#8e8e95";
-    ctx.fillText("POR SEPARADO",W/2-260,py2);
-    ctx.font=`700 48px ${SANS}`;ctx.fillStyle="#77777e";
-    const sTxt=`$${suma}`;
-    ctx.fillText(sTxt,W/2-260,py2+62);
-    const sw2=ctx.measureText(sTxt).width;
-    ctx.strokeStyle="#77777e";ctx.lineWidth=5;
-    ctx.beginPath();ctx.moveTo(W/2-260-sw2/2,py2+45);ctx.lineTo(W/2-260+sw2/2,py2+45);ctx.stroke();
-    ctx.font=`700 26px ${SANS}`;ctx.fillStyle="#8e8e95";
-    ctx.fillText("PRECIO COMBO",W/2+40,py2);
-    precioGradCentered(ctx,W/2+40,py2+70,92,`$${pc}`);
-    // pill ahorro
-    const at=`Ahorras $${ahorro}`;
-    ctx.font=`900 30px ${SANS}`;
-    const aw2=ctx.measureText(at).width+64;
-    const ga=ctx.createLinearGradient(W/2+250,0,W/2+250+aw2,0);
-    ga.addColorStop(0,"#2ee578");ga.addColorStop(1,"#1eb257");
-    rr(ctx,W/2+250,py2+16,aw2,62,31);ctx.fillStyle=ga;
-    ctx.save();ctx.shadowColor="rgba(37,211,102,.45)";ctx.shadowBlur=22;ctx.fill();ctx.restore();
-    ctx.fillStyle="#fff";ctx.textBaseline="middle";ctx.fillText(at,W/2+250+aw2/2,py2+48);
-    ctx.textBaseline="alphabetic";
+  if(C("precio")){
+    if(ahorro>0){
+      if(C("tachado")){
+        ctx.font=`700 26px ${SANS}`;ctx.fillStyle="#8e8e95";
+        ctx.fillText("POR SEPARADO",W/2-260,py2);
+        ctx.font=`700 48px ${SANS}`;ctx.fillStyle="#77777e";
+        const sTxt=`$${suma}`;
+        ctx.fillText(sTxt,W/2-260,py2+62);
+        const sw2=ctx.measureText(sTxt).width;
+        ctx.strokeStyle="#77777e";ctx.lineWidth=5;
+        ctx.beginPath();ctx.moveTo(W/2-260-sw2/2,py2+45);ctx.lineTo(W/2-260+sw2/2,py2+45);ctx.stroke();
+      }
+      ctx.font=`700 26px ${SANS}`;ctx.fillStyle="#8e8e95";
+      ctx.fillText("PRECIO COMBO",W/2+40,py2);
+      precioGradCentered(ctx,W/2+40,py2+70,92,`$${pc}`);
+      // pill ahorro
+      if(C("descuento")){
+        const at=`Ahorras $${ahorro}`;
+        ctx.font=`900 30px ${SANS}`;
+        const aw2=ctx.measureText(at).width+64;
+        const ga=ctx.createLinearGradient(W/2+250,0,W/2+250+aw2,0);
+        ga.addColorStop(0,"#2ee578");ga.addColorStop(1,"#1eb257");
+        rr(ctx,W/2+250,py2+16,aw2,62,31);ctx.fillStyle=ga;
+        ctx.save();ctx.shadowColor="rgba(37,211,102,.45)";ctx.shadowBlur=22;ctx.fill();ctx.restore();
+        ctx.fillStyle="#fff";ctx.textBaseline="middle";ctx.fillText(at,W/2+250+aw2/2,py2+48);
+        ctx.textBaseline="alphabetic";
+      }
+    }else{
+      ctx.font=`700 30px ${SANS}`;ctx.fillStyle="#8e8e95";
+      ctx.fillText("PRECIO DEL COMBO",W/2,py2);
+      precioGradCentered(ctx,W/2,py2+84,100,`$${pc} USD`);
+    }
   }else{
-    ctx.font=`700 30px ${SANS}`;ctx.fillStyle="#8e8e95";
-    ctx.fillText("PRECIO DEL COMBO",W/2,py2);
-    precioGradCentered(ctx,W/2,py2+84,100,`$${pc} USD`);
+    ctaY = 770;
   }
-  ctaVerde(ctx,120,880,W-240,100,`📲 Escribe "COMBO" al WhatsApp`,"Respuesta en menos de 5 min");
-  footerUrl(ctx,W,H-26);
-  marcoLuz(ctx,W,H);
+  if(C("cta")) ctaVerde(ctx,120,ctaY,W-240,100,`📲 Escribe "COMBO" al WhatsApp`,"Respuesta en menos de 5 min");
+  if(C("footer")) footerUrl(ctx,W,H-26);
+  if(C("marco")) marcoLuz(ctx,W,H);
 }
 function precioGradCentered(ctx,cx,y,size,txt){
   ctx.font=`900 ${size}px ${SANS}`;
@@ -5112,6 +5479,7 @@ async function renderPreviews(){
       const octx = off.getContext("2d");
       const imgUsar = ((e.id==="flotante"||e.id==="escena"||e.id==="urgencia") && fotoSinFondo) ? fotoSinFondo : img;
       if(e.id==="escena" && ESCENAS[escenaDe(sel)]){ try{ await loadImage(ESCENAS[escenaDe(sel)]); }catch(err2){} }
+      _estiloCtx = e.id;   /* cada miniatura respeta la config de tarjetas de SU estilo */
       if(e.id==="vitrina") dVitrina(octx,sel,imgUsar);
       else if(e.id==="oferta") dOferta(octx,sel,imgUsar);
       else if(e.id==="story") dStory(octx,sel,imgUsar);
@@ -5121,6 +5489,7 @@ async function renderPreviews(){
       else if(e.id==="urgencia") dUrgencia(octx,sel,imgUsar);
       else if(e.id==="galeria") dGaleria(octx,sel,imgUsar);
       else dFlotante(octx,sel,imgUsar);
+      _estiloCtx = null;
       const t = row.querySelector(`[data-sty=${e.id}]`);
       if(!t) continue;
       const mini = document.createElement("canvas");
@@ -5130,7 +5499,7 @@ async function renderPreviews(){
       const holder = t.querySelector(".cargando");
       if(holder) holder.replaceWith(mini);
       await new Promise(r=>setTimeout(r,30));
-    }catch(err){}
+    }catch(err){ _estiloCtx = null; }
   }
 }
 function marcarPrevActiva(){
@@ -5252,6 +5621,7 @@ document.querySelectorAll(".stybtn").forEach(b=>{
     if(estilo==="escena") actualizarEscenaInfo();
     if(typeof actualizarCajasEstilo==="function") actualizarCajasEstilo();
     if(typeof actualizarHojaRapida==="function") actualizarHojaRapida();
+    if(typeof renderTarjetas==="function") renderTarjetas();
     dibujar();
     marcarPrevActiva();
   };
@@ -5347,6 +5717,29 @@ function _cargarPng(src, nombre, zona){
 }
 $("#selPlantilla").onchange = ()=>{ guardarPref("plantilla", $("#selPlantilla").value); updCapPrev(); };
 $("#chkQR").onchange = ()=>{ guardarPref("qr", $("#chkQR").checked); dibujar(); renderPreviews(); };
+
+/* ================= PANEL DE TARJETAS: conexión e inicio ================= */
+$("#btnTarjTodas").onclick = ()=>ponerVariasTarjetas(true);
+$("#btnTarjNinguna").onclick = ()=>ponerVariasTarjetas(false);
+document.querySelectorAll("#panelTarjetas [data-preset]").forEach(b=>{
+  b.onclick = ()=>aplicarPreset(b.dataset.preset);
+});
+$("#btnZipPlat").onclick = ()=>generarZipPlataformas();
+$("#chkGuias").onchange = e=>{ guardarPref("guias_zona", e.target.checked); actualizarGuias(); };
+$("#selQrModo").onchange = ()=>{ guardarPref("qr_modo", $("#selQrModo").value); dibujar(); renderPreviews(); };
+$("#btnJpg").onclick = async ()=>{
+  if(comboMode){ toast("El JPG liviano funciona con un producto individual"); return; }
+  const cv=document.getElementById("cv");
+  const b=await jpgLiviano(cv, 300*1024);
+  if(!b){ toast("No se pudo generar el JPG"); return; }
+  descargarBlob(b, `tiendamax-${(sel&&sel.slug)||"foto"}-liviano.jpg`);
+  toast(`🖼️ JPG de ${(b.size/1024).toFixed(0)} KB — listo para Revolico`);
+};
+(function(){
+  const gc=document.getElementById("chkGuias"); if(gc) gc.checked=!!leerPref("guias_zona",false);
+  const qm=document.getElementById("selQrModo"); if(qm) qm.value=leerPref("qr_modo","web");
+  renderTarjetas();
+})();
 let _notaT = null;
 $("#inpNota").oninput = ()=>{
   clearTimeout(_notaT);
@@ -8656,7 +9049,8 @@ function sombraPiso(ctx, cx, baseY, ancho){
   ctx.restore();
 }
 function marcaAgua(ctx,W,H){
-  // mejora 15: marca de agua por guardado
+  // mejora 15: marca de agua por guardado (+ interruptor global de tarjetas)
+  if(typeof tarjetaOn==="function" && !tarjetaOn("agua")) return;
   let activa = leerPref("marca_agua",false);
   try{
     if(sel){
@@ -8801,73 +9195,87 @@ function textoCuentaAtras(){
   return `QUEDAN ${d} DÍAS`;
 }
 function dUrgencia(ctx,p,img){
-  const W=1080,H=1080, ac=acento(p.categoria);
+  const W=1080,H=1080, ac=acento(p.categoria), C=tarjetaOn;
   fondoOscuro(ctx,W,H,ac);
+  const disc = p.precioOriginal>p.precioActual?Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100):0;
   /* franja de urgencia arriba */
   const bh=112;
-  const g=ctx.createLinearGradient(0,0,W,bh);
-  g.addColorStop(0,"#ff3d00"); g.addColorStop(1,"#c81e00");
-  ctx.fillStyle=g; ctx.fillRect(0,0,W,bh);
-  dither(ctx,0,0,W,bh);
-  ctx.save();
-  ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
-  ctx.font=`900 52px ${SANS}`;
-  ctx.fillText("⏰ "+textoCuentaAtras(), W/2, bh/2+2);
-  ctx.restore();
+  if(C("badge")){
+    const g=ctx.createLinearGradient(0,0,W,bh);
+    g.addColorStop(0,"#ff3d00"); g.addColorStop(1,"#c81e00");
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,bh);
+    dither(ctx,0,0,W,bh);
+    ctx.save();
+    ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.font=`900 52px ${SANS}`;
+    ctx.fillText("⏰ "+textoCuentaAtras(), W/2, bh/2+2);
+    ctx.restore();
+    ctx.textBaseline="alphabetic";
+  }
+  const top0 = C("badge") ? bh : 14;
+  if(C("logo")) chipMarca(ctx,56,top0+26);
+  if(C("categoria")) pillCat(ctx,W-56,top0+34,p.categoria);
   ctx.textBaseline="alphabetic";
-  chipMarca(ctx,56,bh+26);
-  pillCat(ctx,W-56,bh+34,p.categoria);
-  const disc = p.precioOriginal>p.precioActual?Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100):0;
-  ctx.textBaseline="alphabetic";
-  /* ---- anclado de abajo hacia arriba: nada se pisa ---- */
-  const ctaH=92, ctaY=H-56-ctaH;              /* 932..1024 */
-  const mnY   = ctaY-28;                       /* 904 */
-  const bigY  = mnY-46;                        /* 858 */
-  const oldY  = bigY-94;                       /* 764 */
+  /* ---- apilado de abajo hacia arriba: cada tarjeta apagada libera su sitio ---- */
+  let bottom=H-56, ctaY=0;
+  if(C("cta")){ ctaY=bottom-92; bottom=ctaY-28; }
+  let oldY=0, bigY=0, mnY=0;
+  const precioOn=C("precio"), tachOn=C("tachado")&&disc>0;
+  if(precioOn){
+    mnY=bottom; bigY=mnY-46; oldY=bigY-94;
+    bottom = tachOn ? oldY : bigY;
+  }
   ctx.font=`800 44px ${SANS}`;
   const ln=calcLines(ctx,p.nombre,W-140,2);
-  const nameLast  = (disc?oldY:bigY) - 100;
+  const nameLast = bottom-100;
   const nameFirst = nameLast-(ln.length-1)*52;
-  const fy=bh+72, fx=150, fw=W-300;
+  const fy=top0+72, fx=150, fw=W-300;
   const fh=Math.max(240, nameFirst-46-28-fy);
   vitrina(ctx,fx,fy,fw,fh,img,ac,26);
-  if(disc) badgeDesc(ctx,fx+fw-16,fy+8,disc);
+  if(C("descuento") && disc) badgeDesc(ctx,fx+fw-16,fy+8,disc);
   const st=Number(p.stock);
-  if(st>0&&st<=5) badgeUltimas(ctx,fx+18,fy+fh-70,st);
-  if(qrOn()) dibujarQR(ctx, linkProducto(p), fx+fw-116-18, fy+fh-116-34, 116);
+  if(C("ultimas") && st>0&&st<=5) badgeUltimas(ctx,fx+18,fy+fh-70,st);
+  if(qrOn()) dibujarQR(ctx, qrUrl(p), fx+fw-116-18, fy+fh-116-34, 116);
   /* nombre */
   ctx.fillStyle="#fff"; ctx.textAlign="center"; ctx.textBaseline="alphabetic"; ctx.font=`800 44px ${SANS}`;
   ln.forEach((l,i)=>ctx.fillText(l, W/2, nameFirst+i*52));
-  /* precio anterior tachado */
-  if(disc){
-    ctx.font=`700 54px ${SANS}`; ctx.fillStyle="#9a9aa2"; ctx.textAlign="center";
-    const ot=`Antes $${p.precioOriginal}`;
-    const ow=ctx.measureText(ot).width;
-    ctx.fillText(ot, W/2, oldY);
-    ctx.strokeStyle="#ff3d00"; ctx.lineWidth=7; ctx.lineCap="round";
-    ctx.beginPath(); ctx.moveTo(W/2-ow/2-10, oldY-17); ctx.lineTo(W/2+ow/2+10, oldY-17); ctx.stroke();
-    ctx.lineCap="butt";
+  if(precioOn){
+    if(tachOn){
+      ctx.font=`700 54px ${SANS}`; ctx.fillStyle="#9a9aa2"; ctx.textAlign="center";
+      const ot=`Antes $${p.precioOriginal}`;
+      const ow=ctx.measureText(ot).width;
+      ctx.fillText(ot, W/2, oldY);
+      ctx.strokeStyle="#ff3d00"; ctx.lineWidth=7; ctx.lineCap="round";
+      ctx.beginPath(); ctx.moveTo(W/2-ow/2-10, oldY-17); ctx.lineTo(W/2+ow/2+10, oldY-17); ctx.stroke();
+      ctx.lineCap="butt";
+    }
+    precioGradCentered(ctx, W/2, bigY, 100, `$${p.precioActual} USD`);
+    if(C("mn")){
+      ctx.font=`700 26px ${SANS}`; ctx.fillStyle="#9a9aa2"; ctx.textAlign="center";
+      ctx.fillText(`≈ ${fmtMN(p.precioActual)} MN · pago al recibir`, W/2, mnY);
+    }
   }
-  precioGradCentered(ctx, W/2, bigY, 100, `$${p.precioActual} USD`);
-  ctx.font=`700 26px ${SANS}`; ctx.fillStyle="#9a9aa2"; ctx.textAlign="center";
-  ctx.fillText(`≈ ${fmtMN(p.precioActual)} MN · pago al recibir`, W/2, mnY);
-  ctaVerde(ctx,56,ctaY,W-112,ctaH,`📲 Escribe "${keyword(p)}" ahora`,"Antes de que se acabe la oferta");
-  footerUrl(ctx,W,H-22);
-  cintaNota(ctx,W,H,true);
-  marcoLuz(ctx,W,H);
+  if(C("cta")) ctaVerde(ctx,56,ctaY,W-112,92,`📲 Escribe "${keyword(p)}" ahora`,"Antes de que se acabe la oferta");
+  if(C("footer")) footerUrl(ctx,W,H-22);
+  if(C("nota")) cintaNota(ctx,W,H,true);
+  if(C("marco")) marcoLuz(ctx,W,H);
 }
 function dGaleria(ctx,p,img){
-  const W=1080,H=1080, ac=acento(p.categoria);
+  const W=1080,H=1080, ac=acento(p.categoria), C=tarjetaOn;
   fondoOscuro(ctx,W,H,ac);
-  chipMarca(ctx,56,50);
-  pillCat(ctx,W-56,58,p.categoria);
+  if(C("logo")) chipMarca(ctx,56,50);
+  if(C("categoria")) pillCat(ctx,W-56,58,p.categoria);
   const disc=p.precioOriginal>p.precioActual?Math.round((p.precioOriginal-p.precioActual)/p.precioOriginal*100):0;
-  /* anclado desde abajo */
-  const ctaH=92, ctaY=H-60-ctaH;               /* 928..1020 */
-  const priceY=ctaY-42;                        /* 886 */
+  /* anclado desde abajo (se reacomoda al apagar tarjetas) */
+  let bottom=H-60, ctaY=0;
+  const ctaOn=C("cta");
+  if(ctaOn){ ctaY=bottom-92; bottom=ctaY-42; }
+  const precioOn=C("precio");
+  const priceY=bottom;
+  const nameLast = precioOn ? priceY-76 : priceY-26;
   ctx.font=`800 44px ${SANS}`;
   const ln=calcLines(ctx,p.nombre,W-112,2);
-  const nameLast=priceY-76, nameFirst=nameLast-(ln.length-1)*52;
+  const nameFirst=nameLast-(ln.length-1)*52;
   const top=150, x0=56, ancho=W-112;
   const alto=Math.max(300, nameFirst-46-30-top);
   const fotos=[img].concat(fotosExtra).filter(Boolean).slice(0,4);
@@ -8885,26 +9293,28 @@ function dGaleria(ctx,p,img){
     for(let i=1;i<fotos.length;i++)
       vitrina(ctx, x0+wG+gap, top+(i-1)*(hP+gap), wP, hP, fotos[i], ac, 14);
   }
-  if(disc) badgeDesc(ctx,x0+ancho-16,top+8,disc);
-  if(qrOn()) dibujarQR(ctx, linkProducto(p), x0+8, top+alto-116-8, 108);
+  if(C("descuento") && disc) badgeDesc(ctx,x0+ancho-16,top+8,disc);
+  if(qrOn()) dibujarQR(ctx, qrUrl(p), x0+8, top+alto-116-8, 108);
   ctx.fillStyle="#fff"; ctx.textAlign="left"; ctx.textBaseline="alphabetic"; ctx.font=`800 44px ${SANS}`;
   ln.forEach((l,i)=>ctx.fillText(l,56,nameFirst+i*52));
-  let px=56;
-  if(disc){
-    ctx.font=`700 44px ${SANS}`; ctx.fillStyle="#9a9aa2"; ctx.textAlign="left";
-    const ot=`$${p.precioOriginal}`, ow=ctx.measureText(ot).width;
-    ctx.fillText(ot,px,priceY);
-    ctx.strokeStyle="#ff3d00"; ctx.lineWidth=6; ctx.lineCap="round";
-    ctx.beginPath(); ctx.moveTo(px-5,priceY-13); ctx.lineTo(px+ow+5,priceY-13); ctx.stroke();
-    ctx.lineCap="butt"; px+=ow+28;
+  if(precioOn){
+    let px=56;
+    if(C("tachado") && disc){
+      ctx.font=`700 44px ${SANS}`; ctx.fillStyle="#9a9aa2"; ctx.textAlign="left";
+      const ot=`$${p.precioOriginal}`, ow=ctx.measureText(ot).width;
+      ctx.fillText(ot,px,priceY);
+      ctx.strokeStyle="#ff3d00"; ctx.lineWidth=6; ctx.lineCap="round";
+      ctx.beginPath(); ctx.moveTo(px-5,priceY-13); ctx.lineTo(px+ow+5,priceY-13); ctx.stroke();
+      ctx.lineCap="butt"; px+=ow+28;
+    }
+    const pw=precioGrad(ctx,px,priceY,78,`$${p.precioActual}`);
+    ctx.font=`800 28px ${SANS}`; ctx.fillStyle="#FF6B35"; ctx.textAlign="left";
+    ctx.fillText("USD",px+pw+12,priceY-2);
   }
-  const pw=precioGrad(ctx,px,priceY,78,`$${p.precioActual}`);
-  ctx.font=`800 28px ${SANS}`; ctx.fillStyle="#FF6B35"; ctx.textAlign="left";
-  ctx.fillText("USD",px+pw+12,priceY-2);
-  ctaVerde(ctx,56,ctaY,W-112,ctaH,`📲 Escribe "${keyword(p)}" al WhatsApp`,`${fotos.length} foto${fotos.length!==1?"s":""} real${fotos.length!==1?"es":""} · Pago al recibir`);
-  footerUrl(ctx,W,H-22);
-  cintaNota(ctx,W,H,true);
-  marcoLuz(ctx,W,H);
+  if(ctaOn) ctaVerde(ctx,56,ctaY,W-112,92,`📲 Escribe "${keyword(p)}" al WhatsApp`,`${fotos.length} foto${fotos.length!==1?"s":""} real${fotos.length!==1?"es":""} · Pago al recibir`);
+  if(C("footer")) footerUrl(ctx,W,H-22);
+  if(C("nota")) cintaNota(ctx,W,H,true);
+  if(C("marco")) marcoLuz(ctx,W,H);
 }
 function actualizarCajasEstilo(){
   const u=document.getElementById("cajaUrgencia"), g=document.getElementById("cajaGaleria");
@@ -9502,7 +9912,9 @@ seleccionar = async function(p, abrirPreview){
     const upb=document.getElementById("uploadbox"); if(upb) upb.style.display = estilo==="flotante" ? "block" : "none";
     const escb=document.getElementById("escenaBox"); if(escb) escb.style.display = estilo==="escena" ? "block" : "none";
   }
-  return await _selOriginal(p, abrirPreview);
+  const r = await _selOriginal(p, abrirPreview);
+  if(typeof renderTarjetas==="function") renderTarjetas();
+  return r;
 };
 
 // atajos teclado para acortar tiempo
